@@ -50,7 +50,7 @@ function generateListHTML(json) {
     var dataFiles = "";
     var sexIdx = 0;
     for (sex in requiredSexes) {
-      for (jdx =1; jdx < 10; jdx++) {
+      for (jdx =1; jdx < 50; jdx++) {
         const layerDefinition = definition[`layer_${jdx}`];
         if (layerDefinition !== undefined) {
           if (sexIdx === 0) {

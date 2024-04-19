@@ -30,6 +30,7 @@ $(document).ready(function() {
   var animRowNum = 4; // default for walk
   var currentAnimationItemIndex = 0;
   var activeCustomAnimation = "";
+  var onlyCustomAnimation = false;
   var addedCustomAnimations = [];
 
   // on hash (url) change event, interpret and redraw
@@ -237,6 +238,13 @@ $(document).ready(function() {
     animRowStart = parseInt(selectedAnim.data("row"));
     animRowNum = parseInt(selectedAnim.data("num"));
 
+    // Set Active Custom Animation
+    const animCustom = selectedAnim.data("anim-custom");
+    if(animCustom !== undefined) {
+      activeCustomAnimation = animCustom;
+      onlyCustomAnimation = true;
+    }
+
     currentAnimationItemIndex = 0;
     if (addedCustomAnimations.includes(selectedAnimationValue)) {
       activeCustomAnimation = selectedAnimationValue;
@@ -406,7 +414,7 @@ $(document).ready(function() {
 
     zPosition = 0;
     $("input[type=radio]:checked").each(function(index) {
-      for (jdx =1; jdx < 10; jdx++) {
+      for (jdx =1; jdx < 50; jdx++) {
         if ($(this).data(`layer_${jdx}_${bodyTypeName}`)) {
           const zPos = $(this).data(`layer_${jdx}_zpos`);
           const custom_animation = $(this).data(`layer_${jdx}_custom_animation`);

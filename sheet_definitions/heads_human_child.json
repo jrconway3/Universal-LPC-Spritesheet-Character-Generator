@@ -5,6 +5,21 @@
     "zPos": 100,
     "child": "head/heads/human_child/universal/"
   },
+  "layer_2" : {
+    "custom_animation": "idle",
+    "zPos" : 100,
+    "child": "head/heads/human_child/idle/"
+  },
+  "layer_4" : {
+    "custom_animation": "jump",
+    "zPos" : 100,
+    "child": "head/heads/human_child/jump/"
+  },
+  "layer_5" : {
+    "custom_animation": "sit",
+    "zPos" : 100,
+    "child": "head/heads/human_child/sit/"
+  },
   "variants": [
     "light",
     "amber",

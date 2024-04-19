@@ -28,6 +28,123 @@
     "teen": "hair/xlong_ponytail/universal/adult_front_ponytail/",
     "child": "hair/xlong_ponytail/universal/child_front_ponytail/"
   },
+  "layer_4": {
+    "custom_animation": "idle",
+    "zPos": 120,
+    "male": "hair/xlong_ponytail/idle/adult_front/",
+    "muscular": "hair/xlong_ponytail/idle/adult_front/",
+    "female": "hair/xlong_ponytail/idle/adult_front/",
+    "pregnant": "hair/xlong_ponytail/idle/adult_front/",
+    "teen": "hair/xlong_ponytail/idle/adult_front/",
+    "child": "hair/xlong_ponytail/idle/child_front/"
+  },
+  "layer_5": {
+    "custom_animation": "idle",
+    "zPos": 9,
+    "male": "hair/xlong_ponytail/idle/adult_back/",
+    "muscular": "hair/xlong_ponytail/idle/adult_back/",
+    "female": "hair/xlong_ponytail/idle/adult_back/",
+    "pregnant": "hair/xlong_ponytail/idle/adult_back/",
+    "teen": "hair/xlong_ponytail/idle/adult_back/",
+    "child": "hair/xlong_ponytail/idle/child_back/"
+  },
+  "layer_6": {
+    "custom_animation": "idle",
+    "zPos": 135,
+    "male": "hair/xlong_ponytail/idle/adult_front_ponytail/",
+    "muscular": "hair/xlong_ponytail/idle/adult_front_ponytail/",
+    "female": "hair/xlong_ponytail/idle/adult_front_ponytail/",
+    "pregnant": "hair/xlong_ponytail/idle/adult_front_ponytail/",
+    "teen": "hair/xlong_ponytail/idle/adult_front_ponytail/",
+    "child": "hair/xlong_ponytail/idle/child_front_ponytail/"
+  },
+  "layer_7": {
+    "custom_animation": "run",
+    "zPos": 120,
+    "male": "hair/xlong_ponytail/run/adult_front/",
+    "muscular": "hair/xlong_ponytail/run/adult_front/",
+    "female": "hair/xlong_ponytail/run/adult_front/",
+    "pregnant": "hair/xlong_ponytail/run/adult_front/",
+    "teen": "hair/xlong_ponytail/run/adult_front/"
+  },
+  "layer_8": {
+    "custom_animation": "run",
+    "zPos": 9,
+    "male": "hair/xlong_ponytail/run/adult_back/",
+    "muscular": "hair/xlong_ponytail/run/adult_back/",
+    "female": "hair/xlong_ponytail/run/adult_back/",
+    "pregnant": "hair/xlong_ponytail/run/adult_back/",
+    "teen": "hair/xlong_ponytail/run/adult_back/"
+  },
+  "layer_9": {
+    "custom_animation": "run",
+    "zPos": 135,
+    "male": "hair/xlong_ponytail/run/adult_front_ponytail/",
+    "muscular": "hair/xlong_ponytail/run/adult_front_ponytail/",
+    "female": "hair/xlong_ponytail/run/adult_front_ponytail/",
+    "pregnant": "hair/xlong_ponytail/run/adult_front_ponytail/",
+    "teen": "hair/xlong_ponytail/run/adult_front_ponytail/"
+  },
+  "layer_10": {
+    "custom_animation": "jump",
+    "zPos": 120,
+    "male": "hair/xlong_ponytail/jump/adult_front/",
+    "muscular": "hair/xlong_ponytail/jump/adult_front/",
+    "female": "hair/xlong_ponytail/jump/adult_front/",
+    "pregnant": "hair/xlong_ponytail/jump/adult_front/",
+    "teen": "hair/xlong_ponytail/jump/adult_front/",
+    "child": "hair/xlong_ponytail/jump/child_front/"
+  },
+  "layer_11": {
+    "custom_animation": "jump",
+    "zPos": 9,
+    "male": "hair/xlong_ponytail/jump/adult_back/",
+    "muscular": "hair/xlong_ponytail/jump/adult_back/",
+    "female": "hair/xlong_ponytail/jump/adult_back/",
+    "pregnant": "hair/xlong_ponytail/jump/adult_back/",
+    "teen": "hair/xlong_ponytail/jump/adult_back/",
+    "child": "hair/xlong_ponytail/jump/child_back/"
+  },
+  "layer_12": {
+    "custom_animation": "jump",
+    "zPos": 135,
+    "male": "hair/xlong_ponytail/jump/adult_front_ponytail/",
+    "muscular": "hair/xlong_ponytail/jump/adult_front_ponytail/",
+    "female": "hair/xlong_ponytail/jump/adult_front_ponytail/",
+    "pregnant": "hair/xlong_ponytail/jump/adult_front_ponytail/",
+    "teen": "hair/xlong_ponytail/jump/adult_front_ponytail/",
+    "child": "hair/xlong_ponytail/jump/child_front_ponytail/"
+  },
+  "layer_13": {
+    "custom_animation": "sit",
+    "zPos": 120,
+    "male": "hair/xlong_ponytail/sit/adult_front/",
+    "muscular": "hair/xlong_ponytail/sit/adult_front/",
+    "female": "hair/xlong_ponytail/sit/adult_front/",
+    "pregnant": "hair/xlong_ponytail/sit/adult_front/",
+    "teen": "hair/xlong_ponytail/sit/adult_front/",
+    "child": "hair/xlong_ponytail/sit/child_front/"
+  },
+  "layer_14": {
+    "custom_animation": "sit",
+    "zPos": 9,
+    "male": "hair/xlong_ponytail/sit/adult_back/",
+    "muscular": "hair/xlong_ponytail/sit/adult_back/",
+    "female": "hair/xlong_ponytail/sit/adult_back/",
+    "pregnant": "hair/xlong_ponytail/sit/adult_back/",
+    "teen": "hair/xlong_ponytail/sit/adult_back/",
+    "child": "hair/xlong_ponytail/sit/child_back/"
+  },
+  "layer_15": {
+    "custom_animation": "sit",
+    "zPos": 135,
+    "male": "hair/xlong_ponytail/sit/adult_front_ponytail/",
+    "muscular": "hair/xlong_ponytail/sit/adult_front_ponytail/",
+    "female": "hair/xlong_ponytail/sit/adult_front_ponytail/",
+    "pregnant": "hair/xlong_ponytail/sit/adult_front_ponytail/",
+    "teen": "hair/xlong_ponytail/sit/adult_front_ponytail/",
+    "child": "hair/xlong_ponytail/sit/child_front_ponytail/"
+  },
   "variants": [
     "blonde",
     "ash",

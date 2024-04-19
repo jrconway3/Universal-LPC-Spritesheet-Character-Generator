@@ -10,6 +10,45 @@
     "teen" : "body/bodies/teen/universal/",
     "child" : "body/bodies/child/universal/"
   },
+  "layer_2" : {
+    "custom_animation": "idle",
+    "zPos" : 10,
+    "male" : "body/bodies/male/idle/",
+    "muscular" : "body/bodies/muscular/idle/",
+    "female" : "body/bodies/female/idle/",
+    "pregnant" : "body/bodies/pregnant/idle/",
+    "teen" : "body/bodies/teen/idle/",
+    "child" : "body/bodies/child/idle/"
+  },
+  "layer_3" : {
+    "custom_animation": "run",
+    "zPos" : 10,
+    "male" : "body/bodies/male/run/",
+    "muscular" : "body/bodies/muscular/run/",
+    "female" : "body/bodies/female/run/",
+    "pregnant" : "body/bodies/pregnant/run/",
+    "teen" : "body/bodies/teen/run/"
+  },
+  "layer_4" : {
+    "custom_animation": "jump",
+    "zPos" : 10,
+    "male" : "body/bodies/male/jump/",
+    "muscular" : "body/bodies/muscular/jump/",
+    "female" : "body/bodies/female/jump/",
+    "pregnant" : "body/bodies/pregnant/jump/",
+    "teen" : "body/bodies/teen/jump/",
+    "child" : "body/bodies/child/jump/"
+  },
+  "layer_5" : {
+    "custom_animation": "sit",
+    "zPos" : 10,
+    "male" : "body/bodies/male/sit/",
+    "muscular" : "body/bodies/muscular/sit/",
+    "female" : "body/bodies/female/sit/",
+    "pregnant" : "body/bodies/pregnant/sit/",
+    "teen" : "body/bodies/teen/sit/",
+    "child" : "body/bodies/child/sit/"
+  },
   "variants": [
     "light",
     "amber",

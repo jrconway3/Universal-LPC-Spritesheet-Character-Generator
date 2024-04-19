@@ -10,7 +10,23 @@ const animationRowsLayout = {
   "slash-n": 11,
   "slash-w": 12,
   "slash-s": 13,
-  "slash-e": 14
+  "slash-e": 14,
+  "idle-n": 20,
+  "idle-w": 21,
+  "idle-s": 22,
+  "idle-e": 23,
+  "run-n": 24,
+  "run-w": 25,
+  "run-s": 26,
+  "run-e": 27,
+  "jump-n": 28,
+  "jump-w": 29,
+  "jump-s": 30,
+  "jump-e": 31,
+  "sit-n": 32,
+  "sit-w": 33,
+  "sit-s": 34,
+  "sit-e": 35,
 }
 
 const customAnimations = {
@@ -94,6 +110,42 @@ const customAnimations = {
       ["slash-w,0", "slash-w,1", "slash-w,5", "slash-w,4", "slash-w,3", "slash-w,3", "slash-w,3", "slash-w,2"],
       ["slash-s,0", "slash-s,1", "slash-s,5", "slash-s,4", "slash-s,3", "slash-s,3", "slash-s,2", "slash-s,1"],
       ["slash-e,0", "slash-e,1", "slash-e,5", "slash-e,4", "slash-e,3", "slash-e,3", "slash-e,3", "slash-e,2"]
+    ]
+  },
+  idle: {
+    frameSize: 64,
+    frames: [
+      ["idle-n,0", "idle-n,1"],
+      ["idle-w,0", "idle-w,1"],
+      ["idle-s,0", "idle-s,1"],
+      ["idle-e,0", "idle-e,1"]
+    ]
+  },
+  run: {
+    frameSize: 64,
+    frames: [
+      ["run-n,0", "run-n,1", "run-n,2", "run-n,3", "run-n,4", "run-n,5", "run-n,6", "run-n,7"],
+      ["run-w,0", "run-w,1", "run-w,2", "run-w,3", "run-w,4", "run-w,5", "run-w,6", "run-w,7"],
+      ["run-s,0", "run-s,1", "run-s,2", "run-s,3", "run-s,4", "run-s,5", "run-s,6", "run-s,7"],
+      ["run-e,0", "run-e,1", "run-e,2", "run-e,3", "run-e,4", "run-e,5", "run-e,6", "run-e,7"]
+    ]
+  },
+  jump: {
+    frameSize: 64,
+    frames: [
+      ["jump-n,0", "jump-n,1", "jump-n,2", "jump-n,3", "jump-n,4", "jump-n,1"],
+      ["jump-w,0", "jump-w,1", "jump-w,2", "jump-w,3", "jump-w,4", "jump-w,1"],
+      ["jump-s,0", "jump-s,1", "jump-s,2", "jump-s,3", "jump-s,4", "jump-s,1"],
+      ["jump-e,0", "jump-e,1", "jump-e,2", "jump-e,3", "jump-e,4", "jump-e,1"]
+    ]
+  },
+  sit: {
+    frameSize: 64,
+    frames: [
+      ["sit-n,0"],
+      ["sit-w,0"],
+      ["sit-s,0"],
+      ["sit-e,0"]
     ]
   },
 }
