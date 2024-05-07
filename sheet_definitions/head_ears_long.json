@@ -3,11 +3,12 @@
   "type_name" : "ears",
   "layer_1" : {
     "zPos" : 130,
-    "male" : "head/ears/long/",
-    "muscular" : "head/ears/long/",
-    "female" : "head/ears/long/",
-    "teen" : "head/ears/long/",
-    "pregnant" : "head/ears/long/"
+    "male" : "head/ears/long/adult/",
+    "muscular" : "head/ears/long/adult/",
+    "female" : "head/ears/long/adult/",
+    "teen" : "head/ears/long/adult/",
+    "pregnant" : "head/ears/long/adult/",
+    "child" : "head/ears/long/child/"
   },
   "variants": [
     "light",
