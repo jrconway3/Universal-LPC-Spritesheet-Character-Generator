@@ -3,21 +3,21 @@
   "type_name" : "beastly_ears",
   "layer_1" : {
     "zPos" : 130,
-    "male" : "head/ears/beastly/cat/universal/adult_front/",
-    "muscular" : "head/ears/beastly/cat/universal/adult_front/",
-    "female" : "head/ears/beastly/cat/universal/adult_front/",
-    "teen" : "head/ears/beastly/cat/universal/adult_front/",
-    "pregnant" : "head/ears/beastly/cat/universal/adult_front/",
-    "child" : "head/ears/beastly/cat/universal/child_front/"
+    "male" : "head/ears/cat/adult_front/",
+    "muscular" : "head/ears/cat/adult_front/",
+    "female" : "head/ears/cat/adult_front/",
+    "teen" : "head/ears/cat/adult_front/",
+    "pregnant" : "head/ears/cat/adult_front/",
+    "child" : "head/ears/cat/child_front/"
   },
   "layer_2": {
     "zPos": 8.8,
-    "male": "head/ears/beastly/cat/universal/adult_back/",
-    "muscular": "head/ears/beastly/cat/universal/adult_back/",
-    "female": "head/ears/beastly/cat/universal/adult_back/",
-    "pregnant": "head/ears/beastly/cat/universal/adult_back/",
-    "teen": "head/ears/beastly/cat/universal/adult_back/",
-    "child": "head/ears/beastly/cat/universal/child_back/"
+    "male": "head/ears/cat/adult_back/",
+    "muscular": "head/ears/cat/adult_back/",
+    "female": "head/ears/cat/adult_back/",
+    "pregnant": "head/ears/cat/adult_back/",
+    "teen": "head/ears/cat/adult_back/",
+    "child": "head/ears/cat/child_back/"
   },
   "variants": [
     "blonde",

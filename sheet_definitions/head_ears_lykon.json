@@ -3,12 +3,12 @@
   "type_name" : "beastly_ears",
   "layer_1" : {
     "zPos" : 130,
-    "male" : "head/ears/beastly/lykon/universal/adult/",
-    "muscular" : "head/ears/beastly/lykon/universal/adult/",
-    "female" : "head/ears/beastly/lykon/universal/adult/",
-    "teen" : "head/ears/beastly/lykon/universal/adult/",
-    "pregnant" : "head/ears/beastly/lykon/universal/adult/",
-    "child" : "head/ears/beastly/lykon/universal/child/"
+    "male" : "head/ears/lykon/adult/",
+    "muscular" : "head/ears/lykon/adult/",
+    "female" : "head/ears/lykon/adult/",
+    "teen" : "head/ears/lykon/adult/",
+    "pregnant" : "head/ears/lykon/adult/",
+    "child" : "head/ears/lykon/child/"
   },
   "variants": [
     "blonde",

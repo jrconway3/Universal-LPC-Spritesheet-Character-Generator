@@ -3,12 +3,12 @@
   "type_name" : "beastly_ears_skin",
   "layer_1" : {
     "zPos" : 131,
-    "male" : "head/ears/beastly/skin/lykon/universal/adult/",
-    "muscular" : "head/ears/beastly/skin/lykon/universal/adult/",
-    "female" : "head/ears/beastly/skin/lykon/universal/adult/",
-    "teen" : "head/ears/beastly/skin/lykon/universal/adult/",
-    "pregnant" : "head/ears/beastly/skin/lykon/universal/adult/",
-    "child" : "head/ears/beastly/skin/lykon/universal/child/"
+    "male" : "head/ears/lykon/skin/adult/",
+    "muscular" : "head/ears/lykon/skin/adult/",
+    "female" : "head/ears/lykon/skin/adult/",
+    "teen" : "head/ears/lykon/skin/adult/",
+    "pregnant" : "head/ears/lykon/skin/adult/",
+    "child" : "head/ears/lykon/skin/child/"
   },
   "variants": [
     "light",

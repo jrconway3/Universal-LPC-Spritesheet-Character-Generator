@@ -3,21 +3,21 @@
   "type_name" : "beastly_ears_skin",
   "layer_1" : {
     "zPos" : 131,
-    "male" : "head/ears/beastly/skin/wolf/universal/adult_front/",
-    "muscular" : "head/ears/beastly/skin/wolf/universal/adult_front/",
-    "female" : "head/ears/beastly/skin/wolf/universal/adult_front/",
-    "teen" : "head/ears/beastly/skin/wolf/universal/adult_front/",
-    "pregnant" : "head/ears/beastly/skin/wolf/universal/adult_front/",
-    "child" : "head/ears/beastly/skin/wolf/universal/child_front/"
+    "male" : "head/ears/wolf/skin/adult_front/",
+    "muscular" : "head/ears/wolf/skin/adult_front/",
+    "female" : "head/ears/wolf/skin/adult_front/",
+    "teen" : "head/ears/wolf/skin/adult_front/",
+    "pregnant" : "head/ears/wolf/skin/adult_front/",
+    "child" : "head/ears/wolf/skin/child_front/"
   },
   "layer_2": {
     "zPos": 9,
-    "male": "head/ears/beastly/skin/wolf/universal/adult_back/",
-    "muscular": "head/ears/beastly/skin/wolf/universal/adult_back/",
-    "female": "head/ears/beastly/skin/wolf/universal/adult_back/",
-    "pregnant": "head/ears/beastly/skin/wolf/universal/adult_back/",
-    "teen": "head/ears/beastly/skin/wolf/universal/adult_back/",
-    "child": "head/ears/beastly/skin/wolf/universal/child_back/"
+    "male": "head/ears/wolf/skin/adult_back/",
+    "muscular": "head/ears/wolf/skin/adult_back/",
+    "female": "head/ears/wolf/skin/adult_back/",
+    "pregnant": "head/ears/wolf/skin/adult_back/",
+    "teen": "head/ears/wolf/skin/adult_back/",
+    "child": "head/ears/wolf/skin/child_back/"
   },
   "variants": [
     "light",

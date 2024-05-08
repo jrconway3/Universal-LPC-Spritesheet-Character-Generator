@@ -3,12 +3,12 @@
   "type_name" : "beastly_ears",
   "layer_1" : {
     "zPos" : 130,
-    "male" : "head/ears/beastly/zabos/universal/adult/",
-    "muscular" : "head/ears/beastly/zabos/universal/adult/",
-    "female" : "head/ears/beastly/zabos/universal/adult/",
-    "teen" : "head/ears/beastly/zabos/universal/adult/",
-    "pregnant" : "head/ears/beastly/zabos/universal/adult/",
-    "child" : "head/ears/beastly/zabos/universal/child/"
+    "male" : "head/ears/zabos/adult/",
+    "muscular" : "head/ears/zabos/adult/",
+    "female" : "head/ears/zabos/adult/",
+    "teen" : "head/ears/zabos/adult/",
+    "pregnant" : "head/ears/zabos/adult/",
+    "child" : "head/ears/zabos/child/"
   },
   "variants": [
     "blonde",
