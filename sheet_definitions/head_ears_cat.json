@@ -1,6 +1,6 @@
 {
   "name" : "Cat Ears",
-  "type_name" : "beastly_ears",
+  "type_name" : "furry_ears",
   "layer_1" : {
     "zPos" : 130,
     "male" : "head/ears/cat/adult_front/",
