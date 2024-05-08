@@ -1,6 +1,6 @@
 {
   "name" : "Side Cat Ears",
-  "type_name" : "furry_ears",
+  "type_name" : "ears",
   "layer_1" : {
     "zPos" : 130,
     "male" : "head/ears/zabos/adult/",
