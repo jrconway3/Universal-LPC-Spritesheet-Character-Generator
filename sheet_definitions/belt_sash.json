@@ -5,7 +5,7 @@
     "zPos": 65,
     "male": "torso/waist/sash/male/",
     "female": "torso/waist/sash/female/",
-    "teen": "torso/waist/sash/male/"
+    "teen": "torso/waist/sash/female/"
   },
   "variants": [
     "black",
