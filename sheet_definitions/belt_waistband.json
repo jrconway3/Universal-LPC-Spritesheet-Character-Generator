@@ -34,6 +34,23 @@
   ],
   "credits": [
     {
+      "file": "torso/waist/waistband",
+      "notes": "LPC Sara by Redshrike, contributed by William Thompsonj, Waistband Separated by Bluecarrot16",
+      "authors": [
+        "bluecarrot16",
+        "Mandi Paugh",
+        "Stephen Challener (Redshrike)",
+        "William.Thompsonj"
+      ],
+      "licenses": [
+        "OGA-BY 3.0"
+      ],
+      "urls": [
+        "http://opengameart.org/content/sara-wizard",
+        "https://opengameart.org/content/lpc-sara"
+      ]
+    },
+    {
       "file": "torso/waist/sash",
       "notes": "",
       "authors": [
