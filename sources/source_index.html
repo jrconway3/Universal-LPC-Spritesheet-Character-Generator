@@ -48,45 +48,55 @@
 					<option value="1h_halfslash" data-row="50" data-num="4" data-cycle="6">1-Handed Halfslash</option>
 				</select>
 				<code id="frame-cycle"></code>
-				<canvas id="previewAnimations" width="1024" height="192"></canvas>
+				<div>
+					<canvas id="previewAnimations" width="256" height="64"></canvas>
+				</div>
 			</div>
 		</section>
 	</header>
 	<form id="customizeChar">
 		<section id="preview">
-			<div class="instr">Complete sprite sheet (click to zoom in, double click to zoom out): </div>
-			<canvas id="spritesheet" width="832" height="1344">HTML5 Browser required.</canvas>
+			<details open>
+				<summary>Full Preview</summary>
+				<div class="instr">Complete sprite sheet (click to zoom in, double click to zoom out): </div>
+				<canvas id="spritesheet" width="832" height="1344">HTML5 Browser required.</canvas>
+			</details>
 		</section>
 		<section id="controls">
-			<div>
-				<label class="control-label">Download:</label>
-				<a id="saveAsPNG"><input type="button" value="Image (PNG)"></a>
-				<button type="button" class="generateSheetCreditsTxt">Credits (text)</button>
-				<button type="button" class="generateSheetCreditsCsv">Credits (CSV)</button>
-			</div>
-			<div>
-				<label class="control-label">Import/Export:</label>
-				<button type="button" class="exportToClipboard">Export to Clipboard (JSON)</button>
-				<button type="button" class="importFromClipboard">Import from Clipboard (JSON)</button>
-			</div>
-			<div>
-				<label class="control-label">Edit:</label>
-				<button type="button" id="resetAll">Reset all</button>
-				<button type="button" class="replacePinkMask">Replace Mask (pink)</button>
-			</div>
-			<div>
-				<label class="control-label">View:</label>
-				<button type="button" id="collapse">Collapse All</button>
-				<button type="button" id="expand">Expand Selected</button>
-				<label for="displayMode-compact"><input type="checkbox" name="displayMode" value="compact" id="displayMode-compact"> Compact Display</label>
-			</div>
-			<div>
-				<label class="control-label" for="searchbox">Search: </label>
-				<input type="search" id="searchbox" name="" placeholder="Search" />
-				<output id="matches"></output>
-			</div>
+			<details open>
+				<summary>Controls</summary>
+				<div>
+					<label class="control-label">Download:</label>
+					<a id="saveAsPNG"><input type="button" value="Image (PNG)"></a>
+					<button type="button" class="generateSheetCreditsTxt">Credits (text)</button>
+					<button type="button" class="generateSheetCreditsCsv">Credits (CSV)</button>
+				</div>
+				<div>
+					<label class="control-label">Import/Export:</label>
+					<button type="button" class="exportToClipboard">Export to Clipboard (JSON)</button>
+					<button type="button" class="importFromClipboard">Import from Clipboard (JSON)</button>
+				</div>
+				<div>
+					<label class="control-label">Edit:</label>
+					<button type="button" id="resetAll">Reset all</button>
+					<button type="button" class="replacePinkMask">Replace Mask (pink)</button>
+				</div>
+				<div>
+					<label class="control-label">View:</label>
+					<button type="button" id="collapse">Collapse All</button>
+					<button type="button" id="expand">Expand Selected</button>
+					<label for="displayMode-compact"><input type="checkbox" name="displayMode" value="compact" id="displayMode-compact"> Compact Display</label>
+				</div>
+				<div>
+					<label class="control-label" for="searchbox">Search: </label>
+					<input type="search" id="searchbox" name="" placeholder="Search" />
+					<output id="matches"></output>
+				</div>
+			</details>
 		</section>
 		<section id="chooser">
+			<details open>
+				<summary>Customize Your Character</summary>
 			<h3>Filters</h3>
 			<ul>
 				<li>
@@ -1575,6 +1585,7 @@
 					</ul>
 				</li>
 			</ul>
+		</details>
 		</section>
 	</form>
 	<div id="credits">
@@ -1593,7 +1604,10 @@
 		<p>
 			<strong>Custom file: </strong><span>Draw local file with custom z-position:</span>
 			<input type="file" id="previewFile">
-			<label for="ZPOS">Z-position:</label><input id="ZPOS" type="text" name="ZPOS">
+			<span class="ZPOS">
+				<label for="ZPOS">Z-position:</label>
+				<input id="ZPOS" type="text" name="ZPOS">
+			</span>
 		</p>
 	</div>
 	<imgPrev></imgPrev>
