@@ -75,6 +75,7 @@ eyes_adult_eyeroll.json,layer_1,105,eyes/human/adult/eyeroll/ eyes/human/adult/e
 eyes_adult_look_l.json,layer_1,105,eyes/human/adult/look_l/ eyes/human/adult/look_l/ eyes/human/adult/look_l/ eyes/human/adult/look_l/
 eyes_adult_look_r.json,layer_1,105,eyes/human/adult/look_r/ eyes/human/adult/look_r/ eyes/human/adult/look_r/ eyes/human/adult/look_r/
 eyes_adult_sad.json,layer_1,105,eyes/human/adult/sad/ eyes/human/adult/sad/ eyes/human/adult/sad/ eyes/human/adult/sad/
+eyes_adult_sad2.json,layer_1,105,eyes/human/adult/sad2/ eyes/human/adult/sad2/ eyes/human/adult/sad2/ eyes/human/adult/sad2/
 eyes_adult_shame.json,layer_1,105,eyes/human/adult/shame/ eyes/human/adult/shame/ eyes/human/adult/shame/ eyes/human/adult/shame/
 eyes_adult_shock.json,layer_1,105,eyes/human/adult/shock/ eyes/human/adult/shock/ eyes/human/adult/shock/ eyes/human/adult/shock/
 eyes_child.json,layer_1,105,eyes/human/child/
@@ -88,17 +89,21 @@ eyes_elderly_look_r.json,layer_1,105,eyes/human/elderly/look_r/ eyes/human/elder
 eyes_elderly_sad.json,layer_1,105,eyes/human/elderly/sad/ eyes/human/elderly/sad/ eyes/human/elderly/sad/ eyes/human/elderly/sad/
 eyes_elderly_shame.json,layer_1,105,eyes/human/elderly/shame/ eyes/human/elderly/shame/ eyes/human/elderly/shame/ eyes/human/elderly/shame/
 eyes_elderly_shock.json,layer_1,105,eyes/human/elderly/shock/ eyes/human/elderly/shock/ eyes/human/elderly/shock/ eyes/human/elderly/shock/
-face_anger.json,layer_1,101,head/faces/${head}/anger/ head/faces/${head}/anger/ head/faces/${head}/anger/ head/faces/${head}/anger/
+face_angry.json,layer_1,101,head/faces/${head}/anger/ head/faces/${head}/anger/ head/faces/${head}/anger/ head/faces/${head}/anger/
+face_angry2.json,layer_1,106,head/faces/global/angry2/ head/faces/global/angry2/ head/faces/global/angry2/ head/faces/global/angry2/
 face_blush.json,layer_1,101,head/faces/${head}/blush/ head/faces/${head}/blush/ head/faces/${head}/blush/ head/faces/${head}/blush/
 face_closed.json,layer_1,101,head/faces/${head}/closed/ head/faces/${head}/closed/ head/faces/${head}/closed/ head/faces/${head}/closed/
 face_closing.json,layer_1,101,head/faces/${head}/closing/ head/faces/${head}/closing/ head/faces/${head}/closing/ head/faces/${head}/closing/
 face_eyeroll.json,layer_1,101,head/faces/${head}/eyeroll/ head/faces/${head}/eyeroll/ head/faces/${head}/eyeroll/ head/faces/${head}/eyeroll/
 face_happy.json,layer_1,101,head/faces/${head}/happy/ head/faces/${head}/happy/ head/faces/${head}/happy/ head/faces/${head}/happy/
+face_happy2.json,layer_1,106,head/faces/global/happy2/ head/faces/global/happy2/ head/faces/global/happy2/ head/faces/global/happy2/
 face_look_l.json,layer_1,101,head/faces/${head}/look_l/ head/faces/${head}/look_l/ head/faces/${head}/look_l/ head/faces/${head}/look_l/
 face_look_r.json,layer_1,101,head/faces/${head}/look_r/ head/faces/${head}/look_r/ head/faces/${head}/look_r/ head/faces/${head}/look_r/
 face_sad.json,layer_1,101,head/faces/${head}/sad/ head/faces/${head}/sad/ head/faces/${head}/sad/ head/faces/${head}/sad/
+face_sad2.json,layer_1,101,head/faces/global/sad2/ head/faces/global/sad2/ head/faces/global/sad2/ head/faces/global/sad2/
 face_shame.json,layer_1,101,head/faces/${head}/shame/ head/faces/${head}/shame/ head/faces/${head}/shame/ head/faces/${head}/shame/
 face_shock.json,layer_1,101,head/faces/${head}/shock/ head/faces/${head}/shock/ head/faces/${head}/shock/ head/faces/${head}/shock/
+face_tears.json,layer_1,107,head/faces/global/tears/ head/faces/global/tears/ head/faces/global/tears/ head/faces/global/tears/
 facial_earring_left.json,layer_1,115,facial/earrings/simple/left/adult/ facial/earrings/simple/left/adult/ facial/earrings/simple/left/adult/ facial/earrings/simple/left/adult/ facial/earrings/simple/left/child/
 facial_earring_right.json,layer_1,115,facial/earrings/simple/right/adult/ facial/earrings/simple/right/adult/ facial/earrings/simple/right/adult/ facial/earrings/simple/right/adult/ facial/earrings/simple/right/child/
 facial_earrings_emerald.json,layer_1,115,facial/earrings/emerald/male/ facial/earrings/emerald/female/ facial/earrings/emerald/male/ facial/earrings/emerald/female/

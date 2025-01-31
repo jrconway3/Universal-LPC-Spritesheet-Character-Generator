@@ -1,5 +1,5 @@
 {
-  "name": "Sad Eyes",
+  "name": "Alt Sad Eyes",
   "type_name": "eyes",
   "layer_1": {
     "zPos": 105,
@@ -40,7 +40,7 @@
   ],
   "credits": [
     {
-      "file": "eyes/human/adult/sad",
+      "file": "eyes/human/adult/sad2",
       "notes": "original by Redshrike, Sad Expression by ElizaWy, split from expression and mapped to all frames by JaidynReiman",
       "authors": [
         "JaidynReiman",
