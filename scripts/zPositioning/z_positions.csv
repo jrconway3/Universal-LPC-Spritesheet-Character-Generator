@@ -74,6 +74,7 @@ eyes_adult_default.json,layer_1,105,eyes/human/adult/default/ eyes/human/adult/d
 eyes_adult_eyeroll.json,layer_1,105,eyes/human/adult/eyeroll/ eyes/human/adult/eyeroll/ eyes/human/adult/eyeroll/ eyes/human/adult/eyeroll/
 eyes_adult_look_l.json,layer_1,105,eyes/human/adult/look_l/ eyes/human/adult/look_l/ eyes/human/adult/look_l/ eyes/human/adult/look_l/
 eyes_adult_look_r.json,layer_1,105,eyes/human/adult/look_r/ eyes/human/adult/look_r/ eyes/human/adult/look_r/ eyes/human/adult/look_r/
+eyes_adult_neutral.json,layer_1,105,eyes/human/adult/neutral/ eyes/human/adult/neutral/ eyes/human/adult/neutral/ eyes/human/adult/neutral/
 eyes_adult_sad.json,layer_1,105,eyes/human/adult/sad/ eyes/human/adult/sad/ eyes/human/adult/sad/ eyes/human/adult/sad/
 eyes_adult_sad2.json,layer_1,105,eyes/human/adult/sad2/ eyes/human/adult/sad2/ eyes/human/adult/sad2/ eyes/human/adult/sad2/
 eyes_adult_shame.json,layer_1,105,eyes/human/adult/shame/ eyes/human/adult/shame/ eyes/human/adult/shame/ eyes/human/adult/shame/
@@ -99,6 +100,7 @@ face_happy.json,layer_1,101,head/faces/${head}/happy/ head/faces/${head}/happy/ 
 face_happy2.json,layer_1,106,head/faces/global/happy2/ head/faces/global/happy2/ head/faces/global/happy2/ head/faces/global/happy2/
 face_look_l.json,layer_1,101,head/faces/${head}/look_l/ head/faces/${head}/look_l/ head/faces/${head}/look_l/ head/faces/${head}/look_l/
 face_look_r.json,layer_1,101,head/faces/${head}/look_r/ head/faces/${head}/look_r/ head/faces/${head}/look_r/ head/faces/${head}/look_r/
+face_neutral.json,layer_1,101,head/faces/${head}/neutral/ head/faces/${head}/neutral/ head/faces/${head}/neutral/ head/faces/${head}/neutral/
 face_sad.json,layer_1,101,head/faces/${head}/sad/ head/faces/${head}/sad/ head/faces/${head}/sad/ head/faces/${head}/sad/
 face_sad2.json,layer_1,101,head/faces/global/sad2/ head/faces/global/sad2/ head/faces/global/sad2/ head/faces/global/sad2/
 face_shame.json,layer_1,101,head/faces/${head}/shame/ head/faces/${head}/shame/ head/faces/${head}/shame/ head/faces/${head}/shame/
