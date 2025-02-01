@@ -1,0 +1,119 @@
+{
+  "name": "Neutral",
+  "type_name": "expression",
+  "template": {
+    "head": {
+      "human_male": "male",
+      "human_female": "female",
+      "human_male_elderly": "elderly",
+      "human_female_elderly": "elderly"
+    }
+  },
+  "layer_1": {
+    "zPos": 101,
+    "male": "head/faces/${head}/neutral/",
+    "muscular": "head/faces/${head}/neutral/",
+    "female": "head/faces/${head}/neutral/",
+    "teen": "head/faces/${head}/neutral/",
+    "pregnant": "head/faces/${head}/neutral/"
+  },
+  "variants": [
+    "light",
+    "amber",
+    "olive",
+    "taupe",
+    "bronze",
+    "brown",
+    "black",
+    "lavender",
+    "blue",
+    "zombie_green",
+    "green",
+    "pale_green",
+    "bright_green",
+    "dark_green",
+    "fur_black",
+    "fur_brown",
+    "fur_tan",
+    "fur_copper",
+    "fur_gold",
+    "fur_grey",
+    "fur_white",
+    "zombie"
+  ],
+  "match_body_color": true,
+  "animations": [
+    "spellcast",
+    "thrust",
+    "walk",
+    "slash",
+    "shoot",
+    "hurt",
+    "watering",
+    "idle",
+    "jump",
+    "run",
+    "sit",
+    "emote",
+    "climb",
+    "combat",
+    "1h_slash",
+    "1h_backslash",
+    "1h_halfslash"
+  ],
+  "credits": [
+    {
+      "file": "head/faces/elderly/neutral",
+      "notes": "Original by Redshrike, Elderly Head/Eyes by ElizaWy, mapped to all frames by JaidynReiman",
+      "authors": [
+        "JaidynReiman",
+        "ElizaWy",
+        "Stephen Challener (Redshrike)"
+      ],
+      "licenses": [
+        "OGA-BY 3.0",
+        "CC-BY-SA 3.0",
+        "GPL 3.0"
+      ],
+      "urls": [
+        "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles",
+        "https://github.com/ElizaWy/LPC/tree/main/Characters/Head",
+        "https://opengameart.org/content/ulpc-expanded-expressions"
+      ]
+    },
+    {
+      "file": "head/faces/female/neutral",
+      "notes": "Original by Redshrike, spellcast and jump overrides by JaidynReiman",
+      "authors": [
+        "JaidynReiman",
+        "Stephen Challener (Redshrike)"
+      ],
+      "licenses": [
+        "OGA-BY 3.0",
+        "CC-BY-SA 3.0",
+        "GPL 3.0"
+      ],
+      "urls": [
+        "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles",
+        "https://opengameart.org/content/ulpc-expanded-expressions"
+      ]
+    },
+    {
+      "file": "head/faces/male/neutral",
+      "notes": "Original by Redshrike, spellcast and jump overrides by JaidynReiman",
+      "authors": [
+        "JaidynReiman",
+        "Stephen Challener (Redshrike)"
+      ],
+      "licenses": [
+        "OGA-BY 3.0",
+        "CC-BY-SA 3.0",
+        "GPL 3.0"
+      ],
+      "urls": [
+        "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles",
+        "https://opengameart.org/content/ulpc-expanded-expressions"
+      ]
+    }
+  ]
+}

@@ -1,13 +1,13 @@
 {
-  "name": "Default Eyes",
+  "name": "Neutral Eyes",
   "type_name": "eyes",
   "layer_1": {
     "zPos": 105,
-    "male": "eyes/human/adult/default/",
-    "muscular": "eyes/human/adult/default/",
-    "female": "eyes/human/adult/default/",
-    "teen": "eyes/human/adult/default/",
-    "pregnant": "eyes/human/adult/default/"
+    "male": "eyes/human/adult/neutral/",
+    "muscular": "eyes/human/adult/neutral/",
+    "female": "eyes/human/adult/neutral/",
+    "teen": "eyes/human/adult/neutral/",
+    "pregnant": "eyes/human/adult/neutral/"
   },
   "variants": [
     "blue",
@@ -40,8 +40,8 @@
   ],
   "credits": [
     {
-      "file": "eyes/human/adult/default",
-      "notes": "original by Redshrike, spellcast and jump overrides by JaidynReiman",
+      "file": "eyes/human/adult/neutral",
+      "notes": "original by Redshrike, mapped to all frames by Matthew Krohn & JaidynReiman",
       "authors": [
         "JaidynReiman",
         "Stephen Challener (Redshrike)"
@@ -52,8 +52,7 @@
         "GPL 3.0"
       ],
       "urls": [
-        "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles",
-        "https://opengameart.org/content/ulpc-expanded-expressions"
+        "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles"
       ]
     }
   ]
