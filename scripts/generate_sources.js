@@ -10,7 +10,7 @@ require("child_process").fork("scripts/zPositioning/parse_zpos.js");
 const es6DynamicTemplate = (templateString, templateVariables) =>
   templateString.replace(/\${(.*?)}/g, (_, g) => templateVariables[g]);
 
-var licensesFound = [];
+const licensesFound = [];
 function searchCredit(fileName, credits, origFileName) {
   if (credits.count <= 0) {
     console.error("no credits for filename:", fileName);
@@ -23,7 +23,7 @@ function searchCredit(fileName, credits, origFileName) {
     return undefined;
   }
 
-  for (var creditsIndex = 0; creditsIndex < credits.length; creditsIndex++) {
+  for (let creditsIndex = 0; creditsIndex < credits.length; creditsIndex++) {
     const credit = credits[creditsIndex];
     if (
       credit.file === fileName ||
@@ -102,26 +102,23 @@ function parseJson(json) {
 
   const endHTML = "</ul></li>";
 
-  var idx = 0;
-  var listItemsHTML = `<li><input type="radio" id="${typeName}-none_${name}" name="${typeName}"> <label for="${typeName}-none">No ${typeName}</label></li>`;
-  var listItemsCSV = "";
-  var addedCreditsFor = [];
+  let listItemsHTML = `<li><input type="radio" id="${typeName}-none_${name}" name="${typeName}"> <label for="${typeName}-none">No ${typeName}</label></li>`;
+  let listItemsCSV = "";
+  const addedCreditsFor = [];
   for (const variant of variants) {
-    const itemName = variants[idx];
     const snakeName = name.replaceAll(" ", "_");
-    const snakeItemName = itemName.replaceAll(" ", "_")
+    const snakeItemName = variant.replaceAll(" ", "_")
     const itemIdFor = `${typeName}-${snakeName}_${snakeItemName}`;
-    var matchBodyColor = false;
+    let matchBodyColor = false;
     if (definition[`match_body_color`] !== undefined) {
       matchBodyColor = true;
     }
-    var dataFiles = "";
-    var sexIdx = 0;
+    let dataFiles = "";
     for (const sex of requiredSexes) {
       for (jdx = 1; jdx < 10; jdx++) {
         const layerDefinition = definition[`layer_${jdx}`];
         if (layerDefinition !== undefined) {
-          if (sexIdx === 0) {
+          if (sex === requiredSexes[0]) {
             const zPos = definition[`layer_${jdx}`].zPos;
             dataFiles += `data-preview_row=${previewRow} data-preview_column=${previewColumn} data-preview_x_offset=${previewXOffset} data-preview_y_offset=${previewYOffset} data-layer_${jdx}_zpos=${zPos} `;
             const custom_animation = layerDefinition.custom_animation;
@@ -129,11 +126,11 @@ function parseJson(json) {
               dataFiles += `data-layer_${jdx}_custom_animation=${custom_animation} `;
             }
           }
-          const file = layerDefinition[requiredSexes[sexIdx]];
+          const file = layerDefinition[sex];
           if (file !== null && file !== "") {
             let imageFileName =
-              '"' + file + itemName.replaceAll(" ", "_") + '.png" ';
-            let fileNameForCreditSearch = file + itemName.replaceAll(" ", "_");
+              '"' + file + snakeItemName + '.png" ';
+            let fileNameForCreditSearch = file + snakeItemName;
             if (queryObj) {
               fileNameForCreditSearch = es6DynamicTemplate(
                 fileNameForCreditSearch,
@@ -154,32 +151,29 @@ function parseJson(json) {
               console.log(
                 `file name set for ${sex} is ${imageFileName} for layer ${jdx}`
               );
-            dataFiles += `data-layer_${jdx}_${requiredSexes[sexIdx]}=${imageFileName} `;
+            dataFiles += `data-layer_${jdx}_${sex}=${imageFileName} `;
             if (template) {
               const mungedTemplate = JSON.stringify(template)
                 .replace(/"/g, "'");
               dataFiles += `data-layer_${jdx}_template="${mungedTemplate}" `;
             }
             if (creditToUse !== undefined) {
-              var licenseIdx = 0;
               for (license in creditToUse.licenses) {
-                var licenseName = creditToUse.licenses[licenseIdx];
-                if (!licensesFound.includes(licenseName)) {
-                  licensesFound.push(licenseName);
+                if (!licensesFound.includes(license)) {
+                  licensesFound.push(license);
                 }
-                licenseIdx += 1;
               }
               const licenses = '"' + creditToUse.licenses.join(",") + '" ';
-              dataFiles += `data-layer_${jdx}_${requiredSexes[sexIdx]}_licenses=${licenses} `;
+              dataFiles += `data-layer_${jdx}_${sex}_licenses=${licenses} `;
               const authors = '"' + creditToUse.authors.join(",") + '" ';
-              dataFiles += `data-layer_${jdx}_${requiredSexes[sexIdx]}_authors=${authors} `;
+              dataFiles += `data-layer_${jdx}_${sex}_authors=${authors} `;
               const urls = '"' + creditToUse.urls.join(",") + '" ';
-              dataFiles += `data-layer_${jdx}_${requiredSexes[sexIdx]}_urls=${urls} `;
+              dataFiles += `data-layer_${jdx}_${sex}_urls=${urls} `;
               const notes =
                 '"' + creditToUse.notes.replaceAll('"', "**") + '" ';
-              dataFiles += `data-layer_${jdx}_${requiredSexes[sexIdx]}_notes=${notes} `;
+              dataFiles += `data-layer_${jdx}_${sex}_notes=${notes} `;
               if (!addedCreditsFor.includes(imageFileName)) {
-                const quotedShortName = '"' + file + itemName + '.png"';
+                const quotedShortName = '"' + file + variant + '.png"';
                 listItemsCSV += `${quotedShortName},${notes},${authors},${licenses},${urls}\n`;
                 addedCreditsFor.push(imageFileName);
               }
@@ -191,17 +185,15 @@ function parseJson(json) {
           break;
         }
       }
-      sexIdx += 1;
     }
     listItemsHTML += templateHTML
       .replaceAll("[ID_FOR]", itemIdFor)
       .replaceAll("[TYPE_NAME]", typeName)
-      .replaceAll("[NAME]", itemName)
+      .replaceAll("[NAME]", variant)
       .replaceAll("[PARENT_NAME]", name)
       .replaceAll("[MATCH_BODY_COLOR]", matchBodyColor)
-      .replaceAll("[VARIANT]", itemName)
+      .replaceAll("[VARIANT]", variant)
       .replaceAll("[DATA_FILE]", dataFiles);
-    idx += 1;
   }
   const html = startHTML + listItemsHTML + endHTML;
   let parsed = {};
@@ -210,12 +202,12 @@ function parseJson(json) {
   return parsed;
 }
 
-var lineReader = readline.createInterface({
+const lineReader = readline.createInterface({
   input: fs.createReadStream("sources/source_index.html"),
 });
-var htmlGenerated =
+let htmlGenerated =
   "<!-- THIS FILE IS AUTO-GENERATED. PLEASE DONT ALTER IT MANUALLY -->\n";
-var csvGenerated = "filename,notes,authors,licenses,urls\n";
+let csvGenerated = "filename,notes,authors,licenses,urls\n";
 
 lineReader.on("line", function (line) {
   if (line.includes("div_sheet_")) {
