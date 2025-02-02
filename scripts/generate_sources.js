@@ -108,7 +108,13 @@ function parseJson(json) {
   for (const variant of variants) {
     const snakeName = name.replaceAll(" ", "_");
     const snakeItemName = variant.replaceAll(" ", "_")
-    const itemIdFor = `${typeName}-${snakeName}_${snakeItemName}`;
+    let itemIdFor = `${typeName}-${snakeName}_${snakeItemName}`;
+    if (queryObj) {
+      const vals = Object.values(queryObj)
+        .map(val => val.replaceAll(" ", "_"))
+        .join("_");
+      itemIdFor = `${typeName}-${snakeName}_${vals}_${snakeItemName}`;
+    }
     let matchBodyColor = false;
     if (definition[`match_body_color`] !== undefined) {
       matchBodyColor = true;
