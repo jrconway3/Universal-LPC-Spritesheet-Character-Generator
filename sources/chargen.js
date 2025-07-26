@@ -1774,6 +1774,11 @@ $(".exportSplitAnimations").click(async function() {
       img.addEventListener("load", function () {
         callback(layers, prevctx);
       });
+      img.addEventListener("error", function (event) {
+        if (DEBUG)
+          console.error("There was an error loading image:", event.target.src);
+        images[imgRef] = null;
+      });
       return img;
     }
   }
