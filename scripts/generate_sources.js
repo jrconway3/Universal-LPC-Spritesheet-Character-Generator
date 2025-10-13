@@ -207,7 +207,7 @@ function parseJson(json) {
             } else if (listCreditToUse === null) {
               listCreditToUse = creditToUse;
             }
-            for (license in creditToUse.licenses) {
+            for (const license of creditToUse.licenses) {
               if (!licensesFound.includes(license)) {
                 licensesFound.push(license);
               }
@@ -309,7 +309,7 @@ lineReader.on("close", function (line) {
       return console.error(err);
     } else {
       console.log("CSV Updated!");
-      console.log("Found licenses:", licensesFound);
+      printArray(licensesFound, "Found licenses");
     }
   });
 
@@ -329,3 +329,16 @@ window.itemMetadata = ${JSON.stringify(itemMetadata, null, 2)};
     }
   });
 });
+
+function printArray(array, label) {
+  const colors = {
+    red: "\x1b[31m",
+    reset: "\x1b[0m",
+  };
+  console.log(`${label}: ${colors.red}[`);
+  array.sort();
+  for (const item of array) {
+    console.log(`  "${item}",`);
+  }
+  console.log(`]${colors.reset}`);
+}
