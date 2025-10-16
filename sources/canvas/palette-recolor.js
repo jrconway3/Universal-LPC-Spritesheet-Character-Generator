@@ -2,6 +2,7 @@
 // Recolors body sprites on-demand without caching
 
 import { recolorImageWebGL, isWebGLAvailable } from './webgl-palette-recolor.js';
+import { getDebugParam } from '../main.js';
 
 // Configuration flags
 let config = {
@@ -13,6 +14,7 @@ let config = {
 const USE_WEBGL = config.useWebGL && !config.forceCPU;
 
 // Log which method will be used
+const DEBUG = getDebugParam();
 if (DEBUG) {
 	if (USE_WEBGL) {
 		console.log('🎨 Palette recoloring: WebGL GPU-accelerated mode enabled');
