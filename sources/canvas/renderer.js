@@ -1,9 +1,10 @@
 // Canvas rendering module for Mithril UI
 // Simplified renderer that draws character sprites based on selections
 
-import { state } from '../state/state.js';
+import { state, getHashParamsforSelections } from '../state/state.js';
 import { getPaletteForItem, recolorWithPalette } from './palette-recolor.js';
 import { loadImage, loadImagesInParallel } from './load-image.js';
+import { es6DynamicTemplate } from '../utils/helpers.js';
 
 const FRAME_SIZE = 64;
 const SHEET_HEIGHT = 3456; // Full universal sheet height
@@ -290,19 +291,21 @@ function getSpritePath(itemId, variant, bodyType, animation, layerNum = 1, selec
   if (!basePath) return null;
 
   // Replace template variables like ${head}
-  if (basePath.includes('${head}')) {
-    // Find the selected head and extract its type from the itemId
-    for (const [categoryPath, selection] of Object.entries(selections)) {
-      const selMeta = window.itemMetadata[selection.itemId];
-      if (selMeta && selMeta.path && selMeta.path[0] === 'head' && selMeta.path[1] === 'heads') {
-        // Extract head type from itemId: "head-heads-heads_human_male" -> "male"
-        // The pattern is usually: heads_<type>_<subtype> or heads_<type>
-        const itemIdParts = selection.itemId.split('_');
-        const headType = itemIdParts[itemIdParts.length - 1]; // Last part is the type (male, female, elderly, etc.)
-        basePath = basePath.replace('${head}', headType);
-        break;
-      }
-    }
+  if (basePath.includes('${')) {
+	// get params from selections
+	// TODO: this could be optimized to avoid recomputing every time
+	// or to only do it when relevant selections change
+	// or just use the selections directly instead of recomputing the hash params
+	const hashParams = getHashParamsforSelections(selections);
+    const replacements = Object.fromEntries(
+		Object.entries(hashParams).map(([typeName, nameAndVariant]) => {
+			// TODO: this works for head, eye color, and faces but probably not for everything
+			const name = nameAndVariant.substr(0, nameAndVariant.lastIndexOf('_')); // Extract name before variant
+			const replacement = meta.replace_in_path[typeName]?.[name];
+			return [typeName, replacement];
+		})
+	);
+	basePath = es6DynamicTemplate(basePath, replacements);
   }
 
   // If no variant specified, try to extract from itemId
