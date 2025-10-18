@@ -1,6 +1,6 @@
 // Item with variants component
-import { state, getSelectionGroup, applyMatchBodyColor } from '../../state/state.js';
-import { variantToFilename, capitalize } from '../../utils/helpers.js';
+import { state, getSelectionGroup, applyMatchBodyColor, getHashParamsforSelections } from '../../state/state.js';
+import { variantToFilename, capitalize, es6DynamicTemplate } from '../../utils/helpers.js';
 import { getImageToDraw } from '../../canvas/renderer.js';
 import { getPaletteForItem } from '../../canvas/palette-recolor.js';
 
@@ -107,22 +107,22 @@ export const ItemWithVariants = {
 									if (!layerPath) continue;
 
 									// Replace template variables like ${head}
-									if (layerPath.includes('${head}')) {
-										// Determine head type from current selections
-										const headSelection = Object.values(state.selections).find(sel =>
-											sel.itemId?.startsWith('head-heads-')
+									if (layerPath.includes('${')) {
+										// get params from selections
+										// TODO: this could be optimized to avoid recomputing every time
+										// or to only do it when relevant selections change
+										// or just use the selections directly instead of recomputing the hash params
+										const hashParams = getHashParamsforSelections(state.selections || {});
+										const replacements = Object.fromEntries(
+											Object.entries(hashParams).map(([typeName, nameAndVariant]) => {
+												// TODO: this works for head, eye color, and faces but probably not for everything
+												const name = nameAndVariant.substr(0, nameAndVariant.lastIndexOf('_'));
+												const replacement = meta.replace_in_path[typeName]?.[name];
+												return [typeName, replacement];
+											})
 										);
 
-										// Get the head name (e.g., "Human_male")
-										const headSelectionName = headSelection?.name || 'Human_male';
-
-										// Use replace_in_path mapping if available
-										let replacementValue = 'male'; // default
-										if (meta.replace_in_path?.head) {
-											replacementValue = meta.replace_in_path.head[headSelectionName] || 'male';
-										}
-
-										layerPath = layerPath.replace('${head}', replacementValue);
+										layerPath = es6DynamicTemplate(layerPath, replacements);
 									}
 
 									const hasCustomAnim = layer.custom_animation;
