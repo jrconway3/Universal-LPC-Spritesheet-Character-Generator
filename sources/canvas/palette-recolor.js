@@ -3,6 +3,7 @@
 
 import { recolorImageWebGL, isWebGLAvailable } from './webgl-palette-recolor.js';
 import { getDebugParam } from '../main.js';
+import { get2DContext } from './canvas-utils.js';
 
 // Configuration flags
 let config = {
@@ -108,7 +109,7 @@ function recolorImageCPU(sourceImage, sourcePalette, targetPalette) {
 	const canvas = document.createElement('canvas');
 	canvas.width = sourceImage.width;
 	canvas.height = sourceImage.height;
-	const ctx = canvas.getContext('2d');
+	const ctx = get2DContext(canvas);
 
 	// Draw source image
 	ctx.drawImage(sourceImage, 0, 0);
