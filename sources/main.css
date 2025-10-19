@@ -66,6 +66,19 @@ p {
   touch-action: pan-x pan-y;
 }
 
+/* Prevent canvas antialiasing/blurring */
+canvas {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+#previewAnimations, #spritesheet-preview {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
 .scrollable-container {
   overflow: auto;
   max-width: 100%;

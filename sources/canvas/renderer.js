@@ -4,6 +4,7 @@
 import { state, getHashParamsforSelections } from '../state/state.js';
 import { getPaletteForItem, recolorWithPalette } from './palette-recolor.js';
 import { loadImage, loadImagesInParallel } from './load-image.js';
+import { get2DContext } from './canvas-utils.js';
 import { es6DynamicTemplate } from '../utils/helpers.js';
 
 const FRAME_SIZE = 64;
@@ -110,7 +111,7 @@ function drawTransparencyBackground(context, width, height, squareSize = 8) {
  */
 export function initCanvas() {
   canvas = document.createElement('canvas');
-  ctx = canvas.getContext('2d');
+  ctx = get2DContext(canvas);
   canvas.width = SHEET_WIDTH;
   canvas.height = SHEET_HEIGHT;
 }
@@ -127,7 +128,7 @@ export function copyToPreviewCanvas(previewCanvasElement, showTransparencyGrid =
     return;
   }
 
-  const previewCtx = previewCanvasElement.getContext('2d');
+  const previewCtx = get2DContext(previewCanvasElement);
 
   // Match preview canvas size to offscreen canvas
   previewCanvasElement.width = canvas.width;
@@ -155,7 +156,7 @@ export function copyToPreviewCanvas(previewCanvasElement, showTransparencyGrid =
  */
 export function initPreviewCanvas(previewCanvasElement) {
   previewCanvas = previewCanvasElement;
-  previewCtx = previewCanvas.getContext('2d');
+  previewCtx = get2DContext(previewCanvas);
   previewCanvas.width = 4 * FRAME_SIZE; // 256px
   previewCanvas.height = FRAME_SIZE; // 64px
 }
@@ -462,7 +463,7 @@ export async function renderCharacter(selections, bodyType, targetCanvas = null)
   try {
     // Use provided canvas or default to main canvas
     const renderCanvas = targetCanvas || canvas;
-    const renderCtx = renderCanvas.getContext('2d');
+    const renderCtx = get2DContext(renderCanvas);
 
     if (!renderCanvas || !renderCtx) {
       console.error('Canvas not initialized');
@@ -819,7 +820,7 @@ export function extractAnimationFromCanvas(animationName) {
   const animCanvas = document.createElement('canvas');
   animCanvas.width = SHEET_WIDTH;
   animCanvas.height = srcHeight;
-  const animCtx = animCanvas.getContext('2d');
+  const animCtx = get2DContext(animCanvas);
 
   // Copy animation from main canvas
   animCtx.drawImage(canvas, 0, srcY, SHEET_WIDTH, srcHeight, 0, 0, SHEET_WIDTH, srcHeight);
@@ -872,7 +873,7 @@ export async function renderSingleItem(itemId, variant, bodyType, selections) {
     itemCanvas = document.createElement('canvas');
     itemCanvas.width = animWidth;
     itemCanvas.height = animHeight;
-    itemCtx = itemCanvas.getContext('2d');
+    itemCtx = get2DContext(itemCanvas);
 
     // Render all layers of this custom animation item
     const customSprites = [];
@@ -907,7 +908,7 @@ export async function renderSingleItem(itemId, variant, bodyType, selections) {
     itemCanvas = document.createElement('canvas');
     itemCanvas.width = SHEET_WIDTH;
     itemCanvas.height = SHEET_HEIGHT;
-    itemCtx = itemCanvas.getContext('2d');
+    itemCtx = get2DContext(itemCanvas);
 
     // Build list of sprites to draw for this item
     const spritesToDraw = [];
@@ -1012,7 +1013,7 @@ export async function renderSingleItemAnimation(itemId, variant, bodyType, anima
   const animCanvas = document.createElement('canvas');
   animCanvas.width = SHEET_WIDTH;
   animCanvas.height = animHeight;
-  const animCtx = animCanvas.getContext('2d');
+  const animCtx = get2DContext(animCanvas);
 
   // Build list of sprites to draw for this item & animation
   const spritesToDraw = [];

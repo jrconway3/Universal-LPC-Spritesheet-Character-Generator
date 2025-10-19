@@ -1,6 +1,8 @@
 // WebGL-accelerated palette recoloring for LPC sprites
 // Uses GPU shaders for fast color replacement
 
+import { get2DContext } from './canvas-utils.js';
+
 // Shared WebGL resources for reuse
 let sharedGL = null;
 let sharedCanvas = null;
@@ -222,6 +224,7 @@ function initSharedWebGL() {
 	// Create a reusable canvas
 	sharedCanvas = document.createElement('canvas');
 	sharedGL = sharedCanvas.getContext('webgl', {
+		antialias: false,  // Disable antialiasing for crisp pixels
 		premultipliedAlpha: false,
 		preserveDrawingBuffer: true
 	});
@@ -300,7 +303,7 @@ export function recolorImageWebGL(sourceImage, sourcePalette, targetPalette) {
 		const resultCanvas = document.createElement('canvas');
 		resultCanvas.width = sharedCanvas.width;
 		resultCanvas.height = sharedCanvas.height;
-		const ctx = resultCanvas.getContext('2d');
+		const ctx = get2DContext(resultCanvas);
 		ctx.drawImage(sharedCanvas, 0, 0);
 
 		return resultCanvas;
