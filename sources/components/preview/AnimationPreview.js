@@ -89,6 +89,7 @@ export const AnimationPreview = {
 											value: vnode.state.selectedAnimation,
 											onchange: (e) => {
 												vnode.state.selectedAnimation = e.target.value;
+												state.selectedAnimation = vnode.state.selectedAnimation;
 												if (window.canvasRenderer) {
 													const frames = window.canvasRenderer.setPreviewAnimation(e.target.value);
 													vnode.state.frameCycle = frames.join('-');
@@ -122,6 +123,7 @@ export const AnimationPreview = {
 										value: vnode.state.zoomLevel,
 										oninput: (e) => {
 											vnode.state.zoomLevel = parseFloat(e.target.value);
+											state.previewCanvasZoomLevel = vnode.state.zoomLevel;
 											if (window.canvasRenderer && window.canvasRenderer.setPreviewCanvasZoom) {
 												window.canvasRenderer.setPreviewCanvasZoom(vnode.state.zoomLevel);
 											}

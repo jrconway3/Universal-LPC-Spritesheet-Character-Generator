@@ -33,11 +33,13 @@ const SpritesheetCanvas = {
 	onupdate: function(vnode) {
 		const canvas = vnode.dom;
 		const showTransparencyGrid = vnode.attrs.showTransparencyGrid;
-		const zoomLevel = vnode.state.zoomLevel;
+		const zoomLevel = vnode.attrs.zoomLevel;
 
 		if (!window.canvasRenderer) {
 			return;
 		}
+
+		m.redraw();
 
 		// Copy from offscreen canvas to preview canvas
 		window.canvasRenderer.copyToPreviewCanvas(canvas, showTransparencyGrid, zoomLevel);
@@ -143,6 +145,7 @@ export const FullSpritesheetPreview = {
 										value: vnode.state.zoomLevel,
 										oninput: (e) => {
 											vnode.state.zoomLevel = parseFloat(e.target.value);
+											state.fullSpritesheetCanvasZoomLevel = vnode.state.zoomLevel;
 											// Trigger re-render to update preview canvas zoom
 											m.redraw();
 										}

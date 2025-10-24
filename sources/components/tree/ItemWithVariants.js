@@ -1,8 +1,9 @@
 // Item with variants component
-import { state, getSelectionGroup, applyMatchBodyColor, getHashParamsforSelections } from '../../state/state.js';
-import { variantToFilename, capitalize, es6DynamicTemplate } from '../../utils/helpers.js';
+import { state, getSelectionGroup, applyMatchBodyColor } from '../../state/state.js';
 import { getImageToDraw } from '../../canvas/renderer.js';
 import { getPaletteForItem } from '../../canvas/palette-recolor.js';
+import { replaceInPath } from '../../state/path.js';
+import { variantToFilename, capitalize } from '../../utils/helpers.js';
 
 export const ItemWithVariants = {
 	view: function(vnode) {
@@ -108,21 +109,7 @@ export const ItemWithVariants = {
 
 									// Replace template variables like ${head}
 									if (layerPath.includes('${')) {
-										// get params from selections
-										// TODO: this could be optimized to avoid recomputing every time
-										// or to only do it when relevant selections change
-										// or just use the selections directly instead of recomputing the hash params
-										const hashParams = getHashParamsforSelections(state.selections || {});
-										const replacements = Object.fromEntries(
-											Object.entries(hashParams).map(([typeName, nameAndVariant]) => {
-												// TODO: this works for head, eye color, and faces but probably not for everything
-												const name = nameAndVariant.substr(0, nameAndVariant.lastIndexOf('_'));
-												const replacement = meta.replace_in_path[typeName]?.[name];
-												return [typeName, replacement];
-											})
-										);
-
-										layerPath = es6DynamicTemplate(layerPath, replacements);
+										layerPath = replaceInPath(layerPath, state.selections, meta);
 									}
 
 									const hasCustomAnim = layer.custom_animation;

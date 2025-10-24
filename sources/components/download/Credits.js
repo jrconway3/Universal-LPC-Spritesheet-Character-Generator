@@ -44,7 +44,7 @@ export const Credits = {
 				m("div.content.has-background-light.p-3",
 					allCredits.map(credit =>
 						m("div.mb-3", { key: credit.file }, [
-							m("strong.is-size-6", credit.file),
+							m("strong.is-size-6", credit.fileName),
 							credit.notes ? m("p.is-size-7", credit.notes) : null,
 							m("p.is-size-7", [
 								m("strong", "Licenses: "),
