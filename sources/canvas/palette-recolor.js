@@ -251,6 +251,30 @@ const PALETTE_FILES = {
 };
 
 /**
+ * Get image to draw - applies recoloring if needed based on palette configuration
+ * Async because palette loading is lazy (loads on first use)
+ * @param {HTMLImageElement|HTMLCanvasElement} img - Source image
+ * @param {string} itemId - Item identifier
+ * @param {string} variant - Variant name
+ * @returns {Promise<HTMLImageElement|HTMLCanvasElement>} Image or recolored canvas to draw
+ */
+export async function getImageToDraw(img, itemId, variant) {
+  const meta = window.itemMetadata?.[itemId];
+  const paletteConfig = getPaletteForItem(itemId, meta);
+
+  // Only recolor if item uses a palette and variant is not the source variant
+  if (paletteConfig && variant !== paletteConfig.sourceVariant) {
+    try {
+      return await recolorWithPalette(img, variant, paletteConfig.type);
+    } catch (err) {
+      console.warn(`Failed to recolor ${paletteConfig.type} variant ${variant}:`, err);
+      return img; // Fallback to original on error
+    }
+  }
+  return img; // Return original if no recoloring needed
+}
+
+/**
  * Get palette configuration for an item from its metadata
  * @param {string} itemId - Item identifier
  * @param {Object} meta - Item metadata

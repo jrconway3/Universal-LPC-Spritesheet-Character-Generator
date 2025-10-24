@@ -2,24 +2,16 @@
 import { state } from '../../state/state.js';
 import { getAllCredits, creditsToCsv, creditsToTxt, getItemFileName } from '../../utils/credits.js';
 import { CollapsibleSection } from '../CollapsibleSection.js';
+import { downloadFile, downloadAsPNG } from '../../canvas/download.js';
+import { importStateFromJSON, exportStateAsJSON } from '../../state/json.js';
+import { ANIMATIONS } from '../../state/constants.js';
 
 export const Download = {
 	view: function() {
-		// Helper to download file
-		const downloadFile = (content, filename, type = "text/plain") => {
-			const blob = new Blob([content], { type });
-			const url = URL.createObjectURL(blob);
-			const a = document.createElement("a");
-			a.href = url;
-			a.download = filename;
-			a.click();
-			URL.revokeObjectURL(url);
-		};
-
 		// Export to clipboard
 		const exportToClipboard = async () => {
 			if (!window.canvasRenderer) return;
-			const json = window.canvasRenderer.exportStateAsJSON(state.selections, state.bodyType);
+			const json = exportStateAsJSON(state.selections, state.bodyType);
 			try {
 				await navigator.clipboard.writeText(json);
 				alert('Exported to clipboard!');
@@ -34,7 +26,7 @@ export const Download = {
 			if (!window.canvasRenderer) return;
 			try {
 				const json = await navigator.clipboard.readText();
-				const imported = window.canvasRenderer.importStateFromJSON(json);
+				const imported = importStateFromJSON(json);
 				state.bodyType = imported.bodyType;
 				state.selections = imported.selections;
 
@@ -51,7 +43,7 @@ export const Download = {
 			if (!window.canvasRenderer) return;
 
 			// Export offscreen canvas directly
-			window.canvasRenderer.downloadAsPNG('character-spritesheet.png');
+			downloadAsPNG('character-spritesheet.png');
 		};
 
 		// Export ZIP - Split by animation
@@ -72,7 +64,7 @@ export const Download = {
 				const creditsFolder = zip.folder("credits");
 
 				// Get available animations from canvas renderer
-				const animationList = window.canvasRenderer.getAnimationList();
+				const animationList = ANIMATIONS;;
 				const exportedStandard = [];
 				const failedStandard = [];
 
@@ -92,7 +84,7 @@ export const Download = {
 				}
 
 				// Add character.json at root
-				zip.file('character.json', window.canvasRenderer.exportStateAsJSON(state.selections, state.bodyType));
+				zip.file('character.json', exportStateAsJSON(state.selections, state.bodyType));
 
 				// Add credits in credits folder
 				const allCredits = getAllCredits(state.selections, state.bodyType);
@@ -181,7 +173,7 @@ export const Download = {
 				}
 
 				// Add character.json at root
-				zip.file('character.json', window.canvasRenderer.exportStateAsJSON(state.selections, state.bodyType));
+				zip.file('character.json', exportStateAsJSON(state.selections, state.bodyType));
 
 				// Add credits in credits folder
 				const allCredits = getAllCredits(state.selections, state.bodyType);
@@ -226,7 +218,7 @@ export const Download = {
 				const creditsFolder = zip.folder("credits");
 
 				// Get available animations
-				const animationList = window.canvasRenderer.getAnimationList();
+				const animationList = ANIMATIONS;
 				const exportedStandard = {};
 				const failedStandard = {};
 
@@ -266,7 +258,7 @@ export const Download = {
 				}
 
 				// Add character.json at root
-				zip.file('character.json', window.canvasRenderer.exportStateAsJSON(state.selections, state.bodyType));
+				zip.file('character.json', exportStateAsJSON(state.selections, state.bodyType));
 
 				// Add credits in credits folder
 				const allCredits = getAllCredits(state.selections, state.bodyType);

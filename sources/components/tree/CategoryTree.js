@@ -1,5 +1,5 @@
 // Main tree component
-import { state, resetAll, applyMatchBodyColor } from '../../state/state.js';
+import { state, resetAll, getSelectionGroup, applyMatchBodyColor } from '../../state/state.js';
 import { BodyTypeSelector } from './BodyTypeSelector.js';
 import { TreeNode } from './TreeNode.js';
 

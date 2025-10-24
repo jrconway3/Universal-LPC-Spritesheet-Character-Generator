@@ -1,43 +1,16 @@
 // Canvas rendering module for Mithril UI
 // Simplified renderer that draws character sprites based on selections
 
-import { state } from '../state/state.js';
-import { getPaletteForItem, recolorWithPalette } from './palette-recolor.js';
 import { loadImage, loadImagesInParallel } from './load-image.js';
 import { getSpritePath } from '../state/path.js';
-import { get2DContext } from './canvas-utils.js';
+import { getImageToDraw } from './palette-recolor.js';
+import { get2DContext, getZPos } from './canvas-utils.js';
+import { variantToFilename } from '../utils/helpers.js';
+import { drawFramesToCustomAnimation } from './draw-frames.js';
+import { FRAME_SIZE, ANIMATION_OFFSETS, ANIMATION_CONFIGS } from '../state/constants.js';
 
-const FRAME_SIZE = 64;
 const SHEET_HEIGHT = 3456; // Full universal sheet height
 const SHEET_WIDTH = 832; // 13 frames * 64px
-
-// Animation offsets (y-positions on spritesheet) - matches chargen.js base_animations
-const ANIMATIONS = {
-  spellcast: 0,
-  thrust: 4 * FRAME_SIZE,
-  walk: 8 * FRAME_SIZE,
-  slash: 12 * FRAME_SIZE,
-  shoot: 16 * FRAME_SIZE,
-  hurt: 20 * FRAME_SIZE,
-  climb: 21 * FRAME_SIZE,
-  idle: 22 * FRAME_SIZE,
-  jump: 26 * FRAME_SIZE,
-  sit: 30 * FRAME_SIZE,
-  emote: 34 * FRAME_SIZE,
-  run: 38 * FRAME_SIZE,
-  combat_idle: 42 * FRAME_SIZE,
-  backslash: 46 * FRAME_SIZE,
-  halfslash: 50 * FRAME_SIZE
-};
-
-/**
- * Convert variant name to filename format (spaces to underscores)
- * @param {string} variant - Variant name (e.g., "light brown")
- * @returns {string} - Filename format (e.g., "light_brown")
- */
-function variantToFilename(variant) {
-  return variant.replaceAll(' ', '_');
-}
 
 // Map metadata animation names to actual folder names
 // Metadata uses "combat", "1h_slash", etc. but folders are named differently
@@ -50,61 +23,6 @@ const METADATA_TO_FOLDER = {
 
 let canvas = null;
 let ctx = null;
-let previewCanvas = null;
-let previewCtx = null;
-
-// Animation preview state
-let animationFrames = [1, 2, 3, 4, 5, 6, 7, 8]; // default for walk
-let animRowStart = 8; // default for walk (row number)
-let animRowNum = 4; // default for walk (number of rows to stack)
-let currentFrameIndex = 0;
-let lastFrameTime = Date.now();
-let animationFrameId = null;
-
-// Animation definitions with frame cycles
-const ANIMATION_CONFIGS = {
-  'spellcast': { row: 0, num: 4, cycle: [0, 1, 2, 3, 4, 5, 6] },
-  'thrust': { row: 4, num: 4, cycle: [0, 1, 2, 3, 4, 5, 6, 7] },
-  'walk': { row: 8, num: 4, cycle: [1, 2, 3, 4, 5, 6, 7, 8] },
-  'slash': { row: 12, num: 4, cycle: [0, 1, 2, 3, 4, 5] },
-  'shoot': { row: 16, num: 4, cycle: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] },
-  'hurt': { row: 20, num: 1, cycle: [0, 1, 2, 3, 4, 5] },
-  'climb': { row: 21, num: 1, cycle: [0, 1, 2, 3, 4, 5] },
-  'idle': { row: 22, num: 4, cycle: [0, 0, 1] },
-  'jump': { row: 26, num: 4, cycle: [0, 1, 2, 3, 4, 1] },
-  'sit': { row: 30, num: 4, cycle: [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2] },
-  'emote': { row: 34, num: 4, cycle: [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2] },
-  'run': { row: 38, num: 4, cycle: [0, 1, 2, 3, 4, 5, 6, 7] },
-  'watering': { row: 4, num: 4, cycle: [0, 1, 4, 4, 4, 4, 5] },
-  'combat': { row: 42, num: 4, cycle: [0, 0, 1] },
-  '1h_slash': { row: 46, num: 4, cycle: [0, 1, 2, 3, 4, 5, 6] },
-  '1h_backslash': { row: 46, num: 4, cycle: [0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12] },
-  '1h_halfslash': { row: 50, num: 4, cycle: [0, 1, 2, 3, 4, 5] }
-};
-
-/**
- * Draw a checkered transparency background (like image editors)
- * @param {CanvasRenderingContext2D} context - Canvas context
- * @param {number} width - Canvas width
- * @param {number} height - Canvas height
- * @param {number} squareSize - Size of each checker square (default 8px)
- */
-function drawTransparencyBackground(context, width, height, squareSize = 8) {
-  const lightGray = '#CCCCCC';
-  const darkGray = '#999999';
-
-  for (let y = 0; y < height; y += squareSize) {
-    for (let x = 0; x < width; x += squareSize) {
-      // Alternate colors in a checkerboard pattern
-      const isEvenRow = Math.floor(y / squareSize) % 2 === 0;
-      const isEvenCol = Math.floor(x / squareSize) % 2 === 0;
-      const isLight = isEvenRow === isEvenCol;
-
-      context.fillStyle = isLight ? lightGray : darkGray;
-      context.fillRect(x, y, squareSize, squareSize);
-    }
-  }
-}
 
 /**
  * Initialize the canvas (creates offscreen canvas)
@@ -116,281 +34,7 @@ export function initCanvas() {
   canvas.height = SHEET_HEIGHT;
 }
 
-/**
- * Copy offscreen canvas to a preview canvas with optional transparency grid
- * @param {HTMLCanvasElement} previewCanvasElement - The preview canvas to copy to
- * @param {boolean} showTransparencyGrid - Whether to draw transparency grid background
- * @param {number} zoomLevel - Zoom level to apply (optional, will use CSS zoom)
- */
-export function copyToPreviewCanvas(previewCanvasElement, showTransparencyGrid = false, zoomLevel = 1) {
-  if (!canvas || !previewCanvasElement) {
-    console.error('Canvas not initialized');
-    return;
-  }
-
-  const previewCtx = get2DContext(previewCanvasElement);
-
-  // Match preview canvas size to offscreen canvas
-  previewCanvasElement.width = canvas.width;
-  previewCanvasElement.height = canvas.height;
-
-  // Clear preview canvas
-  previewCtx.clearRect(0, 0, previewCanvasElement.width, previewCanvasElement.height);
-
-  // Optionally draw transparency grid
-  if (showTransparencyGrid) {
-    drawTransparencyBackground(previewCtx, previewCanvasElement.width, previewCanvasElement.height);
-  }
-
-  // Copy offscreen canvas to preview
-  previewCtx.drawImage(canvas, 0, 0);
-
-  // Apply zoom via CSS
-  if (zoomLevel !== 1) {
-    previewCanvasElement.style.zoom = zoomLevel.toString();
-  }
-}
-
-/**
- * Initialize the preview canvas
- */
-export function initPreviewCanvas(previewCanvasElement) {
-  previewCanvas = previewCanvasElement;
-  previewCtx = get2DContext(previewCanvas);
-  previewCanvas.width = 4 * FRAME_SIZE; // 256px
-  previewCanvas.height = FRAME_SIZE; // 64px
-}
-
-/**
- * Set preview canvas zoom level
- * @param {number} zoomLevel - Zoom level (0.5 to 2)
- */
-export function setPreviewCanvasZoom(zoomLevel) {
-  if (previewCanvas) {
-    previewCanvas.style.zoom = zoomLevel.toString();
-  }
-}
-
-/**
- * Set which animation to preview
- */
-export function setPreviewAnimation(animationName) {
-  const config = ANIMATION_CONFIGS[animationName];
-  if (!config) {
-    console.error('Unknown animation:', animationName);
-    return;
-  }
-
-  animationFrames = config.cycle;
-  animRowStart = config.row;
-  animRowNum = config.num;
-  currentFrameIndex = 0;
-
-  return animationFrames; // Return for display
-}
-
-/**
- * Get list of available animations for dropdown
- */
-export function getAnimationList() {
-  return [
-    { value: 'spellcast', label: 'Spellcast' },
-    { value: 'thrust', label: 'Thrust' },
-    { value: 'walk', label: 'Walk' },
-    { value: 'slash', label: 'Slash' },
-    { value: 'shoot', label: 'Shoot' },
-    { value: 'hurt', label: 'Hurt' },
-    { value: 'climb', label: 'Climb' },
-    { value: 'idle', label: 'Idle' },
-    { value: 'jump', label: 'Jump' },
-    { value: 'sit', label: 'Sit' },
-    { value: 'emote', label: 'Emote' },
-    { value: 'run', label: 'Run' },
-    { value: 'watering', label: 'Watering' },
-    { value: 'combat', label: 'Combat Idle' },
-    { value: '1h_slash', label: '1-Handed Slash' },
-    { value: '1h_backslash', label: '1-Handed Backslash' },
-    { value: '1h_halfslash', label: '1-Handed Halfslash' }
-  ];
-}
-
-/**
- * Start the preview animation loop
- */
-export function startPreviewAnimation() {
-  if (animationFrameId !== null) {
-    return; // Already running
-  }
-
-  function nextFrame() {
-    const fpsInterval = 1000 / 8; // 8 FPS
-    const now = Date.now();
-    const elapsed = now - lastFrameTime;
-
-    if (elapsed > fpsInterval) {
-      lastFrameTime = now - (elapsed % fpsInterval);
-
-      if (previewCtx && canvas) {
-        previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
-
-        // Draw transparency grid if enabled
-        if (state.showTransparencyGrid) {
-          drawTransparencyBackground(previewCtx, previewCanvas.width, previewCanvas.height);
-        }
-
-        currentFrameIndex = (currentFrameIndex + 1) % animationFrames.length;
-        const currentFrame = animationFrames[currentFrameIndex];
-
-        // Draw stacked rows from main canvas to preview
-        for (let i = 0; i < animRowNum; i++) {
-          previewCtx.drawImage(
-            canvas,
-            currentFrame * FRAME_SIZE,           // source x
-            (animRowStart + i) * FRAME_SIZE,     // source y
-            FRAME_SIZE,                          // source width
-            FRAME_SIZE,                          // source height
-            i * FRAME_SIZE,                      // dest x (spread horizontally)
-            0,                                   // dest y
-            FRAME_SIZE,                          // dest width
-            FRAME_SIZE                           // dest height
-          );
-        }
-      }
-    }
-
-    animationFrameId = requestAnimationFrame(nextFrame);
-  }
-
-  nextFrame();
-}
-
-/**
- * Stop the preview animation loop
- */
-export function stopPreviewAnimation() {
-  if (animationFrameId !== null) {
-    cancelAnimationFrame(animationFrameId);
-    animationFrameId = null;
-  }
-}
-
-/**
- * Get zPos for a layer
- */
-function getZPos(itemId, layerNum = 1) {
-  const meta = window.itemMetadata[itemId];
-  if (!meta) return 100;
-
-  const layerKey = `layer_${layerNum}`;
-  const layer = meta.layers?.[layerKey];
-
-  return layer?.zPos ?? 100;
-}
-
-/**
- * Get image to draw - applies recoloring if needed based on palette configuration
- * Async because palette loading is lazy (loads on first use)
- * @param {HTMLImageElement|HTMLCanvasElement} img - Source image
- * @param {string} itemId - Item identifier
- * @param {string} variant - Variant name
- * @returns {Promise<HTMLImageElement|HTMLCanvasElement>} Image or recolored canvas to draw
- */
-export async function getImageToDraw(img, itemId, variant) {
-  const meta = window.itemMetadata?.[itemId];
-  const paletteConfig = getPaletteForItem(itemId, meta);
-
-  // Only recolor if item uses a palette and variant is not the source variant
-  if (paletteConfig && variant !== paletteConfig.sourceVariant) {
-    try {
-      return await recolorWithPalette(img, variant, paletteConfig.type);
-    } catch (err) {
-      console.warn(`Failed to recolor ${paletteConfig.type} variant ${variant}:`, err);
-      return img; // Fallback to original on error
-    }
-  }
-  return img; // Return original if no recoloring needed
-}
-
-/**
- * Draw a single frame from source to destination
- * If source is smaller than destination, center it without scaling
- * @param {CanvasRenderingContext2D} destCtx - Destination context
- * @param {{x: number, y: number}} destPos - Destination position
- * @param {number} destFrameSize - Destination frame size
- * @param {CanvasImageSource} src - Source image
- * @param {{x: number, y: number}} srcPos - Source position
- * @param {number} srcFrameSize - Source frame size
- */
-function drawFrameToFrame(destCtx, destPos, destFrameSize, src, srcPos, srcFrameSize) {
-  if (srcFrameSize === destFrameSize) {
-    // Same size - direct copy
-    destCtx.drawImage(
-      src,
-      srcPos.x, srcPos.y, srcFrameSize, srcFrameSize,
-      destPos.x, destPos.y, destFrameSize, destFrameSize
-    );
-  } else {
-    // Different sizes - center the source frame in the destination without scaling
-    // For example: 64x64 source centered in 128x128 dest = offset by 32px
-    const offset = (destFrameSize - srcFrameSize) / 2;
-    destCtx.drawImage(
-      src,
-      srcPos.x, srcPos.y, srcFrameSize, srcFrameSize,  // source rect (64x64)
-      destPos.x + offset, destPos.y + offset, srcFrameSize, srcFrameSize  // dest rect (centered, not scaled)
-    );
-  }
-}
-
-/**
- * Extract frames from a standard sprite sheet and redraw them into a custom animation layout
- * @param {CanvasRenderingContext2D} customAnimationContext - Destination context
- * @param {object} customAnimationDefinition - Custom animation definition from custom-animations.js
- * @param {number} offsetY - Y offset to draw at
- * @param {CanvasImageSource} src - Source sprite sheet image
- */
-function drawFramesToCustomAnimation(customAnimationContext, customAnimationDefinition, offsetY, src) {
-  const frameSize = customAnimationDefinition.frameSize;
-  const animationRowsLayout = window.animationRowsLayout;
-
-  // Check if this is a single-animation sprite (e.g., sit.png) or full universal sheet
-  // Single animation sprites are typically 192px or 832px wide and 256px tall
-  const isSingleAnimation = src.height <= 256;
-
-  for (let i = 0; i < customAnimationDefinition.frames.length; ++i) {
-    const frames = customAnimationDefinition.frames[i];
-    for (let j = 0; j < frames.length; ++j) {
-      const frameSpec = frames[j]; // e.g., "sit-n,2"
-      const [srcRowName, srcColumnStr] = frameSpec.split(",");
-      const srcColumn = parseInt(srcColumnStr);
-
-      let srcRow;
-      if (isSingleAnimation) {
-        // For single animation sprites, rows are 0-3 (n, w, s, e)
-        // Extract direction from srcRowName (e.g., "sit-n" -> "n")
-        const direction = srcRowName.split("-")[1];
-        const directionMap = { 'n': 0, 'w': 1, 's': 2, 'e': 3 };
-        srcRow = directionMap[direction] || 0;
-      } else {
-        // For universal sheet, use animationRowsLayout
-        srcRow = animationRowsLayout ? animationRowsLayout[srcRowName] : i;
-      }
-
-      const srcX = FRAME_SIZE * srcColumn;
-      const srcY = FRAME_SIZE * srcRow;
-      const destX = frameSize * j;
-      const destY = frameSize * i + offsetY;
-
-      drawFrameToFrame(
-        customAnimationContext,
-        { x: destX, y: destY },  // dest position
-        frameSize,  // dest frame size
-        src,
-        { x: srcX, y: srcY },  // source position
-        FRAME_SIZE  // source frame size (64px)
-      );
-    }
-  }
-}
+export { canvas, ctx };
 
 /**
  * Render character based on selections
@@ -472,7 +116,7 @@ export async function renderCharacter(selections, bodyType, targetCanvas = null)
         }
 
         // Process standard animations for this layer
-        for (const [animName, yPos] of Object.entries(ANIMATIONS)) {
+        for (const [animName, yPos] of Object.entries(ANIMATION_OFFSETS)) {
           // Skip if item doesn't have animations array (custom animations only)
           if (!meta.animations || meta.animations.length === 0) {
             continue;
@@ -521,7 +165,7 @@ export async function renderCharacter(selections, bodyType, targetCanvas = null)
     // Add custom uploaded image to itemsToDraw if present
     if (appState.customUploadedImage) {
       // Add custom image to be drawn at all standard animation positions
-      for (const [animName, yPos] of Object.entries(ANIMATIONS)) {
+      for (const [animName, yPos] of Object.entries(ANIMATION_OFFSETS)) {
         itemsToDraw.push({
           itemId: 'custom-upload',
           variant: null,
@@ -681,71 +325,6 @@ export async function renderCharacter(selections, bodyType, targetCanvas = null)
 }
 
 /**
- * Download canvas as PNG (exports the offscreen canvas directly)
- */
-export function downloadAsPNG(filename = 'character-spritesheet.png') {
-  if (!canvas) {
-    console.error('Canvas not initialized');
-    return;
-  }
-
-  // Export offscreen canvas directly
-  canvas.toBlob((blob) => {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
-  }, 'image/png');
-}
-
-/**
- * Get canvas as blob for ZIP export
- */
-export function getCanvasBlob() {
-  if (!canvas) {
-    console.error('Canvas not initialized');
-    return Promise.reject(new Error('Canvas not initialized'));
-  }
-
-  return new Promise((resolve) => {
-    canvas.toBlob((blob) => resolve(blob), 'image/png');
-  });
-}
-
-/**
- * Export current state as JSON string
- */
-export function exportStateAsJSON(selections, bodyType) {
-  const state = {
-    version: '1.0',
-    bodyType: bodyType,
-    selections: selections
-  };
-  return JSON.stringify(state, null, 2);
-}
-
-/**
- * Import state from JSON string
- */
-export function importStateFromJSON(jsonString) {
-  try {
-    const state = JSON.parse(jsonString);
-    if (!state.version || !state.bodyType || !state.selections) {
-      throw new Error('Invalid JSON format');
-    }
-    return {
-      bodyType: state.bodyType,
-      selections: state.selections
-    };
-  } catch (err) {
-    console.error('Failed to parse JSON:', err);
-    throw err;
-  }
-}
-
-/**
  * Extract a specific animation from the main canvas
  * Returns a new canvas with just that animation
  */
@@ -868,7 +447,7 @@ export async function renderSingleItem(itemId, variant, bodyType, selections) {
       const zPos = getZPos(itemId, layerNum);
 
       // Add each animation for this layer
-      for (const [animName, yPos] of Object.entries(ANIMATIONS)) {
+      for (const [animName, yPos] of Object.entries(ANIMATION_OFFSETS)) {
         // Check animation support (same logic as renderCharacter)
         let metadataAnimName = animName;
         if (animName === 'combat_idle') {

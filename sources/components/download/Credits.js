@@ -2,21 +2,12 @@
 import { state } from '../../state/state.js';
 import { getAllCredits, creditsToCsv, creditsToTxt } from '../../utils/credits.js';
 import { CollapsibleSection } from '../CollapsibleSection.js';
+import { downloadFile } from '../../canvas/download.js';
 
 export const Credits = {
 	view: function() {
 		// Collect credits from all selected items
 		const allCredits = getAllCredits(state.selections, state.bodyType);
-
-		const downloadFile = (content, filename) => {
-			const blob = new Blob([content], { type: "text/plain" });
-			const url = URL.createObjectURL(blob);
-			const a = document.createElement("a");
-			a.href = url;
-			a.download = filename;
-			a.click();
-			URL.revokeObjectURL(url);
-		};
 
 		return m(CollapsibleSection, {
 			title: "Credits & Attribution",

@@ -1,7 +1,6 @@
 // Item with variants component
 import { state, getSelectionGroup, applyMatchBodyColor } from '../../state/state.js';
-import { getImageToDraw } from '../../canvas/renderer.js';
-import { getPaletteForItem } from '../../canvas/palette-recolor.js';
+import { getImageToDraw, getPaletteForItem } from '../../canvas/palette-recolor.js';
 import { replaceInPath } from '../../state/path.js';
 import { variantToFilename, capitalize } from '../../utils/helpers.js';
 
