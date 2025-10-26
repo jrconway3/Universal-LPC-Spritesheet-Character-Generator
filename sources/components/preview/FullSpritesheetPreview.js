@@ -116,7 +116,7 @@ export const FullSpritesheetPreview = {
 			defaultOpen: true,
 			boxClass: "box mt-4"
 		}, [
-			m("div.columns.is-mobile.is-variable.is-1", [
+			m("div.columns.is-mobile.is-variable.is-1.is-multiline", [
 				// Transparency grid column
 				m("div.column.is-narrow.is-flex.is-align-items-center", [
 					m("label.checkbox", [
@@ -133,7 +133,7 @@ export const FullSpritesheetPreview = {
 				]),
 				// Replace Mask (Pink) column
 				m("div.column.is-narrow.is-flex.is-align-items-center", [
-					m("button.button.is-small.is-info.ml-4", {
+					m("button.button.is-small.is-info.mx-4", {
 						onclick: () => {
 							// Replace pink mask color with current body color in offscreen canvas
 							if (window.canvasRenderer) {
