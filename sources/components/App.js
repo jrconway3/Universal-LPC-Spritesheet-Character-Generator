@@ -1,9 +1,11 @@
 // Main app component
-import { state, syncSelectionsToHash } from '../state/state.js';
+import { state, } from '../state/state.js';
+import { syncSelectionsToHash } from '../state/hash.js';
 import { Download } from './download/Download.js';
 import { FiltersPanel } from './FiltersPanel.js';
 import { Credits } from './download/Credits.js';
 import { AdvancedTools } from './advanced/AdvancedTools.js';
+import { renderCharacter } from '../canvas/renderer.js';
 
 export const App = {
 	oninit: function(vnode) {
@@ -27,7 +29,7 @@ export const App = {
 			syncSelectionsToHash();
 			if (window.canvasRenderer) {
 				// Render to offscreen canvas (async)
-				window.canvasRenderer.renderCharacter(state.selections, state.bodyType).then(() => {
+				renderCharacter(state.selections, state.bodyType).then(() => {
 					// Trigger redraw to update preview canvas after offscreen render completes
 					m.redraw();
 				});

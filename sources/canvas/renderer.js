@@ -8,6 +8,8 @@ import { get2DContext, getZPos } from './canvas-utils.js';
 import { variantToFilename } from '../utils/helpers.js';
 import { drawFramesToCustomAnimation } from './draw-frames.js';
 import { FRAME_SIZE, ANIMATION_OFFSETS, ANIMATION_CONFIGS } from '../state/constants.js';
+import { customAnimations, customAnimationBase } from '../custom-animations.js';
+import { setCurrentCustomAnimations, setCustomAnimYPositions } from './preview-animation.js';
 
 const SHEET_HEIGHT = 3456; // Full universal sheet height
 const SHEET_WIDTH = 832; // 13 frames * 64px
@@ -23,6 +25,7 @@ const METADATA_TO_FOLDER = {
 
 let canvas = null;
 let ctx = null;
+let layers = [];
 
 /**
  * Initialize the canvas (creates offscreen canvas)
@@ -34,7 +37,7 @@ export function initCanvas() {
   canvas.height = SHEET_HEIGHT;
 }
 
-export { canvas, ctx };
+export { canvas, ctx, layers };
 
 /**
  * Render character based on selections
@@ -184,19 +187,42 @@ export async function renderCharacter(selections, bodyType, targetCanvas = null)
     // This ensures shadow (zPos=0) is drawn before body (zPos=10), etc.
     itemsToDraw.sort((a, b) => a.zPos - b.zPos);
 
+	// save layers for external access
+	layers = itemsToDraw
+		.map(item => {
+			const layer = Object.assign({}, item);
+			layer.fileName = item.spritePath.substring('spritesheets/'.length);
+			delete layer.spritePath;
+			return layer;
+		})
+		.reduce((acc, layer) => {
+			const animation = layer.animation;
+			const accLayer = acc.find(l => l.itemId === layer.itemId && l.layerNum === layer.layerNum);
+			if (!accLayer) {
+				layer.supportedAnimations = [animation];
+				delete layer.animation;
+				acc.push(layer);
+			} else {
+				accLayer.supportedAnimations.push(animation);
+			}
+			return acc;
+		}, []);
+
     // Calculate total canvas height needed (standard sheet + custom animations)
     let totalHeight = SHEET_HEIGHT;
     let totalWidth = SHEET_WIDTH;
+	let currentCustomAnimations = {};
 
-    if (addedCustomAnimations.size > 0 && window.customAnimations) {
+    if (addedCustomAnimations.size > 0 && customAnimations) {
       for (const customAnimName of addedCustomAnimations) {
-        const customAnimDef = window.customAnimations[customAnimName];
+        const customAnimDef = customAnimations[customAnimName];
         if (customAnimDef) {
           const animHeight = customAnimDef.frameSize * customAnimDef.frames.length;
           const animWidth = customAnimDef.frameSize * customAnimDef.frames[0].length;
           totalHeight += animHeight;
           totalWidth = Math.max(totalWidth, animWidth);
         }
+		currentCustomAnimations[customAnimName] = customAnimDef;
       }
     }
 
@@ -207,19 +233,25 @@ export async function renderCharacter(selections, bodyType, targetCanvas = null)
     // Clear canvas (no transparency background on offscreen canvas)
     renderCtx.clearRect(0, 0, renderCanvas.width, renderCanvas.height);
 
+	// Store custom animations for animation preview dropdown
+	setCurrentCustomAnimations(currentCustomAnimations);
+
     // Calculate custom animation Y positions first (needed for drawing standard items into custom areas)
     const customAnimYPositions = {};
-    if (addedCustomAnimations.size > 0 && window.customAnimations) {
+    if (addedCustomAnimations.size > 0 && customAnimations) {
       let currentY = SHEET_HEIGHT;
       for (const customAnimName of addedCustomAnimations) {
         customAnimYPositions[customAnimName] = currentY;
-        const customAnimDef = window.customAnimations[customAnimName];
+        const customAnimDef = customAnimations[customAnimName];
         if (customAnimDef) {
           const animHeight = customAnimDef.frameSize * customAnimDef.frames.length;
           currentY += animHeight;
         }
       }
     }
+
+	// Store Y positions for external access
+	setCustomAnimYPositions(customAnimYPositions);
 
     // Load all standard animation images in parallel and attach them to their items
     const loadPromises = itemsToDraw.map(item => {
@@ -248,14 +280,14 @@ export async function renderCharacter(selections, bodyType, targetCanvas = null)
     }
 
     // Now handle custom animations (wheelchair, etc.)
-    if (addedCustomAnimations.size > 0 && window.customAnimations) {
+    if (addedCustomAnimations.size > 0 && customAnimations) {
       // For each custom animation area, we need to draw layers in zPos order
       for (const customAnimName of addedCustomAnimations) {
-        const customAnimDef = window.customAnimations[customAnimName];
+        const customAnimDef = customAnimations[customAnimName];
         if (!customAnimDef) continue;
 
         const offsetY = customAnimYPositions[customAnimName];
-        const baseAnim = window.customAnimationBase ? window.customAnimationBase(customAnimDef) : null;
+        const baseAnim = customAnimationBase ? customAnimationBase(customAnimDef) : null;
 
         // Collect all items that need to be drawn in this custom animation area
         const customAreaItems = [];
@@ -385,10 +417,10 @@ export async function renderSingleItem(itemId, variant, bodyType, selections) {
 
   let itemCanvas, itemCtx;
 
-  if (hasCustomAnimation && window.customAnimations) {
+  if (hasCustomAnimation && customAnimations) {
     // Custom animation item - use custom animation size
     const customAnimName = layer1.custom_animation;
-    const customAnimDef = window.customAnimations[customAnimName];
+    const customAnimDef = customAnimations[customAnimName];
     if (!customAnimDef) {
       console.error('Custom animation definition not found:', customAnimName);
       return null;
@@ -521,7 +553,7 @@ export async function renderSingleItemAnimation(itemId, variant, bodyType, anima
   const layer1 = meta.layers?.layer_1;
   const hasCustomAnimation = layer1 && layer1.custom_animation;
 
-  if (hasCustomAnimation && window.customAnimations) {
+  if (hasCustomAnimation && customAnimations) {
     // Custom animation item - just return the full item canvas (custom animations are not split by standard animation)
     return await renderSingleItem(itemId, variant, bodyType, selections);
   }

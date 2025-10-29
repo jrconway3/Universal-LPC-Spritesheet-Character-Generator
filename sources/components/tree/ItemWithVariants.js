@@ -50,6 +50,33 @@ export const ItemWithVariants = {
 					const previewXOffset = meta.preview_x_offset ?? 0;
 					const previewYOffset = meta.preview_y_offset ?? 0;
 
+					// Get sprite path for preview image from first layer
+					const layer1 = meta.layers?.layer_1;
+					const basePath = layer1?.[state.bodyType];
+
+					// Check if this item uses a custom animation
+					const hasCustomAnimation = layer1?.custom_animation;
+					const layer1CustomAnimation = hasCustomAnimation ? layer1.custom_animation : null;
+
+					let previewSrc = null;
+					if (basePath) {
+						if (hasCustomAnimation) {
+							// Custom animations don't have animation subfolders
+							previewSrc = `spritesheets/${basePath}${variantToFilename(variant)}.png`;
+						} else {
+							// Standard animations have animation subfolders (walk, slash, etc.)
+							const defaultAnim = meta.animations.includes('walk') ? 'walk' : meta.animations[0];
+							previewSrc = `spritesheets/${basePath}${defaultAnim}/${variantToFilename(variant)}.png`;
+						}
+					}
+
+					// Calculate object position for cropping
+					// Negative position shifts the image left/up to show that part in the viewport
+					// Positive offset values shift the viewport right/down (to see more left/top of sprite)
+					// Negative offset values shift the viewport left/up (to see more right/bottom of sprite)
+					const objectPosX = -(previewCol * 64 - previewXOffset);
+					const objectPosY = -(previewRow * 64 - previewYOffset);
+
 					return m("div.variant-item.is-flex.is-flex-direction-column.is-align-items-center.is-clickable", {
 						key: variant,
 						class: isSelected ? "has-background-link-light has-text-weight-bold has-text-link" : "",
@@ -93,6 +120,7 @@ export const ItemWithVariants = {
 								const ctx = canvas.getContext('2d');
 
 								// Collect all layers for this item
+								// Only include layers that match layer_1's custom animation (if any)
 								const layersToLoad = [];
 
 								// Check if item uses a palette - if so, load the source variant
@@ -105,6 +133,13 @@ export const ItemWithVariants = {
 
 									let layerPath = layer[state.bodyType];
 									if (!layerPath) continue;
+
+									// Filter: only include layers with matching custom animation
+									if (layer1CustomAnimation) {
+										if (layer.custom_animation !== layer1CustomAnimation) {
+											continue; // Skip layers with different custom animations
+										}
+									}
 
 									// Replace template variables like ${head}
 									if (layerPath.includes('${')) {
@@ -138,20 +173,49 @@ export const ItemWithVariants = {
 										img.src = layer.path;
 									});
 								})).then(async loadedLayers => {
-									// Draw each layer in zPos order at full 64x64 resolution
+									canvas.loadedLayers = loadedLayers;
+									// Draw each layer in zPos order
+									// Use universalFrameSize (64) for all calculations, matching master branch
+									const universalFrameSize = 64;
 									for (const { img, layer } of loadedLayers) {
 										if (img) {
 											const imageToDraw = await getImageToDraw(img, itemId, variant);
+											const size = compactDisplay ? 32 : 64;
+											// Master branch uses: previewColumn * universalFrameSize + previewXOffset
+											const srcX = previewCol * universalFrameSize + previewXOffset;
+											const srcY = previewRow * universalFrameSize + previewYOffset;
 											ctx.drawImage(
 												imageToDraw,
-												previewCol * 64 - previewXOffset, previewRow * 64 - previewYOffset, 64, 64,
-												0, 0, 64, 64
+												srcX, srcY, universalFrameSize, universalFrameSize,
+												0, 0, size, size
 											);
 										}
 									}
 									rootViewNode.state.imagesLoaded++;
 									m.redraw();
 								});
+							},
+							onupdate: (canvasVnode) => {
+								const canvas = canvasVnode.dom;
+								const ctx = canvas.getContext('2d');
+								if (canvas.loadedLayers) {
+									// Draw each layer in zPos order
+									// Use universalFrameSize (64) for all calculations, matching master branch
+									const universalFrameSize = 64;
+									for (const { img, layer } of canvas.loadedLayers) {
+										if (img) {
+											const size = compactDisplay ? 32 : 64;
+											// Master branch uses: previewColumn * universalFrameSize + previewXOffset
+											const srcX = previewCol * universalFrameSize + previewXOffset;
+											const srcY = previewRow * universalFrameSize + previewYOffset;
+											ctx.drawImage(
+												img,
+												srcX, srcY, universalFrameSize, universalFrameSize,
+												0, 0, size, size
+											);
+										}
+									}
+								}
 							}
 						})
 					]);

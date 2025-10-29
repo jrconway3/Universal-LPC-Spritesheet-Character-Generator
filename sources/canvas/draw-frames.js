@@ -1,4 +1,5 @@
 import { FRAME_SIZE } from '../state/constants.js';
+import { animationRowsLayout } from '../custom-animations.js';
 
 /**
  * Draw a single frame from source to destination
@@ -39,7 +40,6 @@ export function drawFrameToFrame(destCtx, destPos, destFrameSize, src, srcPos, s
  */
 export function drawFramesToCustomAnimation(customAnimationContext, customAnimationDefinition, offsetY, src) {
   const frameSize = customAnimationDefinition.frameSize;
-  const animationRowsLayout = window.animationRowsLayout;
 
   // Check if this is a single-animation sprite (e.g., sit.png) or full universal sheet
   // Single animation sprites are typically 192px or 832px wide and 256px tall

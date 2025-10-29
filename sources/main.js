@@ -27,7 +27,8 @@ window.setPaletteRecolorMode = setPaletteRecolorMode;
 window.getPaletteRecolorConfig = getPaletteRecolorConfig;
 
 // Import state management
-import { initState, initHashChangeListener } from './state/state.js';
+import { initState } from './state/state.js';
+import { initHashChangeListener } from './state/hash.js';
 
 // Import components
 import { App } from './components/App.js';
@@ -76,9 +77,14 @@ window.DEBUG = DEBUG;
 window.canvasRenderer = canvasRenderer;
 
 // Expose initialization function to be called after canvas is ready
-window.setDefaultSelections = function() {
-	initState();
+window.setDefaultSelections = async function() {
+	await initState();
 };
+
+// Remove Netlify link if not on Netlify
+if (!window.location.hostname.includes('netlify')) {
+	document.getElementById("netlify-link").remove();
+}
 
 // Wait for DOM to be ready, then load Mithril app
 document.addEventListener('DOMContentLoaded', async () => {
@@ -90,7 +96,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 	// Set defaults after canvas is ready
 	if (window.setDefaultSelections) {
-		window.setDefaultSelections();
+		await window.setDefaultSelections();
 	}
 
 	// Initialize hash change listener

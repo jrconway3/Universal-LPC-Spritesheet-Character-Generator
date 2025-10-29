@@ -1,6 +1,7 @@
 import { canvas } from "./renderer.js";
 import { drawTransparencyBackground, get2DContext } from "./canvas-utils.js";
 import { FRAME_SIZE } from "../state/constants.js";
+import { activeCustomAnimation, getCustomAnimations } from "./preview-animation.js";
 
 let previewCanvas = null;
 let previewCtx = null;
@@ -61,8 +62,19 @@ export function copyToPreviewCanvas(
 export function initPreviewCanvas(previewCanvasElement) {
 	previewCanvas = previewCanvasElement;
 	previewCtx = get2DContext(previewCanvas);
-	previewCanvas.width = 4 * FRAME_SIZE; // 256px
-	previewCanvas.height = FRAME_SIZE; // 64px
+	const customAnimations = getCustomAnimations();
+
+	// Size based on active animation
+	let frameSize = FRAME_SIZE;
+	if (activeCustomAnimation && customAnimations) {
+		const customAnimDef = customAnimations[activeCustomAnimation];
+		if (customAnimDef) {
+			frameSize = customAnimDef.frameSize;
+		}
+	}
+
+	previewCanvas.width = 4 * frameSize; // 4 directions
+	previewCanvas.height = frameSize; // 1 frame tall
 }
 
 /**
