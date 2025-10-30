@@ -71,6 +71,10 @@ const profiler = new PerformanceProfiler({
 // Always expose profiler for manual control
 window.profiler = profiler;
 
+if (!window.location.hostname.includes('netlify')) {
+  $('#netlify-link').hide();
+}
+
 $(document).ready(function () {
   let matchBodyColor = true;
   
