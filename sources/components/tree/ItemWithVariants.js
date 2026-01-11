@@ -7,17 +7,21 @@ import { variantToFilename, capitalize } from '../../utils/helpers.js';
 export const ItemWithVariants = {
 	view: function(vnode) {
 		const { itemId, meta, isSearchMatch } = vnode.attrs;
-		const isExpanded = state.expandedNodes[itemId] || false;
 		const compactDisplay = state.compactDisplay;
 		const displayName = meta.name;
 		const rootViewNode = vnode;
+		let nodePath = itemId;
+		if (displayName === 'Body color') {
+			nodePath = 'body-body';
+		}
+		const isExpanded = state.expandedNodes[nodePath] || false;
 
 		return m("div", {
 			class: isSearchMatch ? "search-result" : ""
 		}, [
 			m("div.tree-label", {
 				onclick: () => {
-					state.expandedNodes[itemId] = !isExpanded;
+					state.expandedNodes[nodePath] = !isExpanded;
 				},
 				oninit: () => {
 					rootViewNode.state.isLoading = meta.variants.length > 0;

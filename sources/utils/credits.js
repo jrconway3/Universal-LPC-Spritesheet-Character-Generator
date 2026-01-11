@@ -111,7 +111,7 @@ export function creditsToTxt(allCredits) {
 }
 
 /**
- * Helper function to get item filename with zPos prefix (matches original)
+ * Helper function to get item filename with zPos prefix
  */
 export function getItemFileName(itemId, variant, name) {
 	const meta = window.itemMetadata[itemId];
@@ -120,8 +120,13 @@ export function getItemFileName(itemId, variant, name) {
 	// Get zPos from first layer
 	const layer1 = meta.layers?.layer_1;
 	const zPos = layer1?.zPos || 100;
+	const altName = `${itemId}_${variant ?? ''}`;
 
 	// Format: "050 body_male_light" (zPos padded to 3 digits + space + name)
-	const safeName = (name || itemId).replace(/[^a-z0-9]/gi, "_").toLowerCase();
-	return `${String(zPos).padStart(3, "0")} ${safeName}`;
+	const safeName = (name || altName).replace(/[^a-z0-9]/gi, "_").toLowerCase();
+	const fileName = `${String(zPos).padStart(3, "0")} ${safeName}`;
+	if (fileName.endsWith('.png')) {
+		return fileName;
+	}
+	return `${fileName}.png`;
 }

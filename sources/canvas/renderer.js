@@ -11,8 +11,8 @@ import { FRAME_SIZE, ANIMATION_OFFSETS, ANIMATION_CONFIGS } from '../state/const
 import { customAnimations, customAnimationBase } from '../custom-animations.js';
 import { setCurrentCustomAnimations, setCustomAnimYPositions } from './preview-animation.js';
 
-const SHEET_HEIGHT = 3456; // Full universal sheet height
-const SHEET_WIDTH = 832; // 13 frames * 64px
+export const SHEET_HEIGHT = 3456; // Full universal sheet height
+export const SHEET_WIDTH = 832; // 13 frames * 64px
 
 // Map metadata animation names to actual folder names
 // Metadata uses "combat", "1h_slash", etc. but folders are named differently
@@ -26,6 +26,9 @@ const METADATA_TO_FOLDER = {
 let canvas = null;
 let ctx = null;
 let layers = [];
+let itemsToDraw = [];
+let addedCustomAnimations = new Set();
+let customAreaItems = {};
 
 /**
  * Initialize the canvas (creates offscreen canvas)
@@ -37,7 +40,7 @@ export function initCanvas() {
   canvas.height = SHEET_HEIGHT;
 }
 
-export { canvas, ctx, layers };
+export { canvas, ctx, layers, addedCustomAnimations, itemsToDraw, customAreaItems };
 
 /**
  * Render character based on selections
@@ -51,6 +54,21 @@ export async function renderCharacter(selections, bodyType, targetCanvas = null)
   if (profiler) {
     profiler.mark('renderCharacter:start');
   }
+
+  // Use provided canvas or default to main canvas
+  const renderCanvas = targetCanvas || canvas;
+  const renderCtx = renderCanvas.getContext('2d');
+
+  if (!renderCanvas || !renderCtx) {
+    console.error('Canvas not initialized');
+    return;
+  }
+
+  // Build list of items to draw
+  itemsToDraw = [];
+  const customAnimationItems = []; // Track items with custom animations
+  addedCustomAnimations = new Set(); // Track which custom animations we've added
+
   // Import state to access custom uploaded image
   const appState = await import('../state/state.js').then(m => m.state);
   appState.isRenderingCharacter = true;
@@ -263,7 +281,9 @@ export async function renderCharacter(selections, bodyType, targetCanvas = null)
         return loadImage(item.spritePath)
           .then(img => ({ item, img, success: true }))
           .catch(err => {
-            console.warn(`Failed to load sprite: ${item.spritePath}`);
+            if (window.DEBUG) {
+				console.warn(`Failed to load sprite: ${item.spritePath}`);
+            }
             return { item, img: null, success: false };
           });
       }
@@ -290,16 +310,17 @@ export async function renderCharacter(selections, bodyType, targetCanvas = null)
         const baseAnim = customAnimationBase ? customAnimationBase(customAnimDef) : null;
 
         // Collect all items that need to be drawn in this custom animation area
-        const customAreaItems = [];
+        customAreaItems[customAnimName] = [];
 
         // 1. Add custom animation sprite layers (wheelchair background/foreground)
         for (const item of customAnimationItems) {
           if (item.customAnimation === customAnimName) {
-            customAreaItems.push({
+            customAreaItems[customAnimName].push({
               type: 'custom_sprite',
               zPos: item.zPos,
               spritePath: item.spritePath,
-              itemId: item.itemId
+              itemId: item.itemId,
+			  animation: customAnimName,
             });
           }
         }
@@ -309,7 +330,7 @@ export async function renderCharacter(selections, bodyType, targetCanvas = null)
         if (baseAnim) {
           for (const item of itemsToDraw) {
             if (item.animation === baseAnim) {
-              customAreaItems.push({
+              customAreaItems[customAnimName].push({
                 type: 'extracted_frames',
                 zPos: item.zPos,
                 spritePath: item.spritePath,
@@ -323,10 +344,10 @@ export async function renderCharacter(selections, bodyType, targetCanvas = null)
         }
 
         // Sort by zPos to get correct layer order
-        customAreaItems.sort((a, b) => a.zPos - b.zPos);
+        customAreaItems[customAnimName].sort((a, b) => a.zPos - b.zPos);
 
         // Load all custom area images in parallel
-        const loadedCustomImages = await loadImagesInParallel(customAreaItems);
+        const loadedCustomImages = await loadImagesInParallel(customAreaItems[customAnimName]);
 
         // Draw in zPos order
         for (const { item: areaItem, img, success } of loadedCustomImages) {
@@ -412,7 +433,7 @@ export async function renderSingleItem(itemId, variant, bodyType, selections) {
   }
 
   // Check if this is a custom animation item
-  const layer1 = meta.layers?.layer_1;
+  const layer1 = meta.layers && Object.values(meta.layers).find(l => l.custom_animation);
   const hasCustomAnimation = layer1 && layer1.custom_animation;
 
   let itemCanvas, itemCtx;
@@ -429,9 +450,18 @@ export async function renderSingleItem(itemId, variant, bodyType, selections) {
     const animHeight = customAnimDef.frameSize * customAnimDef.frames.length;
     const animWidth = customAnimDef.frameSize * customAnimDef.frames[0].length;
 
+	const customLayers = Object.values(meta.layers).filter(l => l.custom_animation);
+	const customAnimationsInItem = customLayers.map(l => l.custom_animation)
+	  .filter((value, index, array) => array.indexOf(value) === index);
+	const numCustomAnims = customAnimationsInItem.length;
+	const getYPosForCustomAnim = (name) => {
+	  const index = customAnimationsInItem.indexOf(name);
+	  return SHEET_HEIGHT + index * animHeight;
+	}
+
     itemCanvas = document.createElement('canvas');
     itemCanvas.width = animWidth;
-    itemCanvas.height = animHeight;
+    itemCanvas.height = SHEET_HEIGHT + animHeight * numCustomAnims;
     itemCtx = get2DContext(itemCanvas);
 
     // Render all layers of this custom animation item
@@ -442,11 +472,12 @@ export async function renderSingleItem(itemId, variant, bodyType, selections) {
       if (!layer) break;
 
       const zPos = getZPos(itemId, layerNum);
+      const yPos = getYPosForCustomAnim(layer.custom_animation);
       let basePath = layer[bodyType];
       if (!basePath) continue;
 
       const spritePath = `spritesheets/${basePath}${variantToFilename(variant)}.png`;
-      customSprites.push({ spritePath, zPos });
+      customSprites.push({ spritePath, zPos, yPos });
     }
 
     // Sort by zPos
@@ -459,58 +490,58 @@ export async function renderSingleItem(itemId, variant, bodyType, selections) {
     for (const { item: sprite, img, success } of loadedSprites) {
       if (success && img) {
         const imageToDraw = await getImageToDraw(img, itemId, variant);
-        itemCtx.drawImage(imageToDraw, 0, 0);
+        itemCtx.drawImage(imageToDraw, 0, sprite.yPos);
       }
     }
   } else {
-    // Standard animation item - use standard sheet size
-    itemCanvas = document.createElement('canvas');
-    itemCanvas.width = SHEET_WIDTH;
-    itemCanvas.height = SHEET_HEIGHT;
-    itemCtx = get2DContext(itemCanvas);
+	// Standard animation item - use standard sheet size
+	itemCanvas = document.createElement('canvas');
+	itemCanvas.width = SHEET_WIDTH;
+	itemCanvas.height = SHEET_HEIGHT;
+	itemCtx = get2DContext(itemCanvas);
+  }
 
-    // Build list of sprites to draw for this item
-    const spritesToDraw = [];
+  // Build list of sprites to draw for this item
+  const spritesToDraw = [];
 
-    for (let layerNum = 1; layerNum < 10; layerNum++) {
-      const layerKey = `layer_${layerNum}`;
-      if (!meta.layers?.[layerKey]) break;
+  for (let layerNum = 1; layerNum < 10; layerNum++) {
+    const layerKey = `layer_${layerNum}`;
+    if (!meta.layers?.[layerKey]) break;
 
-      const zPos = getZPos(itemId, layerNum);
+    const zPos = getZPos(itemId, layerNum);
 
-      // Add each animation for this layer
-      for (const [animName, yPos] of Object.entries(ANIMATION_OFFSETS)) {
-        // Check animation support (same logic as renderCharacter)
-        let metadataAnimName = animName;
-        if (animName === 'combat_idle') {
-          if (!meta.animations.includes('combat') && !meta.animations.includes('1h_slash')) {
-            continue;
-          }
-        } else if (animName === 'backslash') {
-          if (!meta.animations.includes('1h_slash') && !meta.animations.includes('1h_backslash')) {
-            continue;
-          }
-        } else if (animName === 'halfslash') {
-          if (!meta.animations.includes('1h_halfslash')) {
-            continue;
-          }
-        } else {
-          if (!meta.animations.includes(animName)) continue;
-        }
-
-        const spritePath = getSpritePath(itemId, variant, bodyType, animName, layerNum, selections, meta);
-
-        spritesToDraw.push({
-          itemId,
-          variant,
-          spritePath,
-          zPos,
-          layerNum,
-          animation: animName,
-          yPos
-        });
+    // Add each animation for this layer
+    for (const [animName, yPos] of Object.entries(ANIMATION_OFFSETS)) {
+    // Check animation support (same logic as renderCharacter)
+    let metadataAnimName = animName;
+    if (animName === 'combat_idle') {
+      if (!meta.animations.includes('combat') && !meta.animations.includes('1h_slash')) {
+      continue;
       }
+    } else if (animName === 'backslash') {
+      if (!meta.animations.includes('1h_slash') && !meta.animations.includes('1h_backslash')) {
+      continue;
+      }
+    } else if (animName === 'halfslash') {
+      if (!meta.animations.includes('1h_halfslash')) {
+      continue;
+      }
+    } else {
+      if (!meta.animations.includes(animName)) continue;
     }
+
+    const spritePath = getSpritePath(itemId, variant, bodyType, animName, layerNum, selections, meta);
+
+    spritesToDraw.push({
+      itemId,
+      variant,
+      spritePath,
+      zPos,
+      layerNum,
+      animation: animName,
+      yPos
+    });
+	}
 
     // Sort by animation first, then by zPos
     spritesToDraw.sort((a, b) => {
@@ -565,7 +596,7 @@ export async function renderSingleItemAnimation(itemId, variant, bodyType, anima
   }
 
   const { row, num } = config;
-  const animYPos = row * FRAME_SIZE;
+  const animYPos = 0;
   const animHeight = num * FRAME_SIZE;
 
   // Create a new canvas for this animation
