@@ -10,18 +10,10 @@ import { drawFramesToCustomAnimation } from './draw-frames.js';
 import { FRAME_SIZE, ANIMATION_OFFSETS, ANIMATION_CONFIGS } from '../state/constants.js';
 import { customAnimations, customAnimationBase } from '../custom-animations.js';
 import { setCurrentCustomAnimations, setCustomAnimYPositions } from './preview-animation.js';
+import { getSortedLayersByAnim } from '../state/meta.js';
 
 export const SHEET_HEIGHT = 3456; // Full universal sheet height
 export const SHEET_WIDTH = 832; // 13 frames * 64px
-
-// Map metadata animation names to actual folder names
-// Metadata uses "combat", "1h_slash", etc. but folders are named differently
-const METADATA_TO_FOLDER = {
-  'combat': 'combat_idle',
-  '1h_slash': 'backslash',
-  '1h_backslash': 'backslash',
-  '1h_halfslash': 'halfslash'
-};
 
 let canvas = null;
 let ctx = null;
@@ -147,20 +139,14 @@ export async function renderCharacter(selections, bodyType, targetCanvas = null)
           // e.g., "combat_idle" -> check for "combat" or "1h_slash" in metadata
           let metadataAnimName = animName;
           if (animName === 'combat_idle') {
-            // combat_idle is supported if item has "combat" OR "1h_slash" in metadata
-            if (!meta.animations.includes('combat') && !meta.animations.includes('1h_slash')) {
-              continue;
-            }
+            // combat_idle is supported if item has "combat" in metadata
+            if (!meta.animations.includes('combat')) continue;
           } else if (animName === 'backslash') {
             // backslash is supported if item has "1h_slash" OR "1h_backslash" in metadata
-            if (!meta.animations.includes('1h_slash') && !meta.animations.includes('1h_backslash')) {
-              continue;
-            }
+            if (!meta.animations.includes('1h_slash') && !meta.animations.includes('1h_backslash')) continue;
           } else if (animName === 'halfslash') {
             // halfslash is supported if item has "1h_halfslash" in metadata
-            if (!meta.animations.includes('1h_halfslash')) {
-              continue;
-            }
+            if (!meta.animations.includes('1h_halfslash')) continue;
           } else {
             // For all other animations, direct match required
             if (!meta.animations.includes(animName)) continue;
@@ -419,7 +405,7 @@ export function getCanvas() {
  * Render a single item to a new canvas
  * Returns a canvas with just this one item rendered
  */
-export async function renderSingleItem(itemId, variant, bodyType, selections) {
+export async function renderSingleItem(itemId, variant, bodyType, selections, singleLayer = null) {
   const meta = window.itemMetadata[itemId];
   if (!meta) {
     console.error('Item metadata not found:', itemId);
@@ -450,14 +436,14 @@ export async function renderSingleItem(itemId, variant, bodyType, selections) {
     const animHeight = customAnimDef.frameSize * customAnimDef.frames.length;
     const animWidth = customAnimDef.frameSize * customAnimDef.frames[0].length;
 
-	const customLayers = Object.values(meta.layers).filter(l => l.custom_animation);
-	const customAnimationsInItem = customLayers.map(l => l.custom_animation)
-	  .filter((value, index, array) => array.indexOf(value) === index);
-	const numCustomAnims = customAnimationsInItem.length;
-	const getYPosForCustomAnim = (name) => {
-	  const index = customAnimationsInItem.indexOf(name);
-	  return SHEET_HEIGHT + index * animHeight;
-	}
+    const customLayers = Object.values(meta.layers).filter(l => l.custom_animation);
+    const customAnimationsInItem = customLayers.map(l => l.custom_animation)
+      .filter((value, index, array) => array.indexOf(value) === index);
+    const numCustomAnims = customAnimationsInItem.length;
+    const getYPosForCustomAnim = (name) => {
+      const index = customAnimationsInItem.indexOf(name);
+      return SHEET_HEIGHT + index * animHeight;
+    }
 
     itemCanvas = document.createElement('canvas');
     itemCanvas.width = animWidth;
@@ -466,18 +452,22 @@ export async function renderSingleItem(itemId, variant, bodyType, selections) {
 
     // Render all layers of this custom animation item
     const customSprites = [];
-    for (let layerNum = 1; layerNum < 10; layerNum++) {
-      const layerKey = `layer_${layerNum}`;
-      const layer = meta.layers?.[layerKey];
-      if (!layer) break;
+    const animsList = getSortedLayersByAnim(itemId, true);
+    for (const animName in animsList) {
+      for (let layerNum = 1; layerNum < 10; layerNum++) {
+        if (singleLayer !== null && layerNum !== singleLayer) continue;
+        const animLayer = animsList[animName].find(l => l.animLayerNum === layerNum);
+        const layerKey = `layer_${animLayer.layerNum}`;
+        const layer = meta.layers?.[layerKey];
+        if (!layer) break;
 
-      const zPos = getZPos(itemId, layerNum);
-      const yPos = getYPosForCustomAnim(layer.custom_animation);
-      let basePath = layer[bodyType];
-      if (!basePath) continue;
+        const yPos = getYPosForCustomAnim(layer.custom_animation);
+        let basePath = layer[bodyType];
+        if (!basePath) continue;
 
-      const spritePath = `spritesheets/${basePath}${variantToFilename(variant)}.png`;
-      customSprites.push({ spritePath, zPos, yPos });
+        const spritePath = `spritesheets/${basePath}${variantToFilename(variant)}.png`;
+        customSprites.push({ spritePath, zPos: animLayer.zPos, yPos });
+      }
     }
 
     // Sort by zPos
@@ -494,17 +484,18 @@ export async function renderSingleItem(itemId, variant, bodyType, selections) {
       }
     }
   } else {
-	// Standard animation item - use standard sheet size
-	itemCanvas = document.createElement('canvas');
-	itemCanvas.width = SHEET_WIDTH;
-	itemCanvas.height = SHEET_HEIGHT;
-	itemCtx = get2DContext(itemCanvas);
+    // Standard animation item - use standard sheet size
+    itemCanvas = document.createElement('canvas');
+    itemCanvas.width = SHEET_WIDTH;
+    itemCanvas.height = SHEET_HEIGHT;
+    itemCtx = get2DContext(itemCanvas);
   }
 
   // Build list of sprites to draw for this item
   const spritesToDraw = [];
 
   for (let layerNum = 1; layerNum < 10; layerNum++) {
+    if (singleLayer !== null && layerNum !== singleLayer) continue;
     const layerKey = `layer_${layerNum}`;
     if (!meta.layers?.[layerKey]) break;
 
@@ -512,36 +503,30 @@ export async function renderSingleItem(itemId, variant, bodyType, selections) {
 
     // Add each animation for this layer
     for (const [animName, yPos] of Object.entries(ANIMATION_OFFSETS)) {
-    // Check animation support (same logic as renderCharacter)
-    let metadataAnimName = animName;
-    if (animName === 'combat_idle') {
-      if (!meta.animations.includes('combat') && !meta.animations.includes('1h_slash')) {
-      continue;
+      // Check animation support (same logic as renderCharacter)
+      let metadataAnimName = animName;
+      if (animName === 'combat_idle') {
+        if (!meta.animations.includes('combat')) continue;
+      } else if (animName === 'backslash') {
+        if (!meta.animations.includes('1h_slash') && !meta.animations.includes('1h_backslash')) continue;
+      } else if (animName === 'halfslash') {
+        if (!meta.animations.includes('1h_halfslash')) continue;
+      } else {
+        if (!meta.animations.includes(animName)) continue;
       }
-    } else if (animName === 'backslash') {
-      if (!meta.animations.includes('1h_slash') && !meta.animations.includes('1h_backslash')) {
-      continue;
-      }
-    } else if (animName === 'halfslash') {
-      if (!meta.animations.includes('1h_halfslash')) {
-      continue;
-      }
-    } else {
-      if (!meta.animations.includes(animName)) continue;
+
+      const spritePath = getSpritePath(itemId, variant, bodyType, animName, layerNum, selections, meta);
+
+      spritesToDraw.push({
+        itemId,
+        variant,
+        spritePath,
+        zPos,
+        layerNum,
+        animation: animName,
+        yPos
+      });
     }
-
-    const spritePath = getSpritePath(itemId, variant, bodyType, animName, layerNum, selections, meta);
-
-    spritesToDraw.push({
-      itemId,
-      variant,
-      spritePath,
-      zPos,
-      layerNum,
-      animation: animName,
-      yPos
-    });
-	}
 
     // Sort by animation first, then by zPos
     spritesToDraw.sort((a, b) => {
@@ -568,7 +553,7 @@ export async function renderSingleItem(itemId, variant, bodyType, selections) {
  * Render a single item for a single animation to a new canvas
  * Returns a canvas with just this one item's one animation rendered
  */
-export async function renderSingleItemAnimation(itemId, variant, bodyType, animationName, selections) {
+export async function renderSingleItemAnimation(itemId, variant, bodyType, animationName, selections, singleLayer = null) {
   const meta = window.itemMetadata[itemId];
   if (!meta) {
     console.error('Item metadata not found:', itemId);
@@ -609,6 +594,7 @@ export async function renderSingleItemAnimation(itemId, variant, bodyType, anima
   const spritesToDraw = [];
 
   for (let layerNum = 1; layerNum < 10; layerNum++) {
+    if (singleLayer !== null && layerNum !== singleLayer) continue;
     const layerKey = `layer_${layerNum}`;
     if (!meta.layers?.[layerKey]) break;
 
@@ -616,17 +602,11 @@ export async function renderSingleItemAnimation(itemId, variant, bodyType, anima
 
     // Check animation support
     if (animationName === 'combat_idle') {
-      if (!meta.animations.includes('combat') && !meta.animations.includes('1h_slash')) {
-        continue;
-      }
+      if (!meta.animations.includes('combat')) continue;
     } else if (animationName === 'backslash') {
-      if (!meta.animations.includes('1h_slash') && !meta.animations.includes('1h_backslash')) {
-        continue;
-      }
+      if (!meta.animations.includes('1h_slash') && !meta.animations.includes('1h_backslash')) continue;
     } else if (animationName === 'halfslash') {
-      if (!meta.animations.includes('1h_halfslash')) {
-        continue;
-      }
+      if (!meta.animations.includes('1h_halfslash')) continue;
     } else {
       if (!meta.animations.includes(animationName)) continue;
     }

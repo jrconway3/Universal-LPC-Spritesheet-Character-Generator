@@ -47178,7 +47178,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -47283,7 +47283,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -47400,7 +47400,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -47514,7 +47514,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -47611,7 +47611,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -47710,7 +47710,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -47806,7 +47806,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -47893,7 +47893,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -47980,7 +47980,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -48067,7 +48067,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -48154,7 +48154,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -48242,7 +48242,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -48330,7 +48330,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -48418,7 +48418,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -48506,7 +48506,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -48592,7 +48592,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -48678,7 +48678,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -48764,7 +48764,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -48850,7 +48850,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -48936,7 +48936,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -49022,7 +49022,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -49108,7 +49108,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -49194,7 +49194,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -49322,7 +49322,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -49453,7 +49453,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -49580,7 +49580,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -49672,7 +49672,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -49785,7 +49785,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -49892,7 +49892,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -49958,7 +49958,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -50045,7 +50045,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -50267,7 +50267,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -50357,7 +50357,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -50440,7 +50440,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -50666,7 +50666,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -50746,7 +50746,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -50834,7 +50834,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -50926,7 +50926,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -51018,7 +51018,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [
       "dress",
@@ -51119,7 +51119,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [
       "dress",
@@ -51221,7 +51221,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [
       "dress",
@@ -51322,7 +51322,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [
       "dress",
@@ -51424,7 +51424,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [
       "arms",
@@ -51530,7 +51530,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [
       "arms",
@@ -51637,7 +51637,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [
       "arms",
@@ -51743,7 +51743,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [
       "arms",
@@ -58000,7 +58000,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -58127,7 +58127,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -63954,7 +63954,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -66135,7 +66135,7 @@ window.itemMetadata = {
       "slash",
       "shoot",
       "hurt",
-      "watering"
+      "idle"
     ],
     "tags": [],
     "required_tags": [],
@@ -66249,15 +66249,7 @@ window.itemMetadata = {
       "muscular",
       "pregnant"
     ],
-    "animations": [
-      "spellcast",
-      "thrust",
-      "walk",
-      "slash",
-      "shoot",
-      "hurt",
-      "watering"
-    ],
+    "animations": [],
     "tags": [],
     "required_tags": [],
     "excluded_tags": [],
@@ -66343,13 +66335,7 @@ window.itemMetadata = {
       "pregnant"
     ],
     "animations": [
-      "spellcast",
-      "thrust",
-      "walk",
-      "slash",
-      "shoot",
-      "hurt",
-      "watering"
+      "walk"
     ],
     "tags": [],
     "required_tags": [],
@@ -66446,13 +66432,8 @@ window.itemMetadata = {
       "pregnant"
     ],
     "animations": [
-      "spellcast",
-      "thrust",
       "walk",
-      "slash",
-      "shoot",
-      "hurt",
-      "watering"
+      "hurt"
     ],
     "tags": [],
     "required_tags": [],
@@ -66538,15 +66519,7 @@ window.itemMetadata = {
       "muscular",
       "pregnant"
     ],
-    "animations": [
-      "spellcast",
-      "thrust",
-      "walk",
-      "slash",
-      "shoot",
-      "hurt",
-      "watering"
-    ],
+    "animations": [],
     "tags": [],
     "required_tags": [],
     "excluded_tags": [],
@@ -74472,13 +74445,9 @@ window.itemMetadata = {
       "pregnant"
     ],
     "animations": [
-      "spellcast",
       "thrust",
       "walk",
-      "slash",
-      "shoot",
-      "hurt",
-      "watering"
+      "hurt"
     ],
     "tags": [],
     "required_tags": [],
@@ -74555,13 +74524,9 @@ window.itemMetadata = {
       "pregnant"
     ],
     "animations": [
-      "spellcast",
-      "thrust",
       "walk",
-      "slash",
       "shoot",
-      "hurt",
-      "watering"
+      "hurt"
     ],
     "tags": [],
     "required_tags": [],
@@ -74646,15 +74611,7 @@ window.itemMetadata = {
       "muscular",
       "pregnant"
     ],
-    "animations": [
-      "spellcast",
-      "thrust",
-      "walk",
-      "slash",
-      "shoot",
-      "hurt",
-      "watering"
-    ],
+    "animations": [],
     "tags": [],
     "required_tags": [],
     "excluded_tags": [],
@@ -74821,6 +74778,7 @@ window.itemMetadata = {
       "pregnant"
     ],
     "animations": [
+      "walk",
       "shoot",
       "hurt"
     ],
@@ -74938,6 +74896,7 @@ window.itemMetadata = {
       "pregnant"
     ],
     "animations": [
+      "walk",
       "shoot",
       "hurt"
     ],
@@ -75065,6 +75024,7 @@ window.itemMetadata = {
       "pregnant"
     ],
     "animations": [
+      "walk",
       "shoot",
       "hurt"
     ],
@@ -75181,13 +75141,10 @@ window.itemMetadata = {
       "pregnant"
     ],
     "animations": [
-      "spellcast",
       "thrust",
       "walk",
       "slash",
-      "shoot",
-      "hurt",
-      "watering"
+      "hurt"
     ],
     "tags": [],
     "required_tags": [],
@@ -75276,13 +75233,8 @@ window.itemMetadata = {
       "pregnant"
     ],
     "animations": [
-      "spellcast",
-      "thrust",
       "walk",
-      "slash",
-      "shoot",
-      "hurt",
-      "watering"
+      "hurt"
     ],
     "tags": [],
     "required_tags": [],
@@ -75384,13 +75336,8 @@ window.itemMetadata = {
       "pregnant"
     ],
     "animations": [
-      "spellcast",
-      "thrust",
       "walk",
-      "slash",
-      "shoot",
-      "hurt",
-      "watering"
+      "hurt"
     ],
     "tags": [],
     "required_tags": [],
@@ -75521,13 +75468,8 @@ window.itemMetadata = {
       "pregnant"
     ],
     "animations": [
-      "spellcast",
-      "thrust",
       "walk",
-      "slash",
-      "shoot",
-      "hurt",
-      "watering"
+      "hurt"
     ],
     "tags": [],
     "required_tags": [],
@@ -75626,13 +75568,8 @@ window.itemMetadata = {
       "pregnant"
     ],
     "animations": [
-      "spellcast",
-      "thrust",
       "walk",
-      "slash",
-      "shoot",
-      "hurt",
-      "watering"
+      "hurt"
     ],
     "tags": [],
     "required_tags": [],
@@ -75728,13 +75665,8 @@ window.itemMetadata = {
       "pregnant"
     ],
     "animations": [
-      "spellcast",
-      "thrust",
       "walk",
-      "slash",
-      "shoot",
-      "hurt",
-      "watering"
+      "hurt"
     ],
     "tags": [],
     "required_tags": [],
@@ -75828,13 +75760,7 @@ window.itemMetadata = {
       "pregnant"
     ],
     "animations": [
-      "spellcast",
-      "thrust",
-      "walk",
-      "slash",
-      "shoot",
-      "hurt",
-      "watering"
+      "walk"
     ],
     "tags": [],
     "required_tags": [],
@@ -75927,15 +75853,7 @@ window.itemMetadata = {
       "muscular",
       "pregnant"
     ],
-    "animations": [
-      "spellcast",
-      "thrust",
-      "walk",
-      "slash",
-      "shoot",
-      "hurt",
-      "watering"
-    ],
+    "animations": [],
     "tags": [],
     "required_tags": [],
     "excluded_tags": [],
@@ -76029,23 +75947,10 @@ window.itemMetadata = {
       "pregnant"
     ],
     "animations": [
-      "spellcast",
-      "thrust",
       "walk",
-      "slash",
-      "shoot",
       "hurt",
-      "watering",
       "idle",
-      "jump",
-      "run",
-      "sit",
-      "emote",
-      "climb",
-      "combat",
-      "1h_slash",
-      "1h_backslash",
-      "1h_halfslash"
+      "combat"
     ],
     "tags": [],
     "required_tags": [],
@@ -76188,13 +76093,8 @@ window.itemMetadata = {
       "pregnant"
     ],
     "animations": [
-      "spellcast",
-      "thrust",
       "walk",
-      "slash",
-      "shoot",
-      "hurt",
-      "watering"
+      "hurt"
     ],
     "tags": [],
     "required_tags": [],
@@ -76293,13 +76193,8 @@ window.itemMetadata = {
       "pregnant"
     ],
     "animations": [
-      "spellcast",
-      "thrust",
       "walk",
-      "slash",
-      "shoot",
-      "hurt",
-      "watering"
+      "hurt"
     ],
     "tags": [],
     "required_tags": [],
@@ -76398,13 +76293,8 @@ window.itemMetadata = {
       "pregnant"
     ],
     "animations": [
-      "spellcast",
-      "thrust",
       "walk",
-      "slash",
-      "shoot",
-      "hurt",
-      "watering"
+      "hurt"
     ],
     "tags": [],
     "required_tags": [],
@@ -76502,15 +76392,7 @@ window.itemMetadata = {
       "muscular",
       "pregnant"
     ],
-    "animations": [
-      "spellcast",
-      "thrust",
-      "walk",
-      "slash",
-      "shoot",
-      "hurt",
-      "watering"
-    ],
+    "animations": [],
     "tags": [],
     "required_tags": [],
     "excluded_tags": [],
@@ -76770,13 +76652,8 @@ window.itemMetadata = {
       "pregnant"
     ],
     "animations": [
-      "spellcast",
-      "thrust",
       "walk",
-      "slash",
-      "shoot",
-      "hurt",
-      "watering"
+      "hurt"
     ],
     "tags": [],
     "required_tags": [],
@@ -76868,13 +76745,8 @@ window.itemMetadata = {
       "pregnant"
     ],
     "animations": [
-      "spellcast",
-      "thrust",
       "walk",
-      "slash",
-      "shoot",
-      "hurt",
-      "watering"
+      "hurt"
     ],
     "tags": [],
     "required_tags": [],
@@ -76989,15 +76861,7 @@ window.itemMetadata = {
       "muscular",
       "pregnant"
     ],
-    "animations": [
-      "spellcast",
-      "thrust",
-      "walk",
-      "slash",
-      "shoot",
-      "hurt",
-      "watering"
-    ],
+    "animations": [],
     "tags": [],
     "required_tags": [],
     "excluded_tags": [],
@@ -77110,15 +76974,7 @@ window.itemMetadata = {
       "muscular",
       "pregnant"
     ],
-    "animations": [
-      "spellcast",
-      "thrust",
-      "walk",
-      "slash",
-      "shoot",
-      "hurt",
-      "watering"
-    ],
+    "animations": [],
     "tags": [],
     "required_tags": [],
     "excluded_tags": [],
@@ -77232,15 +77088,7 @@ window.itemMetadata = {
       "muscular",
       "pregnant"
     ],
-    "animations": [
-      "spellcast",
-      "thrust",
-      "walk",
-      "slash",
-      "shoot",
-      "hurt",
-      "watering"
-    ],
+    "animations": [],
     "tags": [],
     "required_tags": [],
     "excluded_tags": [],
@@ -77358,10 +77206,7 @@ window.itemMetadata = {
       "spellcast",
       "thrust",
       "walk",
-      "slash",
-      "shoot",
-      "hurt",
-      "watering"
+      "hurt"
     ],
     "tags": [],
     "required_tags": [],
@@ -77444,13 +77289,8 @@ window.itemMetadata = {
       "pregnant"
     ],
     "animations": [
-      "spellcast",
-      "thrust",
       "walk",
-      "slash",
-      "shoot",
-      "hurt",
-      "watering"
+      "hurt"
     ],
     "tags": [],
     "required_tags": [],
@@ -77573,13 +77413,8 @@ window.itemMetadata = {
       "pregnant"
     ],
     "animations": [
-      "spellcast",
-      "thrust",
       "walk",
-      "slash",
-      "shoot",
-      "hurt",
-      "watering"
+      "hurt"
     ],
     "tags": [],
     "required_tags": [],
@@ -77702,13 +77537,8 @@ window.itemMetadata = {
       "pregnant"
     ],
     "animations": [
-      "spellcast",
-      "thrust",
       "walk",
-      "slash",
-      "shoot",
-      "hurt",
-      "watering"
+      "hurt"
     ],
     "tags": [],
     "required_tags": [],
@@ -77831,13 +77661,8 @@ window.itemMetadata = {
       "pregnant"
     ],
     "animations": [
-      "spellcast",
-      "thrust",
       "walk",
-      "slash",
-      "shoot",
-      "hurt",
-      "watering"
+      "hurt"
     ],
     "tags": [],
     "required_tags": [],
@@ -77951,13 +77776,8 @@ window.itemMetadata = {
       "pregnant"
     ],
     "animations": [
-      "spellcast",
-      "thrust",
       "walk",
-      "slash",
-      "shoot",
-      "hurt",
-      "watering"
+      "hurt"
     ],
     "tags": [],
     "required_tags": [],
