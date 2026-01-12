@@ -1,0 +1,68 @@
+{
+    "styles": {
+        "ulpc": {
+            "name": "Universal LPC Palettes"
+        },
+        "lpcr": {
+            "name": "LPC Revised"
+        }
+    },
+    "palettes": {
+        "body": {
+            "ulpc": {
+                "file": "ulpc/body-ulpc",
+                "default": "light"
+            },
+            "lpcr": {
+                "file": "lpcr/body-lpcr",
+                "default": "ivory"
+            }
+        },
+        "hair": {
+            "ulpc": {
+                "file": "ulpc/hair-ulpc",
+                "default": "orange"
+            },
+            "lpcr": {
+                "file": "lpcr/hair-lpcr",
+                "default": "blonde"
+            }
+        },
+        "cloth": {
+            "ulpc": {
+                "file": "ulpc/cloth-ulpc",
+                "default": "brown"
+            },
+            "lpcr": {
+                "file": "lpcr/cloth-lpcr",
+                "default": "brown"
+            }
+        },
+        "metal": {
+            "ulpc": {
+                "file": "ulpc/metal-ulpc",
+                "default": "steel"
+            },
+            "lpcr": {
+                "file": "lpcr/metal-lpcr",
+                "default": "steel"
+            }
+        },
+        "eye": {
+            "ulpc": {
+                "file": "ulpc/eyes-ulpc",
+                "default": "blue"
+            },
+            "lpcr": {
+                "file": "lpcr/eyes-lpcr",
+                "default": "blue"
+            }
+        },
+        "all": {
+            "lpcr": {
+                "file": "lpcr/all-lpcr",
+                "default": "white"
+            }
+        }
+    }
+}
