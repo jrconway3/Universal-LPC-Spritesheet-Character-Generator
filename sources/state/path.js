@@ -86,7 +86,7 @@ for (const key of Object.keys(window.itemMetadata || {})) {
 // e.g. use double underscore to separate name and variant in item ids
 function getNameWithoutVariant(typeName, nameAndVariant) {
 	let variant = '';
-	const nameAndVariantPath = nameAndVariant.split('_');;
+	const nameAndVariantPath = nameAndVariant.split('_');
 	const l = nameAndVariantPath.length;
 	const names = indexedMetadataCache.get(typeName) || [];
 	const variants = names.flatMap(n => n.variants || []).map(v => v.toLowerCase());
