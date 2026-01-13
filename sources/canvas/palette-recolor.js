@@ -4,6 +4,8 @@
 import { recolorImageWebGL, isWebGLAvailable } from './webgl-palette-recolor.js';
 import { getDebugParam } from '../main.js';
 import { get2DContext } from './canvas-utils.js';
+import { getPaletteFile } from '../state/meta.js';
+import { PALETTE_TYPES, PALETTE_FILES } from '../state/constants.js';
 
 // Configuration flags
 let config = {
@@ -239,17 +241,6 @@ export async function loadPalette(url) {
 // Palettes are loaded on-demand based on item metadata
 const loadedPalettes = {};
 
-// Map palette names to file paths
-const PALETTE_FILES = {
-	'body': 'tools/palettes/ulpc-body-palettes.json',
-	'hair': 'tools/palettes/ulpc-hair-palettes.json',
-	'cloth': 'tools/palettes/ulpc-cloth-palettes.json',
-	'cloth-metal': 'tools/palettes/ulpc-cloth-metal-palettes.json',
-	'metal': 'tools/palettes/ulpc-metal-palettes.json',
-	'eye': 'tools/palettes/ulpc-eye-palettes.json',
-	'fur': 'tools/palettes/ulpc-fur-palettes.json'
-};
-
 /**
  * Get image to draw - applies recoloring if needed based on palette configuration
  * Async because palette loading is lazy (loads on first use)
@@ -288,7 +279,7 @@ export function getPaletteForItem(itemId, meta) {
 	return {
 		type: meta.recolors.palette,
 		sourceVariant: meta.recolors.base,
-		file: PALETTE_FILES[meta.recolors.palette]
+		file: getPaletteFile(meta.recolors.palette)
 	};
 }
 
@@ -299,7 +290,7 @@ export function getPaletteForItem(itemId, meta) {
  */
 async function ensurePaletteLoaded(paletteType) {
 	if (!loadedPalettes[paletteType]) {
-		const paletteFile = PALETTE_FILES[paletteType];
+		const paletteFile = getPaletteFile(paletteType);
 		if (!paletteFile) {
 			throw new Error(`Unknown palette type: ${paletteType} (no file mapping found)`);
 		}
