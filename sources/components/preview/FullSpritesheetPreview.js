@@ -28,7 +28,7 @@ const SpritesheetCanvas = {
 			// Trigger re-render to update preview canvas zoom
 			m.redraw();
 			// Apply zoom to canvas
-			copyToPreviewCanvas(canvas, showTransparencyGrid, applyTransparencyMaskvnode.state.zoomLevel);
+			copyToPreviewCanvas(canvas, showTransparencyGrid, applyTransparencyMask, vnode.state.zoomLevel);
 
 			state.fullSpritesheetCanvasZoomLevel = vnode.state.zoomLevel;
 		}, vnode.state.zoomLevel);
