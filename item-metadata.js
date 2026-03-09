@@ -49985,7 +49985,7 @@ window.itemMetadata = {
       "climb",
       "combat",
       "1h_slash",
-      "1h_backslash",
+      "1h/bgslash",
       "1h_halfslash"
     ],
     "tags": [],
@@ -50002,21 +50002,21 @@ window.itemMetadata = {
     "layers": {
       "layer_1": {
         "zPos": 131,
-        "male": "head/ears/cat/skin/adult_front/",
-        "muscular": "head/ears/cat/skin/adult_front/",
-        "female": "head/ears/cat/skin/adult_front/",
-        "teen": "head/ears/cat/skin/adult_front/",
-        "pregnant": "head/ears/cat/skin/adult_front/",
-        "child": "head/ears/cat/skin/child_front/"
+        "male": "head/ears/cat/skin/adult/fg/",
+        "muscular": "head/ears/cat/skin/adult/fg/",
+        "female": "head/ears/cat/skin/adult/fg/",
+        "teen": "head/ears/cat/skin/adult/fg/",
+        "pregnant": "head/ears/cat/skin/adult/fg/",
+        "child": "head/ears/cat/skin/child/fg/"
       },
       "layer_2": {
         "zPos": 9,
-        "male": "head/ears/cat/skin/adult_back/",
-        "muscular": "head/ears/cat/skin/adult_back/",
-        "female": "head/ears/cat/skin/adult_back/",
-        "pregnant": "head/ears/cat/skin/adult_back/",
-        "teen": "head/ears/cat/skin/adult_back/",
-        "child": "head/ears/cat/skin/child_back/"
+        "male": "head/ears/cat/skin/adult/bg/",
+        "muscular": "head/ears/cat/skin/adult/bg/",
+        "female": "head/ears/cat/skin/adult/bg/",
+        "pregnant": "head/ears/cat/skin/adult/bg/",
+        "teen": "head/ears/cat/skin/adult/bg/",
+        "child": "head/ears/cat/skin/child/bg/"
       }
     },
     "credits": [
@@ -50485,7 +50485,7 @@ window.itemMetadata = {
       "climb",
       "combat",
       "1h_slash",
-      "1h_backslash",
+      "1h/bgslash",
       "1h_halfslash"
     ],
     "tags": [],
@@ -50502,21 +50502,21 @@ window.itemMetadata = {
     "layers": {
       "layer_1": {
         "zPos": 131,
-        "male": "head/ears/wolf/skin/adult_front/",
-        "muscular": "head/ears/wolf/skin/adult_front/",
-        "female": "head/ears/wolf/skin/adult_front/",
-        "teen": "head/ears/wolf/skin/adult_front/",
-        "pregnant": "head/ears/wolf/skin/adult_front/",
-        "child": "head/ears/wolf/skin/child_front/"
+        "male": "head/ears/wolf/skin/adult/fg/",
+        "muscular": "head/ears/wolf/skin/adult/fg/",
+        "female": "head/ears/wolf/skin/adult/fg/",
+        "teen": "head/ears/wolf/skin/adult/fg/",
+        "pregnant": "head/ears/wolf/skin/adult/fg/",
+        "child": "head/ears/wolf/skin/child/fg/"
       },
       "layer_2": {
         "zPos": 9,
-        "male": "head/ears/wolf/skin/adult_back/",
-        "muscular": "head/ears/wolf/skin/adult_back/",
-        "female": "head/ears/wolf/skin/adult_back/",
-        "pregnant": "head/ears/wolf/skin/adult_back/",
-        "teen": "head/ears/wolf/skin/adult_back/",
-        "child": "head/ears/wolf/skin/child_back/"
+        "male": "head/ears/wolf/skin/adult/bg/",
+        "muscular": "head/ears/wolf/skin/adult/bg/",
+        "female": "head/ears/wolf/skin/adult/bg/",
+        "pregnant": "head/ears/wolf/skin/adult/bg/",
+        "teen": "head/ears/wolf/skin/adult/bg/",
+        "child": "head/ears/wolf/skin/child/bg/"
       }
     },
     "credits": [
