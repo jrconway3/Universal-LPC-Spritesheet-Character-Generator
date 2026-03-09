@@ -49985,7 +49985,7 @@ window.itemMetadata = {
       "climb",
       "combat",
       "1h_slash",
-      "1h/bgslash",
+      "1h_backslash",
       "1h_halfslash"
     ],
     "tags": [],
@@ -50485,7 +50485,7 @@ window.itemMetadata = {
       "climb",
       "combat",
       "1h_slash",
-      "1h/bgslash",
+      "1h_backslash",
       "1h_halfslash"
     ],
     "tags": [],
