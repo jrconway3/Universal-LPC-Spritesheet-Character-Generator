@@ -35,7 +35,7 @@ files.forEach(file => {
       var images = "";
       var bodyIndex = 0;
       var firstImage = true;
-      for (let item in possibleBodies) {
+      for (const _key in possibleBodies) {
         const body = possibleBodies[bodyIndex];
         const imageRef = layerDefinition[`${body}`];
         if (imageRef !== undefined) {

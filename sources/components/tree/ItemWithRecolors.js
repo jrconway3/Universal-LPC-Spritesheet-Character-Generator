@@ -47,17 +47,6 @@ export const ItemWithRecolors = {
             });
         }
 
-        // Only show the idle preview for the asset
-        const layer1 = meta.layers?.layer_1;
-        const basePath = layer1?.[state.bodyType];
-
-        let previewSrc = null;
-        if (basePath) {
-            // Standard animations have animation subfolders (walk, slash, etc.)
-            const defaultAnim = meta.animations.includes('walk') ? 'walk' : meta.animations[0];
-            previewSrc = `spritesheets/${basePath}${defaultAnim}.png`;
-        }
-
         return m("div", {
             class: classNames({
                 "search-result": isSearchMatch,
@@ -138,7 +127,7 @@ export const ItemWithRecolors = {
                             }, [
                                 m("label", opt.label),
                                 m("div.palette-swatch",
-                                    gradient.map((color, i) =>
+                                    gradient.map((color) =>
                                         m("span", {
                                             style: {
                                                 backgroundColor: color

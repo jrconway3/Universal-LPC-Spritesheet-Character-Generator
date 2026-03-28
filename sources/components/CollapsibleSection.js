@@ -9,7 +9,7 @@ export const CollapsibleSection = {
       title,
       boxClass = "box",
       onToggle,
-      defaultOpen, // Consume it here so it doesn't leak to the html
+      defaultOpen: _, // Consume so it doesn't leak to the html
       ...additionalAttrs
     } = vnode.attrs;
     const { isCollapsed } = vnode.state;

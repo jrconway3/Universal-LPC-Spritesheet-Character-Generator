@@ -4,7 +4,6 @@ const { promisify } = require('util');
 const exec = require('child_process').exec;
 const execAsync = promisify(exec);
 
-const currentBranch = 'full_rewrite';
 const otherBranch = 'master';
 
 // Function to get the content of a file from a specific branch

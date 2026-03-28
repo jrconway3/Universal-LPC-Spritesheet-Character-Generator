@@ -65,7 +65,7 @@ const PreviewCanvas = {
 			stopPreviewAnimation();
 		}
 	},
-	view: function(vnode) {
+	view: function() {
 		return m("canvas#previewAnimations");
 	}
 };

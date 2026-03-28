@@ -2,7 +2,7 @@
 import { state, getSelectionGroup, selectItem } from '../../state/state.js';
 import { getLayersToLoad } from '../../state/meta.js';
 import { COMPACT_FRAME_SIZE, FRAME_SIZE } from '../../state/constants.js';
-import { variantToFilename, capitalize } from '../../utils/helpers.js';
+import { capitalize } from '../../utils/helpers.js';
 
 const classNames = window.classNames;
 
@@ -67,33 +67,6 @@ export const ItemWithVariants = {
 					const previewXOffset = meta.preview_x_offset ?? 0;
 					const previewYOffset = meta.preview_y_offset ?? 0;
 
-					// Get sprite path for preview image from first layer
-					const layer1 = meta.layers?.layer_1;
-					const basePath = layer1?.[state.bodyType];
-
-					// Check if this item uses a custom animation
-					const hasCustomAnimation = layer1?.custom_animation;
-					const layer1CustomAnimation = hasCustomAnimation ? layer1.custom_animation : null;
-
-					let previewSrc = null;
-					if (basePath) {
-						if (hasCustomAnimation) {
-							// Custom animations don't have animation subfolders
-							previewSrc = `spritesheets/${basePath}${variantToFilename(variant)}.png`;
-						} else {
-							// Standard animations have animation subfolders (walk, slash, etc.)
-							const defaultAnim = meta.animations.includes('walk') ? 'walk' : meta.animations[0];
-							previewSrc = `spritesheets/${basePath}${defaultAnim}/${variantToFilename(variant)}.png`;
-						}
-					}
-
-					// Calculate object position for cropping
-					// Negative position shifts the image left/up to show that part in the viewport
-					// Positive offset values shift the viewport right/down (to see more left/top of sprite)
-					// Negative offset values shift the viewport left/up (to see more right/bottom of sprite)
-					const objectPosX = -(previewCol * FRAME_SIZE - previewXOffset);
-					const objectPosY = -(previewRow * FRAME_SIZE - previewYOffset);
-
 					return m("div.variant-item.is-flex.is-flex-direction-column.is-align-items-center.is-clickable", {
 						key: variant,
 						class: classNames({
@@ -142,7 +115,7 @@ export const ItemWithVariants = {
 								})).then(loadedLayers => {
 									canvas.loadedLayers = loadedLayers;
 									// Draw each layer in zPos order
-									for (const { img, layer } of loadedLayers) {
+									for (const { img } of loadedLayers) {
 										if (img) {
 											const size = compactDisplay ? COMPACT_FRAME_SIZE : FRAME_SIZE;
 											// Master branch uses: previewColumn * FRAME_SIZE + previewXOffset
@@ -166,7 +139,7 @@ export const ItemWithVariants = {
 								// Process Layers Loaded for Variant
 								if (canvas.loadedLayers) {
 									// Draw each layer in zPos order
-									for (const { img, layer } of canvas.loadedLayers) {
+									for (const { img } of canvas.loadedLayers) {
 										if (img) {
 											const size = compactDisplay ? COMPACT_FRAME_SIZE : FRAME_SIZE;
 											// Master branch uses: previewColumn * FRAME_SIZE + previewXOffset

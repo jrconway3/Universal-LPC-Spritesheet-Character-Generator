@@ -19,13 +19,13 @@ export default class PinchToZoom {
     init() {
         this.gesture = new TinyGesture(this.element, { mouseSupport: false });
 
-        this.gesture.on('pinch', (event) => {
+        this.gesture.on('pinch', () => {
             const scale = this.gesture.scale;
             this.currentZoom = this.initialZoom * scale;
             this.onZoom(this.currentZoom);
         });
 
-        this.gesture.on('pinchend', (event) => {
+        this.gesture.on('pinchend', () => {
             this.initialZoom = this.currentZoom;
         });
     }

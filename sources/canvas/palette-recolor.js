@@ -351,7 +351,7 @@ export async function drawRecolorPreview(itemId, meta, canvas, selectedColors, r
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   // Draw each layer in zPos order
   imagesLoaded = 0;
-  for (const { img, layer } of loadedLayers) {
+  for (const { img } of loadedLayers) {
     if (isStaleRender()) {
       return 0;
     }

@@ -21,7 +21,7 @@ export const CategoryTree = {
 					}, "Collapse All"),
 					m("button.button.is-small", {
 						onclick: () => {
-							for (const [categoryPath, selection] of Object.entries(state.selections)) {
+							for (const [, selection] of Object.entries(state.selections)) {
 								const { itemId } = selection;
 								const meta = window.itemMetadata[itemId];
 								if (meta && meta.path) {

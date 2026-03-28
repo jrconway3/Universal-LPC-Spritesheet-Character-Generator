@@ -99,7 +99,7 @@ export function buildNewSelection(foundItemId, matchedVariant, matchedRecolor, s
   if (newSelection.variant || newSelection.recolor) {
     let recolorLabel = newSelection.recolor;
     if (recolorLabel) {
-      const [mat, ver, recolor] = parseRecolorKey(newSelection.recolor, subMeta);
+      const [, ver, recolor] = parseRecolorKey(newSelection.recolor, subMeta);
       recolorLabel = (ver !== subMeta?.default ? `${ver} ${recolor}` : recolor);
     }
     newSelection.name += " (" +
@@ -349,9 +349,6 @@ export function loadSelectionsFromHash(hashString = null) {
 
 // Initialize hash change listener
 export function initHashChangeListener(listener) {
-  // Store the current hash to detect external changes
-  let lastKnownHash = getHash();
-
   if (listener) {
     window.addEventListener("hashchange", listener);
     return;
@@ -382,7 +379,6 @@ export function initHashChangeListener(listener) {
 
     // If the hash matches what we expect from current state, ignore (it's our own update)
     if (currentHash === expectedHash) {
-      lastKnownHash = currentHash;
       return;
     }
 
@@ -396,7 +392,5 @@ export function initHashChangeListener(listener) {
 
     // Trigger redraw which calls App.onupdate (syncs hash and renders canvas)
     m.redraw();
-
-    lastKnownHash = currentHash;
   });
 }

@@ -110,7 +110,7 @@ export const PaletteSelectModal = {
                                         }
                                     }),
                                     m("div.palette-swatch",
-                                        gradient.map((color, i) =>
+                                        gradient.map((color) =>
                                             m("span", {
                                                 style: {
                                                     backgroundColor: color

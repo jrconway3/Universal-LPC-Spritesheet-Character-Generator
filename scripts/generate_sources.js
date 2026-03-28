@@ -292,7 +292,6 @@ function parseJson(filePath, fileName) {
 
   // Collect recolor information
   const recolors = [];
-  let hasRecolors = false;
   if (definition.recolors !== undefined) {
     for (let n = 1; n < 10; n++) {
       const colorDef = definition.recolors[`color_${n}`];
@@ -306,9 +305,6 @@ function parseJson(filePath, fileName) {
     // If no multiple recolors, add single recolor definition
     if (recolors.length === 0) {
       recolors.push(definition.recolors);
-    }
-    if (recolors.length > 0) {
-      hasRecolors = true;
     }
 
     // Add All Palettes

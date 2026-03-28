@@ -7,7 +7,6 @@ import { get2DContext } from "./canvas-utils.js";
 let sharedGL = null;
 let sharedCanvas = null;
 let sharedProgram = null;
-let sharedQuadBuffer = null;
 
 /**
  * Vertex shader - renders a full-screen quad
@@ -136,7 +135,6 @@ function hexToRgbNormalized(hex) {
  * @returns {WebGLTexture} Palette texture
  */
 function createPaletteTexture(gl, sourcePalette, targetPalette) {
-  const size = Math.max(sourcePalette.length, targetPalette.length);
   const data = new Uint8Array(32 * 2 * 4); // 32 colors × 2 rows × RGBA
 
   // First row: source colors
@@ -355,7 +353,7 @@ export function isWebGLAvailable() {
     return !!(
       canvas.getContext("webgl") || canvas.getContext("experimental-webgl")
     );
-  } catch (e) {
+  } catch {
     return false;
   }
 }

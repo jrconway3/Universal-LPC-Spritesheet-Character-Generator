@@ -11,7 +11,7 @@ import { ItemWithRecolors } from './ItemWithRecolors.js';
 
 export const TreeNode = {
 	view: function(vnode) {
-		const { name, node, pathPrefix = "", label } = vnode.attrs;
+		const { name, node, pathPrefix = "" } = vnode.attrs;
 		const nodePath = pathPrefix ? `${pathPrefix}-${name}` : name;
 		const searchQuery = state.searchQuery;
 		const hasSearchMatches = nodeHasMatches(node, searchQuery);

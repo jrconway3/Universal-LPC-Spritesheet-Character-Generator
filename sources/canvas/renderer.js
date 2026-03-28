@@ -68,7 +68,6 @@ export async function renderCharacter(
 
   // Build list of items to draw
   itemsToDraw = [];
-  const customAnimationItems = []; // Track items with custom animations
   addedCustomAnimations = new Set(); // Track which custom animations we've added
 
   // Import state to access custom uploaded image
@@ -91,7 +90,7 @@ export async function renderCharacter(
     const customAnimationItems = []; // Track items with custom animations
     const addedCustomAnimations = new Set(); // Track which custom animations we've added
 
-    for (const [categoryPath, selection] of Object.entries(selections)) {
+    for (const [, selection] of Object.entries(selections)) {
       const { itemId, subId, variant } = selection;
       const meta = window.itemMetadata[itemId];
 
@@ -153,7 +152,6 @@ export async function renderCharacter(
 
           // Map folder name to metadata name for checking support
           // e.g., "combat_idle" -> check for "combat" or "1h_slash" in metadata
-          let metadataAnimName = animName;
           if (animName === "combat_idle") {
             // combat_idle is supported if item has "combat" in metadata
             if (!meta.animations.includes("combat")) continue;
@@ -301,7 +299,7 @@ export async function renderCharacter(
         // Load standard image
         return loadImage(item.spritePath)
           .then((img) => ({ item, img, success: true }))
-          .catch((err) => {
+          .catch(() => {
             if (window.DEBUG) {
               console.warn(`Failed to load sprite: ${item.spritePath}`);
             }
@@ -578,7 +576,6 @@ export async function renderSingleItem(
     // Add each animation for this layer
     for (const [animName, yPos] of Object.entries(ANIMATION_OFFSETS)) {
       // Check animation support (same logic as renderCharacter)
-      let metadataAnimName = animName;
       if (animName === "combat_idle") {
         if (!meta.animations.includes("combat")) continue;
       } else if (animName === "backslash") {
@@ -676,7 +673,7 @@ export async function renderSingleItemAnimation(
     return null;
   }
 
-  const { row, num } = config;
+  const { num } = config;
   const animYPos = 0;
   const animHeight = num * FRAME_SIZE;
 

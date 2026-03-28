@@ -280,7 +280,7 @@ export const exportSplitItemSheets = async () => {
     const failedItems = [];
 
     // Render each item individually
-    for (const [categoryPath, selection] of Object.entries(state.selections)) {
+    for (const [, selection] of Object.entries(state.selections)) {
       const { itemId, variant, name } = selection;
       const layers = getSortedLayers(itemId, true);
 
@@ -418,7 +418,7 @@ export const exportSplitItemAnimations = async () => {
       failedStandard[anim.value] = [];
 
       // Export each item for this animation
-      for (const [categoryPath, selection] of Object.entries(
+      for (const [, selection] of Object.entries(
         state.selections
       )) {
         const { itemId, variant, name } = selection;
@@ -783,9 +783,8 @@ function extractFramesFromCustomAnimation(animationCanvas, customAnimationDef, d
 		}
 
 		// Batch fetch image data for the entire row for better performance
-		let rowImageData;
 		try {
-			rowImageData = sourceCtx.getImageData(0, sourceY, animationCanvas.width, frameSize);
+			sourceCtx.getImageData(0, sourceY, animationCanvas.width, frameSize);
 		} catch (e) {
 			console.warn(`Failed to get image data for row ${dirIndex}:`, e);
 			continue;

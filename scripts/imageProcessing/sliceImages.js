@@ -141,12 +141,12 @@ files.forEach(function(sheetToProcess) {
         var isMasterSheet = false;
         if (masterSheet !== "") {
             if (fs.existsSync(`${directory}/${masterSheet}`)) {
-                execSync(`mv ${sheetToProcess} ${directory}/${masterSheet.replace(".png", "\/")}`, (err) => {
+                execSync(`mv ${sheetToProcess} ${directory}/${masterSheet.replace(".png", "/")}`, (err) => {
                     if (err) {
                         throw err;
                     }
                 });
-                sheetToProcess = `${directory}/${masterSheet.replace(".png", "\/")}${masterSheet}`;
+                sheetToProcess = `${directory}/${masterSheet.replace(".png", "/")}${masterSheet}`;
                 isMasterSheet = true;
             }
         }

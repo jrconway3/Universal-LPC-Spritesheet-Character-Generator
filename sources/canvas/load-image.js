@@ -1,6 +1,4 @@
 let loadedImages = {};
-let imagesToLoad = 0;
-let imagesLoaded = 0;
 
 /**
  * Load an image
@@ -21,7 +19,6 @@ export function loadImage(src) {
     const img = new Image();
     img.onload = () => {
       loadedImages[src] = img;
-      imagesLoaded++;
 
       // Mark end and measure
       if (profiler) {
@@ -33,11 +30,9 @@ export function loadImage(src) {
     };
     img.onerror = () => {
       console.error(`Failed to load image: ${src}`);
-      imagesLoaded++;
       reject(new Error(`Failed to load ${src}`));
     };
     img.src = src;
-    imagesToLoad++;
   });
 }
 
@@ -51,7 +46,7 @@ export async function loadImagesInParallel(items, getPath = (item) => item.sprit
   const promises = items.map(item =>
     loadImage(getPath(item))
       .then(img => ({ item, img, success: true }))
-      .catch(err => {
+      .catch(() => {
         if (window.DEBUG) {
           console.warn(`Failed to load sprite: ${getPath(item)}`);
         }
