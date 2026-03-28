@@ -96672,6 +96672,13 @@ window.itemMetadata = {
 };
 
 window.aliasMetadata = {
+  "wrinkes": {
+    "*": {
+      "typeName": "wrinkles",
+      "name": "*",
+      "variant": "*"
+    }
+  },
   "belt": {
     "Other_belts_formal": {
       "typeName": "belt",

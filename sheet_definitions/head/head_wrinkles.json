@@ -55,7 +55,7 @@
     ]
   },
   "aliases": {
-    "wrinkes=": "wrinkles="
+    "wrinkes=*": "wrinkles=*"
   },
   "type_name": "wrinkles"
 }

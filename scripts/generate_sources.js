@@ -166,8 +166,12 @@ function writeAliases(aliases, meta) {
     let targetName = '';
     let targetVariant = '';
 
+    // If Variant is *, Match Variant by Same Name as Original (for use in type name changes)
+    if (aliasVariant === "*" && aliasType) {
+      targetName = aliasVariant;
+      targetVariant = aliasVariant;
     // If Variant Exists, mark aliasVariant as the variant while grabbing the name from itemMetadata
-    if (meta.variants.indexOf(aliasVariant) !== -1) {
+    } else if (meta.variants.indexOf(aliasVariant) !== -1) {
       targetName = meta.name.replaceAll(" ", "_");
       targetVariant = aliasVariant;
     } else {
