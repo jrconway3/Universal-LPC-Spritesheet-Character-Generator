@@ -33,6 +33,7 @@ describe('AnimationFilters Component', () => {
     ];
     setAnimations(animationsStub);
 
+    // eslint-disable-next-line no-console
     alertStub = sinon.stub(window, 'alert').callsFake((message) => console.log('ALERT:', message));
   });
 

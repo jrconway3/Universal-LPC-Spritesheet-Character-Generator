@@ -17,7 +17,7 @@ const PreviewCanvas = {
 		const zoomLevel = vnode.attrs.zoomLevel || 1;
 
 		if (!window.canvasRenderer) {
-			console.warn('Canvas renderer not available yet');
+			console.error('Canvas renderer not available yet');
 			return;
 		}
 

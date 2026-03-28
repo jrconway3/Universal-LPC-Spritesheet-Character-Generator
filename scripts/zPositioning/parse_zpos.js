@@ -58,8 +58,9 @@ const csvToWrite = "json,layer,zPos,images\n" + csvEntries.sort().join("\n");
 
 fs.writeFile('scripts/zPositioning/z_positions.csv', csvToWrite, function(err) {
   if (err) {
-      return console.log(err);
+    return console.error(err);
   } else {
-      console.log('Updated z_positions.csv!');
+    // eslint-disable-next-line no-console
+    console.log('Updated z_positions.csv!');
   }
 });

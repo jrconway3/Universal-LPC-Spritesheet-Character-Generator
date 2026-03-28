@@ -1,6 +1,7 @@
 import { ANIMATIONS } from './constants.js';
 import { getHashParamsforSelections } from './hash.js';
 import { variantToFilename, es6DynamicTemplate } from '../utils/helpers.js';
+import { debugLog } from '../utils/debug.js';
 
 /**
  * Build sprite path from item metadata for a specific animation
@@ -53,10 +54,8 @@ export function replaceInPath(path, selections, meta) {
 			Object.entries(hashParams).map(([typeName, nameAndVariant]) => {
 				const name = getNameWithoutVariant(typeName, nameAndVariant);
 				const replacement = meta.replace_in_path[typeName]?.[name];
-				if (window.DEBUG) {
-					if (path.includes(`\${${typeName}}`) && !replacement) {
-						console.log(`Warning: No replacement found for ${typeName}="${name}" in path template.`);
-					}
+				if (path.includes(`\${${typeName}}`) && !replacement) {
+					debugLog(`Warning: No replacement found for ${typeName}="${name}" in path template.`);
 				}
 				return [typeName, replacement];
 			}),

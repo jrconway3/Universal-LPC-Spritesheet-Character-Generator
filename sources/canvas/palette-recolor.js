@@ -5,7 +5,7 @@ import {
   recolorImageWebGL,
   isWebGLAvailable,
 } from "./webgl-palette-recolor.js";
-import { getDebugParam } from "../main.js";
+import { debugLog, debugWarn } from "../utils/debug.js";
 import { get2DContext } from "./canvas-utils.js";
 import { state } from '../state/state.js';
 import { getLayersToLoad } from '../state/meta.js';
@@ -22,19 +22,16 @@ let config = {
 const USE_WEBGL = config.useWebGL && !config.forceCPU;
 
 // Log which method will be used
-const DEBUG = getDebugParam();
-if (DEBUG) {
-  if (USE_WEBGL) {
-    console.log("🎨 Palette recoloring: WebGL GPU-accelerated mode enabled");
-    console.log("💡 To check stats, run: window.getPaletteRecolorStats()");
-    console.log(
-      '💡 To force CPU mode, run: window.setPaletteRecolorMode("cpu")'
-    );
-  } else if (config.forceCPU) {
-    console.log("🎨 Palette recoloring: CPU mode (forced by configuration)");
-  } else {
-    console.log("🎨 Palette recoloring: CPU mode (WebGL not available)");
-  }
+if (USE_WEBGL) {
+  debugLog("🎨 Palette recoloring: WebGL GPU-accelerated mode enabled");
+  debugLog("💡 To check stats, run: window.getPaletteRecolorStats()");
+  debugLog(
+    '💡 To force CPU mode, run: window.setPaletteRecolorMode("cpu")'
+  );
+} else if (config.forceCPU) {
+  debugLog("🎨 Palette recoloring: CPU mode (forced by configuration)");
+} else {
+  debugLog("🎨 Palette recoloring: CPU mode (WebGL not available)");
 }
 
 /**
@@ -173,15 +170,16 @@ export function resetRecolorStats() {
 export function setPaletteRecolorMode(mode) {
   if (mode === "cpu") {
     config.forceCPU = true;
-    console.log("🎨 Switched to CPU mode (forced)");
+    debugLog("🎨 Switched to CPU mode (forced)");
   } else if (mode === "webgl") {
     if (config.useWebGL) {
       config.forceCPU = false;
-      console.log("🎨 Switched to WebGL mode");
+      debugLog("🎨 Switched to WebGL mode");
     } else {
-      console.warn("⚠️ WebGL not available on this browser");
+      debugWarn("⚠️ WebGL not available on this browser");
     }
   } else {
+     
     console.error('Invalid mode. Use "webgl" or "cpu"');
   }
 }
@@ -213,6 +211,7 @@ export function recolorImage(sourceImage, sourcePalette, targetPalette) {
       recolorStats.webgl++;
       return recolorImageWebGL(sourceImage, sourcePalette, targetPalette);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.warn("⚠️ WebGL recoloring failed, falling back to CPU:", error);
       recolorStats.fallback++;
       return recolorImageCPU(sourceImage, sourcePalette, targetPalette);
@@ -255,6 +254,7 @@ export async function getImageToDraw(img, itemId, recolors) {
     try {
       return await recolorWithPalette(img, recolors, paletteConfig);
     } catch (err) {
+       
       console.error(
         `Failed to recolor ${paletteConfig[meta.type_name].material} color ${JSON.stringify(recolors)}:`,
         err
@@ -336,8 +336,7 @@ export async function drawRecolorPreview(itemId, meta, canvas, selectedColors, r
       const img = new Image();
       img.onload = () => resolve({ img, layer });
       img.onerror = () => {
-        if (DEBUG)
-          console.warn(`Failed to load image for layer ${layer.path}`);
+        debugWarn(`Failed to load image for layer ${layer.path}`);
         resolve({ img: null, layer });
       }
       img.src = layer.path;

@@ -26,6 +26,7 @@ fs.readdirSync(SHEETS_DIR, {
           definition[`layer_${jdx}`].zPos = requiredZposition;
           try {
             fs.writeFileSync(fullPath, JSON.stringify(definition, null, 2));
+            // eslint-disable-next-line no-console
             console.log('Updated:', file.name);
           } catch(e) {
             return console.error(e);

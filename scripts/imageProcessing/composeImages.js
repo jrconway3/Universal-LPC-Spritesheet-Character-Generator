@@ -5,6 +5,7 @@
 
 const fs = require('fs');
 const { execSync } = require('child_process');
+const { debugLog } = require('../utils/debug.js');
 
 const walk = function(dir) {
     var results = [];
@@ -24,7 +25,7 @@ const walk = function(dir) {
 }
 const sheetsFolder = 'spritesheets';
 const walkDirectories = walk(sheetsFolder);
-console.log("file", walkDirectories);
+debugLog("file", walkDirectories);
 
 const masterSheetNames = [
     "spellcast", 
@@ -35,7 +36,7 @@ const masterSheetNames = [
     "hurt"
 ]
 walkDirectories.forEach(function(walkDirectory) {
-    console.log(`Start processing sheet: ${walkDirectory}`);
+    debugLog(`Start processing sheet: ${walkDirectory}`);
     const list = fs.readdirSync(walkDirectory + "/walk");
     var variants = [];
     list.forEach(function(file) {
@@ -43,7 +44,7 @@ walkDirectories.forEach(function(walkDirectory) {
             variants.push(file);
         }
     });
-    console.log("variants found", variants);
+    debugLog("variants found", variants);
 
     const universalFolder = `${walkDirectory}/_universal`;
     if (fs.existsSync(universalFolder)) {
@@ -57,11 +58,11 @@ walkDirectories.forEach(function(walkDirectory) {
             if (fs.existsSync(`${walkDirectory}/${animation}/${variant}`)) {
                 imagesToCompose.push(variantPath);
             } else {
-                console.log("variantPath does NOT exist", variantPath)
+                debugLog("variantPath does NOT exist", variantPath)
                 // TODO: Load a dummy here in order to preserve right sequence
             }
         });
-        console.log("composing images", imagesToCompose);
+        debugLog("composing images", imagesToCompose);
 
         const newFile = `${universalFolder}/${variant}`;
         const inputArguments = imagesToCompose.join(" ");

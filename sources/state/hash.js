@@ -1,5 +1,6 @@
 import { state, selectDefaults } from "./state.js";
 import { parseRecolorKey } from "./palettes.js";
+import { debugWarn } from "../utils/debug.js";
 
 // Dependency injection for testability
 export function getState() {
@@ -257,11 +258,9 @@ export function loadSelectionsFromHash(hashString = null) {
 
     if (!foundItemId) {
       skippedEntries[typeName] = nameAndVariant;
-      if (window.DEBUG) {
-        console.warn(
-          `No item found with type_name "${typeName}" and nameAndVariant "${nameAndVariant}"`,
-        );
-      }
+      debugWarn(
+        `No item found with type_name "${typeName}" and nameAndVariant "${nameAndVariant}"`,
+      );
       continue;
     }
 

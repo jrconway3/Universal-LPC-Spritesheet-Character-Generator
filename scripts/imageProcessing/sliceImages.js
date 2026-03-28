@@ -1,5 +1,6 @@
 const fs = require('fs');
 const { execSync } = require('child_process');
+const { debugLog } = require('../utils/debug.js');
 
 const universalFrameSize = 64;
 
@@ -112,7 +113,7 @@ const masterSheetNames = [
     "thin.png"
 ]
 files.forEach(function(sheetToProcess) {
-    console.log(`Start processing sheet: ${sheetToProcess}`);
+    debugLog(`Start processing sheet: ${sheetToProcess}`);
     const index = sheetToProcess.lastIndexOf('/');
     var directory = "";
     if (index > -1) {

@@ -1,5 +1,6 @@
 const fs = require('fs').promises; // Use promises-based fs for async operations
 const path = require('path');
+const { debugLog } = require('./utils/debug.js');
 const { promisify } = require('util');
 const exec = require('child_process').exec;
 const execAsync = promisify(exec);
@@ -32,7 +33,7 @@ function restoreMissingKeys(target, source) {
 }
 
 async function restoreKeysFromBranch(branchToCompare, filePath) {
-  console.log(`Restoring missing keys from '${branchToCompare}' into '${filePath}'...`);
+  debugLog(`Restoring missing keys from '${branchToCompare}' into '${filePath}'...`);
 
   try {
     // 1. Read the JSON file from the target branch.
@@ -68,11 +69,11 @@ async function walkAndModifyJson(directoryPath, updateFunction) {
       const stats = await fs.stat(filePath);
 
       if (stats.isDirectory()) {
-        console.log(`Entering directory: ${filePath}`);
+        debugLog(`Entering directory: ${filePath}`);
         await walkAndModifyJson(filePath, updateFunction); // Recurse into subdirectories
       } else if (stats.isFile() && path.extname(filePath) === '.json') {
         try {
-          console.log(`Processing file: ${filePath}`);
+          debugLog(`Processing file: ${filePath}`);
           const fileContent = await fs.readFile(filePath, 'utf8');
           let jsonData = JSON.parse(fileContent);
 
@@ -81,7 +82,7 @@ async function walkAndModifyJson(directoryPath, updateFunction) {
 
           // Write the updated JSON back to the file
           await fs.writeFile(filePath, JSON.stringify(jsonData, null, 2), 'utf8');
-          console.log(`Updated: ${filePath}`);
+          debugLog(`Updated: ${filePath}`);
         } catch (jsonError) {
           console.error(`Error processing JSON file ${filePath}:`, jsonError);
         }
@@ -106,5 +107,5 @@ const myUpdateFunction = async (data, filePath) => {
 
 // Call the function to start walking and modifying
 walkAndModifyJson(startDirectory, myUpdateFunction)
-  .then(() => console.log('Finished processing JSON files.'))
+  .then(() => debugLog('Finished processing JSON files.'))
   .catch((err) => console.error('An error occurred during the process:', err));

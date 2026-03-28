@@ -1,3 +1,5 @@
+import { debugWarn } from "../utils/debug.js";
+
 let loadedImages = {};
 
 /**
@@ -47,9 +49,7 @@ export async function loadImagesInParallel(items, getPath = (item) => item.sprit
     loadImage(getPath(item))
       .then(img => ({ item, img, success: true }))
       .catch(() => {
-        if (window.DEBUG) {
-          console.warn(`Failed to load sprite: ${getPath(item)}`);
-        }
+        debugWarn(`Failed to load sprite: ${getPath(item)}`);
         return { item, img: null, success: false };
       })
   );

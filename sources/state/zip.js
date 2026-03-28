@@ -22,6 +22,7 @@ import {
 import { getSortedLayers } from "./meta.js";
 import { get2DContext } from "../canvas/canvas-utils.js";
 import { getMultiRecolors } from '../state/palettes.js';
+import { debugLog, debugWarn } from '../utils/debug.js';
 
 // Helper to convert canvas to blob
 const canvasToBlob = (canvas) => {
@@ -59,7 +60,7 @@ function hasContentInRegion(ctx, x, y, width, height) {
     const imageData = ctx.getImageData(x, y, width, height);
     return imageData.data.some((pixel) => pixel !== 0);
   } catch (e) {
-    console.warn("Error checking region content:", e);
+    debugWarn("Error checking region content:", e);
     return false;
   }
 }
@@ -98,24 +99,20 @@ async function addAnimationToZipFolder(folder, fileName, srcCanvas, srcRect) {
     if (animCanvas) {
       const blob = await canvasToBlob(animCanvas);
       if (fileName.endsWith(".png")) {
-        if (window.DEBUG) {
-          console.log(
-            `Adding to ZIP: `,
-            `${folder.root}${fileName}`,
-            "size: ",
-            blob.size
-          );
-        }
+        debugLog(
+          `Adding to ZIP: `,
+          `${folder.root}${fileName}`,
+          "size: ",
+          blob.size
+        );
         folder.file(fileName, blob);
       } else {
-        if (window.DEBUG) {
-          console.log(
-            "Adding to ZIP: ",
-            `${folder.root}/${fileName}.png`,
-            "size: ",
-            blob.size
-          );
-        }
+        debugLog(
+          "Adding to ZIP: ",
+          `${folder.root}/${fileName}.png`,
+          "size: ",
+          blob.size
+        );
         folder.file(`${fileName}.png`, blob);
       }
       return animCanvas;
@@ -424,13 +421,12 @@ export const exportSplitItemAnimations = async () => {
         const { itemId, variant, name } = selection;
         const meta = window.itemMetadata[itemId];
         if (!meta || !meta.animations.includes(anim.value)) {
-          if (window.DEBUG)
-            console.log(
-              "Skipping item ",
-              itemId,
-              " without the animation: ",
-              anim.value
-            );
+          debugLog(
+            "Skipping item ",
+            itemId,
+            " without the animation: ",
+            anim.value
+          );
           continue;
         }
 
@@ -510,19 +506,17 @@ export const exportSplitItemAnimations = async () => {
       }
     }
 
-    if (window.DEBUG) console.log(customAreaItems);
+    debugLog(customAreaItems);
 
     for (const customAnimName of Object.keys(customAreaItems)) {
       // Export items exclusive to custom animations
       for (const layer of customAreaItems[customAnimName]) {
         const custName = layer.animation;
 
-        if (window.DEBUG) {
-          console.log(
-            "Processing layer for custom animation only export:",
-            layer
-          );
-        }
+        debugLog(
+          "Processing layer for custom animation only export:",
+          layer
+        );
 
         const spritePath = layer.spritePath;
         const itemFileName = getItemFileName(
@@ -537,11 +531,9 @@ export const exportSplitItemAnimations = async () => {
         const custFailedItems = failedCustom[custName] ?? [];
 
         try {
-          if (window.DEBUG) {
-            console.log(
-              `Exporting item ${itemFileName} for custom animation ${custName}`
-            );
-          }
+          debugLog(
+            `Exporting item ${itemFileName} for custom animation ${custName}`
+          );
           const img = await loadImage(spritePath, false);
           if (!img) continue;
 
@@ -727,13 +719,11 @@ function extractFramesFromCustomAnimation(animationCanvas, customAnimationDef, d
 	const frameSize = customAnimationDef.frameSize;
 	const animationFrames = customAnimationDef.frames;
 
-	if (window.DEBUG) {
-		console.log(`Extracting frames from custom animation:`, {
-			frameSize,
-			animationFrames,
-			canvasSize: { width: animationCanvas.width, height: animationCanvas.height }
-		});
-	}
+	debugLog(`Extracting frames from custom animation:`, {
+		frameSize,
+		animationFrames,
+		canvasSize: { width: animationCanvas.width, height: animationCanvas.height }
+	});
 
 	// Get animation canvas context once with willReadFrequently for better performance
 	const sourceCtx = animationCanvas.getContext('2d', { willReadFrequently: true });
@@ -768,9 +758,7 @@ function extractFramesFromCustomAnimation(animationCanvas, customAnimationDef, d
 	for (const direction of directions) {
 		const dirIndex = directionMap[direction];
 		if (dirIndex >= animationFrames.length) {
-			if (window.DEBUG) {
-				console.log(`Skipping direction ${direction} (index ${dirIndex}) - not enough rows in animation frames`);
-			}
+			debugLog(`Skipping direction ${direction} (index ${dirIndex}) - not enough rows in animation frames`);
 			continue;
 		}
 
@@ -778,15 +766,13 @@ function extractFramesFromCustomAnimation(animationCanvas, customAnimationDef, d
 		const frameRow = animationFrames[dirIndex];
 		const sourceY = dirIndex * frameSize;
 
-		if (window.DEBUG) {
-			console.log(`Processing direction ${direction} (row ${dirIndex}):`, frameRow);
-		}
+		debugLog(`Processing direction ${direction} (row ${dirIndex}):`, frameRow);
 
 		// Batch fetch image data for the entire row for better performance
 		try {
 			sourceCtx.getImageData(0, sourceY, animationCanvas.width, frameSize);
 		} catch (e) {
-			console.warn(`Failed to get image data for row ${dirIndex}:`, e);
+			debugWarn(`Failed to get image data for row ${dirIndex}:`, e);
 			continue;
 		}
 
@@ -813,9 +799,7 @@ function extractFramesFromCustomAnimation(animationCanvas, customAnimationDef, d
 				frameNumber: frameIndex + 1 // 1-based numbering
 			});
 
-			if (window.DEBUG) {
-				console.log(`Added frame ${frameIndex + 1} for direction ${direction}`);
-			}
+			debugLog(`Added frame ${frameIndex + 1} for direction ${direction}`);
 		}
 	}
 
@@ -916,13 +900,11 @@ export const exportIndividualFrames = async () => {
 				const custSize = customAnimationSize(customAnimDef);
 				const srcRect = { x: 0, y, ...custSize };
 
-				if (window.DEBUG) {
-					console.log(`Processing custom animation: ${animName}`, {
-						frameSize: customAnimDef.frameSize,
-						frames: customAnimDef.frames,
-						srcRect: srcRect
-					});
-				}
+				debugLog(`Processing custom animation: ${animName}`, {
+					frameSize: customAnimDef.frameSize,
+					frames: customAnimDef.frames,
+					srcRect: srcRect
+				});
 
 				// Extract custom animation from main canvas
 				const custAnimCanvas = newAnimationFromSheet(canvas, srcRect);
@@ -930,9 +912,7 @@ export const exportIndividualFrames = async () => {
 					const animFolder = customFolder.folder(animName);
 					const frames = extractFramesFromCustomAnimation(custAnimCanvas, customAnimDef, directions);
 
-					if (window.DEBUG) {
-						console.log(`Extracted frames for ${animName}:`, frames);
-					}
+					debugLog(`Extracted frames for ${animName}:`, frames);
 
 					for (const [direction, frameList] of Object.entries(frames)) {
 						if (frameList.length > 0) {
@@ -951,7 +931,7 @@ export const exportIndividualFrames = async () => {
 					}
 					exportedCustom.push(animName);
 				} else {
-					console.warn(`No canvas generated for custom animation: ${animName}`);
+					debugWarn(`No canvas generated for custom animation: ${animName}`);
 				}
 
 				y += srcRect.height;
@@ -962,7 +942,7 @@ export const exportIndividualFrames = async () => {
 		}
 
 		// Process all blob creation in parallel for much better performance
-		console.log(`Converting ${blobTasks.length} frames to blobs...`);
+		debugLog(`Converting ${blobTasks.length} frames to blobs...`);
 		const blobResults = await Promise.all(
 			blobTasks.map(async (task) => {
 				try {
@@ -981,13 +961,11 @@ export const exportIndividualFrames = async () => {
 			if (result.success && result.blob) {
 				result.folder.file(result.filename, result.blob);
 				successCount++;
-				if (window.DEBUG) {
-					console.log(`Added frame: ${result.debugPath}`);
-				}
+				debugLog(`Added frame: ${result.debugPath}`);
 			}
 		}
 
-		console.log(`Successfully processed ${successCount}/${blobTasks.length} frames`);
+		debugLog(`Successfully processed ${successCount}/${blobTasks.length} frames`);
 
 		// Add character.json at root
 		zip.file('character.json', exportStateAsJSON(state, layers));
@@ -1019,7 +997,7 @@ export const exportIndividualFrames = async () => {
 		creditsFolder.file('metadata.json', JSON.stringify(metadata, null, 2));
 
 		// Generate and download ZIP
-		console.log('Generating ZIP file...');
+		debugLog('Generating ZIP file...');
 		const zipBlob = await zip.generateAsync({ type: 'blob' });
 		const url = URL.createObjectURL(zipBlob);
 		const a = document.createElement('a');

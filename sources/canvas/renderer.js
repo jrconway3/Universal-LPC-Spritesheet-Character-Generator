@@ -19,6 +19,7 @@ import {
   setCustomAnimYPositions,
 } from "./preview-animation.js";
 import { getSortedLayersByAnim } from "../state/meta.js";
+import { debugWarn } from "../utils/debug.js";
 
 export const SHEET_HEIGHT = 3456; // Full universal sheet height
 export const SHEET_WIDTH = 832; // 13 frames * 64px
@@ -300,9 +301,7 @@ export async function renderCharacter(
         return loadImage(item.spritePath)
           .then((img) => ({ item, img, success: true }))
           .catch(() => {
-            if (window.DEBUG) {
-              console.warn(`Failed to load sprite: ${item.spritePath}`);
-            }
+            debugWarn(`Failed to load sprite: ${item.spritePath}`);
             return { item, img: null, success: false };
           });
       }

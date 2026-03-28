@@ -1,10 +1,13 @@
 const fs = require("fs");
 const path = require("path");
+const {
+	debugLog,
+	debugWarn
+} = require("./utils/debug.js");
 
 const SHEETS_DIR = "sheet_definitions" + path.sep;
 const PALETTES_DIR = "palette_definitions" + path.sep;
 
-const DEBUG = false; // change this to print debug log
 const onlyIfTemplate = false; // print debugging log only if there is a template
 
 require("child_process").fork("scripts/zPositioning/parse_zpos.js");
@@ -32,14 +35,12 @@ const categoryTree = { items: [], children: {} };
 
 function searchCredit(fileName, credits, origFileName) {
   if (credits.count <= 0) {
-    if (DEBUG)
-      console.error("no credits for filename:", fileName);
+    console.error("no credits for filename:", fileName);
     return undefined;
   }
   if (credits.count === 1) {
     if (!credits[0].file.includes(fileName)) {
-      if (DEBUG)
-        console.error("Wrong credit at filename:", fileName);
+      console.error("Wrong credit at filename:", fileName);
     }
     return undefined;
   }
@@ -58,7 +59,7 @@ function searchCredit(fileName, credits, origFileName) {
   const index = fileName.lastIndexOf("/");
   if (index > -1) {
     return searchCredit(fileName.substring(0, index), credits, origFileName);
-  } else if (DEBUG) {
+  } else {
     console.error(
       "missing credit after searching recursively filename:",
       origFileName
@@ -71,8 +72,8 @@ function searchCredit(fileName, credits, origFileName) {
 function parseCredits(fileName, credits, listCreditToUse, addedCreditsFor, sex, jdx) {
   let fileNameForCreditSearch = fileName;
   let imageFileName = '"' + fileName + '.png" ';
-  if (DEBUG && !onlyIfTemplate)
-    console.log(
+  if (!onlyIfTemplate)
+    debugLog(
       `Searching for credits to use for ${imageFileName} in ${fileNameForCreditSearch} for layer ${jdx}`
     );
 
@@ -81,8 +82,8 @@ function parseCredits(fileName, credits, listCreditToUse, addedCreditsFor, sex, 
     credits,
     fileNameForCreditSearch
   );
-  if (DEBUG && !onlyIfTemplate)
-    console.log(
+  if (!onlyIfTemplate)
+    debugLog(
       `file name set for ${sex} is ${imageFileName} for layer ${jdx}`
     );
 
@@ -120,15 +121,14 @@ function parseCredits(fileName, credits, listCreditToUse, addedCreditsFor, sex, 
 function parseTree(filePath, fileName) {
   // Get Full Path
   const fullPath = path.join(filePath, fileName);
-  if (DEBUG && !onlyIfTemplate)
-    console.log(`Parsing tree ${fullPath}`);
+  if (!onlyIfTemplate)
+    debugLog(`Parsing tree ${fullPath}`);
 
   let meta = null;
   try {
     meta = JSON.parse(fs.readFileSync(fullPath));
   } catch (e) {
-    if (DEBUG)
-      console.error("Error parsing json from category file ", fullPath);
+    console.error("Error parsing json from category file ", fullPath);
     throw e;
   }
 
@@ -191,8 +191,7 @@ function writeAliases(aliases, meta) {
 
     // Target Must Exist!
     if (!targetName || !targetVariant) {
-      if (DEBUG)
-        console.warn("Alias target does not exist for", alias);
+      debugWarn("Alias target does not exist for", alias);
       continue;
     }
 
@@ -217,16 +216,15 @@ function writeAliases(aliases, meta) {
 function parseJson(filePath, fileName) {
   const fullPath = path.join(filePath, fileName);
   const searchFileName = fileName.replace(".json", "");
-  if (DEBUG && !onlyIfTemplate)
-    console.log(`Parsing ${fullPath}`);
+  if (!onlyIfTemplate)
+    debugLog(`Parsing ${fullPath}`);
 
   // Read JSON Definition
   let definition = null;
   try {
     definition = JSON.parse(fs.readFileSync(fullPath));
   } catch (e) {
-    if (DEBUG)
-      console.error("Error parsing metadata JSON from file:", fullPath);
+    console.error("Error parsing metadata JSON from file:", fullPath);
     throw e;
   }
 
@@ -314,8 +312,7 @@ function parseJson(filePath, fileName) {
       const colorVariants = new Set();
       const materialMeta = paletteMetadata.materials[recolor.material];
       if (!materialMeta) {
-        if (DEBUG)
-          console.warn(`Material metadata not found for ${recolor.material}`);
+        debugWarn(`Material metadata not found for ${recolor.material}`);
         continue;
       }
       recolor.default = materialMeta.default;
@@ -453,8 +450,7 @@ palettes.forEach(file => {
     try {
       json = JSON.parse(fs.readFileSync(fullPath));
     } catch (e) {
-      if (DEBUG)
-        console.error(`Error parsing palette file json data: ${fullPath}`, e);
+      console.error(`Error parsing palette file json data: ${fullPath}`, e);
       throw e;
     }
 
@@ -506,7 +502,7 @@ files.forEach(file => {
     try {
       parsedResult = parseJson(file.parentPath, file.name);
     } catch (e) {
-      if (DEBUG && !onlyIfTemplate)
+      if (!onlyIfTemplate)
         console.error(`Error parsing sheet file json data: ${file.parentPath}`, e);
       return;
     }
@@ -621,6 +617,7 @@ fs.writeFile("CREDITS.csv", csvGenerated, function(err) {
   if (err) {
     return console.error(err);
   } else {
+    // eslint-disable-next-line no-console
     console.log("CSV Updated!");
     printArray(licensesFound, "Found licenses");
   }
@@ -643,6 +640,7 @@ fs.writeFile("item-metadata.js", metadataJS, function(err) {
   if (err) {
     return console.error(err);
   } else {
+    // eslint-disable-next-line no-console
     console.log("Item Metadata JS Updated!");
   }
 });
@@ -652,10 +650,10 @@ function printArray(array, label) {
     red: "\x1b[31m",
     reset: "\x1b[0m"
   };
-  console.log(`${label}: ${colors.red}[`);
+  debugLog(`${label}: ${colors.red}[`);
   array.sort();
   for (const item of array) {
-    console.log(`  "${item}",`);
+    debugLog(`  "${item}",`);
   }
-  console.log(`]${colors.reset}`);
+  debugLog(`]${colors.reset}`);
 }

@@ -1,5 +1,10 @@
 // Main entry point - initializes and mounts the Mithril application
 
+// Import debug first so `window.DEBUG` is set before other modules run.
+import { debugLog, getDebugParam } from './utils/debug.js';
+
+export { getDebugParam };
+
 // Import canvas renderer
 import * as canvasRenderer from './canvas/renderer.js';
 
@@ -15,11 +20,11 @@ import {
 window.getPaletteRecolorStats = () => {
 	const stats = getRecolorStats();
 	const total = stats.webgl + stats.cpu + stats.fallback;
-	console.log('📊 Palette Recolor Statistics:');
-	console.log(`  WebGL (GPU): ${stats.webgl} (${total ? (stats.webgl/total*100).toFixed(1) : 0}%)`);
-	console.log(`  CPU: ${stats.cpu} (${total ? (stats.cpu/total*100).toFixed(1) : 0}%)`);
-	console.log(`  Fallback: ${stats.fallback} (${total ? (stats.fallback/total*100).toFixed(1) : 0}%)`);
-	console.log(`  Total: ${total}`);
+	debugLog('📊 Palette Recolor Statistics:');
+	debugLog(`  WebGL (GPU): ${stats.webgl} (${total ? (stats.webgl/total*100).toFixed(1) : 0}%)`);
+	debugLog(`  CPU: ${stats.cpu} (${total ? (stats.cpu/total*100).toFixed(1) : 0}%)`);
+	debugLog(`  Fallback: ${stats.fallback} (${total ? (stats.fallback/total*100).toFixed(1) : 0}%)`);
+	debugLog(`  Total: ${total}`);
 	return stats;
 };
 window.resetPaletteRecolorStats = resetRecolorStats;
@@ -40,26 +45,6 @@ import { PerformanceProfiler } from './performance-profiler.js';
 
 // DEBUG mode will be turned on if on localhost and off in production
 // but this can be overridden by adding debug=(true|false) to the querystring.
-function boolMap() {
-	return {
-		true: true,
-		false: false
-	}
-}
-function bool(s) {
-	return boolMap()[s] ?? null;
-}
-function isLocalhost() {
-	return window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-}
-
-// Get debug parameter from URL query string
-export function getDebugParam() {
-	const urlParams = new URLSearchParams(window.location.search);
-	const debugParam = urlParams.get('debug');
-	return bool(debugParam) ?? isLocalhost();
-}
-
 export const DEBUG = getDebugParam();
 
 // Initialize performance profiler (uses same DEBUG flag as console logging)
@@ -69,9 +54,8 @@ export const profiler = new PerformanceProfiler({
 	logSlowOperations: true
 });
 
-// Always expose profiler and DEBUG flag globally for manual control
+// Always expose profiler globally for manual control (window.DEBUG is set in utils/debug.js)
 window.profiler = profiler;
-window.DEBUG = DEBUG;
 
 // Expose canvas renderer to global scope for compatibility
 window.canvasRenderer = canvasRenderer;

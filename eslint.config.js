@@ -17,7 +17,12 @@ const commonRules = {
 			caughtErrorsIgnorePattern: "^_",
 		},
 	],
-	"no-console": "warn",
+	"no-console": [
+		"error",
+		{
+			allow: ["error"],
+		},
+	],
 };
 
 module.exports = [

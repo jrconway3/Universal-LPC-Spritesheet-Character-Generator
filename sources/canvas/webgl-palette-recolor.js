@@ -2,6 +2,7 @@
 // Uses GPU shaders for fast color replacement
 
 import { get2DContext } from "./canvas-utils.js";
+import { debugLog } from "../utils/debug.js";
 
 // Shared WebGL resources for reuse
 let sharedGL = null;
@@ -260,9 +261,7 @@ function initSharedWebGL() {
   // Setup quad geometry once
   setupQuad(sharedGL, sharedProgram);
 
-  if (window.DEBUG) {
-    console.log("WebGL palette recoloring initialized (shared context)");
-  }
+  debugLog("WebGL palette recoloring initialized (shared context)");
 }
 
 /**

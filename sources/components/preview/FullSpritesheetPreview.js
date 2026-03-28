@@ -14,7 +14,7 @@ const SpritesheetCanvas = {
 		const zoomLevel = vnode.attrs.zoomLevel;
 
 		if (!window.canvasRenderer) {
-			console.warn('Canvas renderer not available yet');
+			console.error('Canvas renderer not available yet');
 			return;
 		}
 

@@ -1,3 +1,11 @@
+import {
+	debugLog,
+	debugWarn,
+	debugGroup,
+	debugGroupEnd,
+	debugTable,
+} from './utils/debug.js';
+
 /**
  * Performance Profiler for LPC Spritesheet Generator
  *
@@ -35,8 +43,8 @@ export class PerformanceProfiler {
 
     if (this.enabled) {
       this._initializeFPSMonitor();
-      console.log('📊 Performance Profiler enabled');
-      console.log('💡 Type "profiler.report()" in console for summary.');
+      debugLog('📊 Performance Profiler enabled');
+      debugLog('💡 Type "profiler.report()" in console for summary.');
     }
   }
 
@@ -47,8 +55,8 @@ export class PerformanceProfiler {
     if (!this.enabled) {
       this.enabled = true;
       this._initializeFPSMonitor();
-      console.log('📊 Performance Profiler enabled');
-      console.log('💡 Type "profiler.report()" in console for summary.');
+      debugLog('📊 Performance Profiler enabled');
+      debugLog('💡 Type "profiler.report()" in console for summary.');
     }
   }
 
@@ -58,7 +66,7 @@ export class PerformanceProfiler {
   disable() {
     if (this.enabled) {
       this.enabled = false;
-      console.log('📊 Performance Profiler disabled');
+      debugLog('📊 Performance Profiler disabled');
     }
   }
 
@@ -71,10 +79,10 @@ export class PerformanceProfiler {
     try {
       performance.mark(name);
       if (this.verbose) {
-        console.log(`🔵 Mark: ${name}`);
+        debugLog(`🔵 Mark: ${name}`);
       }
     } catch (e) {
-      console.warn('Performance.mark failed:', e);
+      debugWarn('Performance.mark failed:', e);
     }
   }
 
@@ -95,9 +103,9 @@ export class PerformanceProfiler {
 
         // Log slow operations
         if (this.logSlowOperations && duration > this.slowThresholdMs) {
-          console.warn(`⚠️ Slow operation: ${measureName} took ${duration.toFixed(2)}ms`);
+          debugWarn(`⚠️ Slow operation: ${measureName} took ${duration.toFixed(2)}ms`);
         } else if (this.verbose) {
-          console.log(`⏱️ ${measureName}: ${duration.toFixed(2)}ms`);
+          debugLog(`⏱️ ${measureName}: ${duration.toFixed(2)}ms`);
         }
 
         // Track in metrics
@@ -106,7 +114,7 @@ export class PerformanceProfiler {
         return duration;
       }
     } catch (e) {
-      console.warn('Performance.measure failed:', e);
+      debugWarn('Performance.measure failed:', e);
     }
 
     return null;
@@ -155,7 +163,7 @@ export class PerformanceProfiler {
 
       if (this.verbose) {
         const fpsEmoji = this.currentFps >= 55 ? '✅' : this.currentFps >= 30 ? '⚠️' : '❌';
-        console.log(`${fpsEmoji} FPS: ${this.currentFps}`);
+        debugLog(`${fpsEmoji} FPS: ${this.currentFps}`);
       }
 
       // Reset
@@ -190,37 +198,37 @@ export class PerformanceProfiler {
    */
   report() {
     if (!this.enabled) {
-      console.log('Performance profiler is disabled');
+      debugLog('Performance profiler is disabled');
       return;
     }
 
-    console.group('📊 Performance Report');
+    debugGroup('📊 Performance Report');
 
     // Summary by category
-    console.group('⏱️ Timing Summary');
+    debugGroup('⏱️ Timing Summary');
     for (const [category, data] of Object.entries(this.metrics)) {
       if (data.count > 0) {
         const avg = (data.totalTime / data.count).toFixed(2);
-        console.log(`${category}: ${data.count} ops, ${data.totalTime.toFixed(2)}ms total, ${avg}ms avg`);
+        debugLog(`${category}: ${data.count} ops, ${data.totalTime.toFixed(2)}ms total, ${avg}ms avg`);
       }
     }
-    console.groupEnd();
+    debugGroupEnd();
 
     // FPS
-    console.log(`\n🎬 Current FPS: ${this.currentFps}`);
+    debugLog(`\n🎬 Current FPS: ${this.currentFps}`);
 
     // Memory (Chrome only)
     const memory = this.getMemoryUsage();
     if (memory) {
-      console.group('💾 Memory Usage');
-      console.table(memory);
-      console.groupEnd();
+      debugGroup('💾 Memory Usage');
+      debugTable(memory);
+      debugGroupEnd();
     }
 
     // All measures
     const allMeasures = performance.getEntriesByType('measure');
     if (allMeasures.length > 0) {
-      console.group(`📏 All Measurements (${allMeasures.length} total)`);
+      debugGroup(`📏 All Measurements (${allMeasures.length} total)`);
 
       // Sort by duration
       const sorted = allMeasures
@@ -228,15 +236,15 @@ export class PerformanceProfiler {
         .sort((a, b) => b.duration - a.duration)
         .slice(0, 20); // Top 20
 
-      console.table(sorted.map(m => ({
+      debugTable(sorted.map(m => ({
         'Operation': m.name,
         'Duration (ms)': m.duration.toFixed(2)
       })));
-      console.groupEnd();
+      debugGroupEnd();
     }
 
-    console.log('\n💡 Tip: Open DevTools → Performance tab and click Record to see visual timeline');
-    console.groupEnd();
+    debugLog('\n💡 Tip: Open DevTools → Performance tab and click Record to see visual timeline');
+    debugGroupEnd();
   }
 
   /**
@@ -254,9 +262,9 @@ export class PerformanceProfiler {
         previews: { count: 0, totalTime: 0 },
         domUpdates: { count: 0, totalTime: 0 }
       };
-      console.log('🧹 Performance data cleared');
+      debugLog('🧹 Performance data cleared');
     } catch (e) {
-      console.warn('Failed to clear performance data:', e);
+      debugWarn('Failed to clear performance data:', e);
     }
   }
 }

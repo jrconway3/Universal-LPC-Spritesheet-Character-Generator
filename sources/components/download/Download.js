@@ -6,6 +6,7 @@ import { CollapsibleSection } from '../CollapsibleSection.js';
 import { downloadFile, downloadAsPNG } from '../../canvas/download.js';
 import { importStateFromJSON, exportStateAsJSON } from '../../state/json.js';
 import { exportSplitAnimations, exportSplitItemSheets, exportSplitItemAnimations, exportIndividualFrames } from '../../state/zip.js';
+import { debugLog } from '../../utils/debug.js';
 
 export const Download = {
 	view: function() {
@@ -14,7 +15,7 @@ export const Download = {
 			if (!window.canvasRenderer) return;
 			try {
 				const json = exportStateAsJSON(state, layers);
-				if (window.DEBUG) console.log(json);
+				debugLog(json);
 				await navigator.clipboard.writeText(json);
 				alert('Exported to clipboard!');
 			} catch (err) {
@@ -28,7 +29,7 @@ export const Download = {
 			if (!window.canvasRenderer) return;
 			try {
 				const json = await navigator.clipboard.readText();
-				if (window.DEBUG) console.log(json);
+				debugLog(json);
 				const imported = importStateFromJSON(json);
 				Object.assign(state, imported);
 
