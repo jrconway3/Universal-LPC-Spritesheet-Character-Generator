@@ -1675,7 +1675,7 @@ window.itemMetadata = {
   "head_wrinkles": {
     "name": "Wrinkles",
     "priority": 80,
-    "type_name": "wrinkes",
+    "type_name": "wrinkles",
     "required": [
       "male",
       "female",
