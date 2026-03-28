@@ -93518,109 +93518,6 @@ window.itemMetadata = {
       ]
     }
   },
-  "shield_heater_pattern": {
-    "name": "Heater shield pattern",
-    "priority": null,
-    "type_name": "shield_pattern",
-    "required": [
-      "male",
-      "female",
-      "muscular",
-      "pregnant"
-    ],
-    "animations": [
-      "spellcast",
-      "thrust",
-      "walk",
-      "slash",
-      "shoot",
-      "hurt",
-      "watering"
-    ],
-    "tags": [],
-    "required_tags": [],
-    "excluded_tags": [],
-    "path": [
-      "weapons",
-      "shields",
-      "heater",
-      "pattern",
-      "shield_heater_pattern"
-    ],
-    "replace_in_path": {},
-    "variants": [
-      "barry",
-      "bend",
-      "bend_sinister",
-      "bendy",
-      "bendy_sinister",
-      "bordure",
-      "chevron",
-      "chevron_inverted",
-      "chief",
-      "cross",
-      "fess",
-      "lozengy",
-      "paint",
-      "pale",
-      "pall",
-      "paly",
-      "per_bend",
-      "per_bend_sinister",
-      "per_chevron",
-      "per_chevron_inverted",
-      "per_fess",
-      "per_pale",
-      "per_saltire",
-      "quarterly",
-      "saltire"
-    ],
-    "layers": {
-      "layer_1": {
-        "zPos": 112,
-        "male": "shield/heater/pattern/universal/",
-        "muscular": "shield/heater/pattern/universal/",
-        "female": "shield/heater/pattern/universal/",
-        "pregnant": "shield/heater/pattern/universal/"
-      }
-    },
-    "credits": [
-      {
-        "file": "shield/heater/pattern/universal",
-        "notes": "",
-        "authors": [
-          "bluecarrot16",
-          "Sander Frenken (castelonia)"
-        ],
-        "licenses": [
-          "OGA-BY 3.0"
-        ],
-        "urls": [
-          "https://opengameart.org/content/lpc-shields"
-        ]
-      }
-    ],
-    "preview_row": 2,
-    "preview_column": 0,
-    "preview_x_offset": 0,
-    "preview_y_offset": 0,
-    "matchBodyColor": false,
-    "recolors": [],
-    "licenses": {
-      "male": [
-        "OGA-BY 3.0"
-      ],
-      "female": [
-        "OGA-BY 3.0"
-      ],
-      "muscular": [
-        "OGA-BY 3.0"
-      ],
-      "pregnant": [
-        "OGA-BY 3.0"
-      ]
-    }
-  },
   "shield_heater_revised_pattern_barry": {
     "name": "revised_barry",
     "priority": null,
@@ -98459,7 +98356,6 @@ window.categoryTree = {
                     "shield_heater_pattern_chief",
                     "shield_heater_pattern_cross",
                     "shield_heater_pattern_fess",
-                    "shield_heater_pattern",
                     "shield_heater_pattern_lozengy",
                     "shield_heater_pattern_pale",
                     "shield_heater_pattern_pall",
