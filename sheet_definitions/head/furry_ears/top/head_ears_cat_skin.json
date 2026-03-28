@@ -2,21 +2,21 @@
   "name": "Cat Ears Skintone",
   "layer_1": {
     "zPos": 131,
-    "male": "head/ears/cat/skin/adult_front/",
-    "muscular": "head/ears/cat/skin/adult_front/",
-    "female": "head/ears/cat/skin/adult_front/",
-    "teen": "head/ears/cat/skin/adult_front/",
-    "pregnant": "head/ears/cat/skin/adult_front/",
-    "child": "head/ears/cat/skin/child_front/"
+    "male": "head/ears/cat/skin/adult/fg/",
+    "muscular": "head/ears/cat/skin/adult/fg/",
+    "female": "head/ears/cat/skin/adult/fg/",
+    "teen": "head/ears/cat/skin/adult/fg/",
+    "pregnant": "head/ears/cat/skin/adult/fg/",
+    "child": "head/ears/cat/skin/child/fg/"
   },
   "layer_2": {
     "zPos": 9,
-    "male": "head/ears/cat/skin/adult_back/",
-    "muscular": "head/ears/cat/skin/adult_back/",
-    "female": "head/ears/cat/skin/adult_back/",
-    "pregnant": "head/ears/cat/skin/adult_back/",
-    "teen": "head/ears/cat/skin/adult_back/",
-    "child": "head/ears/cat/skin/child_back/"
+    "male": "head/ears/cat/skin/adult/bg/",
+    "muscular": "head/ears/cat/skin/adult/bg/",
+    "female": "head/ears/cat/skin/adult/bg/",
+    "pregnant": "head/ears/cat/skin/adult/bg/",
+    "teen": "head/ears/cat/skin/adult/bg/",
+    "child": "head/ears/cat/skin/child/bg/"
   },
   "match_body_color": true,
   "animations": [

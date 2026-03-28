@@ -2,21 +2,21 @@
   "name": "Wolf Ears Skintone",
   "layer_1": {
     "zPos": 131,
-    "male": "head/ears/wolf/skin/adult_front/",
-    "muscular": "head/ears/wolf/skin/adult_front/",
-    "female": "head/ears/wolf/skin/adult_front/",
-    "teen": "head/ears/wolf/skin/adult_front/",
-    "pregnant": "head/ears/wolf/skin/adult_front/",
-    "child": "head/ears/wolf/skin/child_front/"
+    "male": "head/ears/wolf/skin/adult/fg/",
+    "muscular": "head/ears/wolf/skin/adult/fg/",
+    "female": "head/ears/wolf/skin/adult/fg/",
+    "teen": "head/ears/wolf/skin/adult/fg/",
+    "pregnant": "head/ears/wolf/skin/adult/fg/",
+    "child": "head/ears/wolf/skin/child/fg/"
   },
   "layer_2": {
     "zPos": 9,
-    "male": "head/ears/wolf/skin/adult_back/",
-    "muscular": "head/ears/wolf/skin/adult_back/",
-    "female": "head/ears/wolf/skin/adult_back/",
-    "pregnant": "head/ears/wolf/skin/adult_back/",
-    "teen": "head/ears/wolf/skin/adult_back/",
-    "child": "head/ears/wolf/skin/child_back/"
+    "male": "head/ears/wolf/skin/adult/bg/",
+    "muscular": "head/ears/wolf/skin/adult/bg/",
+    "female": "head/ears/wolf/skin/adult/bg/",
+    "pregnant": "head/ears/wolf/skin/adult/bg/",
+    "teen": "head/ears/wolf/skin/adult/bg/",
+    "child": "head/ears/wolf/skin/child/bg/"
   },
   "match_body_color": true,
   "animations": [
