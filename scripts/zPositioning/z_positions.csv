@@ -66,20 +66,9 @@ dress_kimono_split_trim,layer_1,31,dress/kimono/split/trim/universal/female/
 dress_kimono_trim,layer_1,31,dress/kimono/normal/trim/universal/female/
 dress_sash,layer_1,30,dress/sash/female/
 dress_slit,layer_1,30,dress/slit/female/
-eye_color,layer_1,105,eyes/human/${head}/${expression}/ eyes/human/${head}/${expression}/ eyes/human/${head}/${expression}/ eyes/human/${head}/${expression}/ eyes/human/child/${expression}/
 eyebrows_thick,layer_1,106,eyes/eyebrows/thick/adult/ eyes/eyebrows/thick/adult/ eyes/eyebrows/thick/adult/ eyes/eyebrows/thick/adult/ eyes/eyebrows/thick/child/
 eyebrows_thin,layer_1,106,eyes/eyebrows/thin/adult/ eyes/eyebrows/thin/adult/ eyes/eyebrows/thin/adult/ eyes/eyebrows/thin/adult/ eyes/eyebrows/thin/child/
-eyes_child,layer_1,105,eyes/human/child/
 eyes_cyclops,layer_1,105,eyes/cyclops/adult/ eyes/cyclops/adult/ eyes/cyclops/adult/ eyes/cyclops/adult/ eyes/cyclops/child/
-eyes_elderly_anger,layer_1,105,eyes/human/elderly/anger/ eyes/human/elderly/anger/ eyes/human/elderly/anger/ eyes/human/elderly/anger/
-eyes_elderly_closing,layer_1,105,eyes/human/elderly/closing/ eyes/human/elderly/closing/ eyes/human/elderly/closing/ eyes/human/elderly/closing/
-eyes_elderly_default,layer_1,105,eyes/human/elderly/default/ eyes/human/elderly/default/ eyes/human/elderly/default/ eyes/human/elderly/default/
-eyes_elderly_eyeroll,layer_1,105,eyes/human/elderly/eyeroll/ eyes/human/elderly/eyeroll/ eyes/human/elderly/eyeroll/ eyes/human/elderly/eyeroll/
-eyes_elderly_look_l,layer_1,105,eyes/human/elderly/look_l/ eyes/human/elderly/look_l/ eyes/human/elderly/look_l/ eyes/human/elderly/look_l/
-eyes_elderly_look_r,layer_1,105,eyes/human/elderly/look_r/ eyes/human/elderly/look_r/ eyes/human/elderly/look_r/ eyes/human/elderly/look_r/
-eyes_elderly_sad,layer_1,105,eyes/human/elderly/sad/ eyes/human/elderly/sad/ eyes/human/elderly/sad/ eyes/human/elderly/sad/
-eyes_elderly_shame,layer_1,105,eyes/human/elderly/shame/ eyes/human/elderly/shame/ eyes/human/elderly/shame/ eyes/human/elderly/shame/
-eyes_elderly_shock,layer_1,105,eyes/human/elderly/shock/ eyes/human/elderly/shock/ eyes/human/elderly/shock/ eyes/human/elderly/shock/
 face_angry,layer_1,101,head/faces/${head}/anger/ head/faces/${head}/anger/ head/faces/${head}/anger/ head/faces/${head}/anger/
 face_angry2,layer_1,106,head/faces/global/angry2/ head/faces/global/angry2/ head/faces/global/angry2/ head/faces/global/angry2/
 face_blush,layer_1,101,head/faces/${head}/blush/ head/faces/${head}/blush/ head/faces/${head}/blush/ head/faces/${head}/blush/
@@ -392,8 +381,8 @@ head_ears_avyon_skin,layer_1,127,head/ears/avyon/skin/adult/ head/ears/avyon/ski
 head_ears_big,layer_1,105,head/ears/big/adult/ head/ears/big/adult/ head/ears/big/adult/ head/ears/big/adult/ head/ears/big/child/
 head_ears_cat,layer_1,130,head/ears/cat/adult_front/ head/ears/cat/adult_front/ head/ears/cat/adult_front/ head/ears/cat/adult_front/ head/ears/cat/child_front/
 head_ears_cat,layer_2,8,head/ears/cat/adult_back/ head/ears/cat/adult_back/ head/ears/cat/adult_back/ head/ears/cat/adult_back/ head/ears/cat/child_back/
-head_ears_cat_skin,layer_1,131,head/ears/cat/skin/adult_front/ head/ears/cat/skin/adult_front/ head/ears/cat/skin/adult_front/ head/ears/cat/skin/adult_front/ head/ears/cat/skin/child_front/
-head_ears_cat_skin,layer_2,9,head/ears/cat/skin/adult_back/ head/ears/cat/skin/adult_back/ head/ears/cat/skin/adult_back/ head/ears/cat/skin/adult_back/ head/ears/cat/skin/child_back/
+head_ears_cat_skin,layer_1,131,head/ears/cat/skin/adult/fg/ head/ears/cat/skin/adult/fg/ head/ears/cat/skin/adult/fg/ head/ears/cat/skin/adult/fg/ head/ears/cat/skin/child/fg/
+head_ears_cat_skin,layer_2,9,head/ears/cat/skin/adult/bg/ head/ears/cat/skin/adult/bg/ head/ears/cat/skin/adult/bg/ head/ears/cat/skin/adult/bg/ head/ears/cat/skin/child/bg/
 head_ears_down,layer_1,126,head/ears/down/adult/ head/ears/down/adult/ head/ears/down/adult/ head/ears/down/adult/ head/ears/down/child/
 head_ears_dragon,layer_1,126,head/ears/dragon/adult/ head/ears/dragon/adult/ head/ears/dragon/adult/ head/ears/dragon/adult/ head/ears/dragon/child/
 head_ears_elven,layer_1,126,head/ears/elven/adult/ head/ears/elven/adult/ head/ears/elven/adult/ head/ears/elven/adult/ head/ears/elven/child/
@@ -404,8 +393,8 @@ head_ears_lykon_skin,layer_1,127,head/ears/lykon/skin/adult/ head/ears/lykon/ski
 head_ears_medium,layer_1,126,head/ears/medium/adult/ head/ears/medium/adult/ head/ears/medium/adult/ head/ears/medium/adult/ head/ears/medium/child/
 head_ears_wolf,layer_1,130,head/ears/wolf/adult_front/ head/ears/wolf/adult_front/ head/ears/wolf/adult_front/ head/ears/wolf/adult_front/ head/ears/wolf/child_front/
 head_ears_wolf,layer_2,8,head/ears/wolf/adult_back/ head/ears/wolf/adult_back/ head/ears/wolf/adult_back/ head/ears/wolf/adult_back/ head/ears/wolf/child_back/
-head_ears_wolf_skin,layer_1,131,head/ears/wolf/skin/adult_front/ head/ears/wolf/skin/adult_front/ head/ears/wolf/skin/adult_front/ head/ears/wolf/skin/adult_front/ head/ears/wolf/skin/child_front/
-head_ears_wolf_skin,layer_2,9,head/ears/wolf/skin/adult_back/ head/ears/wolf/skin/adult_back/ head/ears/wolf/skin/adult_back/ head/ears/wolf/skin/adult_back/ head/ears/wolf/skin/child_back/
+head_ears_wolf_skin,layer_1,131,head/ears/wolf/skin/adult/fg/ head/ears/wolf/skin/adult/fg/ head/ears/wolf/skin/adult/fg/ head/ears/wolf/skin/adult/fg/ head/ears/wolf/skin/child/fg/
+head_ears_wolf_skin,layer_2,9,head/ears/wolf/skin/adult/bg/ head/ears/wolf/skin/adult/bg/ head/ears/wolf/skin/adult/bg/ head/ears/wolf/skin/adult/bg/ head/ears/wolf/skin/child/bg/
 head_ears_zabos,layer_1,126,head/ears/zabos/adult/ head/ears/zabos/adult/ head/ears/zabos/adult/ head/ears/zabos/adult/ head/ears/zabos/child/
 head_ears_zabos_skin,layer_1,127,head/ears/zabos/skin/adult/ head/ears/zabos/skin/adult/ head/ears/zabos/skin/adult/ head/ears/zabos/skin/adult/ head/ears/zabos/skin/child/
 head_fins_fin,layer_1,125,head/fins/fin/adult/ head/fins/fin/adult/ head/fins/fin/adult/ head/fins/fin/adult/ head/fins/fin/child/
