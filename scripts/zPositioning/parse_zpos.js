@@ -1,33 +1,35 @@
-const fs = require('fs');
+const fs = require("fs");
 const path = require("path");
 const SHEETS_DIR = "sheet_definitions" + path.sep;
 
 var csvEntries = [];
-const possibleBodies = ["male", "female", "muscular", "pregnant","child"];
+const possibleBodies = ["male", "female", "muscular", "pregnant", "child"];
 
 // Read sheet_definitions/* recursively line by line recursively and extract zPos and image references to write to csv
-const files = fs.readdirSync(SHEETS_DIR, { 
-  recursive: true,
-  withFileTypes: true 
-}).sort((a, b) => {
-  const pa = path.join(a.parentPath, a.name);
-  const pb = path.join(b.parentPath, b.name);
+const files = fs
+  .readdirSync(SHEETS_DIR, {
+    recursive: true,
+    withFileTypes: true,
+  })
+  .sort((a, b) => {
+    const pa = path.join(a.parentPath, a.name);
+    const pb = path.join(b.parentPath, b.name);
 
-  const depthA = pa.split(path.sep).length;
-  const depthB = pb.split(path.sep).length;
-  if (depthA !== depthB) return depthA - depthB;
+    const depthA = pa.split(path.sep).length;
+    const depthB = pb.split(path.sep).length;
+    if (depthA !== depthB) return depthA - depthB;
 
-  return pa.localeCompare(pb, ["en"]);
-});
+    return pa.localeCompare(pb, ["en"]);
+  });
 
-files.forEach(file => {
-  if (!file.name.includes('.json') || file.isDirectory()) {
-    return
+files.forEach((file) => {
+  if (!file.name.includes(".json") || file.isDirectory()) {
+    return;
   }
   const fullPath = path.join(file.parentPath, file.name);
-  const json = file.name.replace('.json', '');
+  const json = file.name.replace(".json", "");
   const definition = JSON.parse(fs.readFileSync(fullPath));
-  for (let jdx =1; jdx < 10; jdx++) {
+  for (let jdx = 1; jdx < 10; jdx++) {
     const layerDefinition = definition[`layer_${jdx}`];
     if (layerDefinition !== undefined) {
       const layer = `layer_${jdx}`;
@@ -40,27 +42,31 @@ files.forEach(file => {
         const imageRef = layerDefinition[`${body}`];
         if (imageRef !== undefined) {
           if (!firstImage) {
-            images += " "
+            images += " ";
           }
           images += imageRef;
           firstImage = false;
         }
-        bodyIndex+=1;
+        bodyIndex += 1;
       }
-      csvEntries.push(`${json},${layer},${zPos},${images}`)
+      csvEntries.push(`${json},${layer},${zPos},${images}`);
     } else {
-      return
+      return;
     }
   }
 });
 
 const csvToWrite = "json,layer,zPos,images\n" + csvEntries.sort().join("\n");
 
-fs.writeFile('scripts/zPositioning/z_positions.csv', csvToWrite, function(err) {
-  if (err) {
-    return console.error(err);
-  } else {
-    // eslint-disable-next-line no-console
-    console.log('Updated z_positions.csv!');
-  }
-});
+fs.writeFile(
+  "scripts/zPositioning/z_positions.csv",
+  csvToWrite,
+  function (err) {
+    if (err) {
+      return console.error(err);
+    } else {
+      // eslint-disable-next-line no-console
+      console.log("Updated z_positions.csv!");
+    }
+  },
+);

@@ -83,7 +83,12 @@ export function setHashParams(params) {
   setHash(hash);
 }
 
-export function buildNewSelection(foundItemId, matchedVariant, matchedRecolor, subId = null) {
+export function buildNewSelection(
+  foundItemId,
+  matchedVariant,
+  matchedRecolor,
+  subId = null,
+) {
   // Get Meta Data for Item ID
   const meta = window.itemMetadata[foundItemId];
   const subMeta = meta.recolors?.[subId ?? 0];
@@ -92,22 +97,26 @@ export function buildNewSelection(foundItemId, matchedVariant, matchedRecolor, s
   let newSelection = {
     itemId: foundItemId,
     subId,
-    variant: matchedVariant || (matchedRecolor != "" ? "" : meta.variants?.[0] || ""),
-    recolor: matchedRecolor || ((meta.variants?.length ?? 0) === 0 ? subMeta?.variants[0] || "" : ""),
-    name: subId ? subMeta?.label : meta.name
+    variant:
+      matchedVariant || (matchedRecolor != "" ? "" : meta.variants?.[0] || ""),
+    recolor:
+      matchedRecolor ||
+      ((meta.variants?.length ?? 0) === 0 ? subMeta?.variants[0] || "" : ""),
+    name: subId ? subMeta?.label : meta.name,
   };
 
   if (newSelection.variant || newSelection.recolor) {
     let recolorLabel = newSelection.recolor;
     if (recolorLabel) {
       const [, ver, recolor] = parseRecolorKey(newSelection.recolor, subMeta);
-      recolorLabel = (ver !== subMeta?.default ? `${ver} ${recolor}` : recolor);
+      recolorLabel = ver !== subMeta?.default ? `${ver} ${recolor}` : recolor;
     }
-    newSelection.name += " (" +
+    newSelection.name +=
+      " (" +
       (newSelection.variant ? `${newSelection.variant}` : "") +
       (newSelection.variant && newSelection.recolor ? " | " : "") +
       (newSelection.recolor ? `${recolorLabel}` : "") +
-    ")";
+      ")";
   }
   return newSelection;
 }
@@ -125,7 +134,9 @@ export function getHashParamsforSelections(selections) {
     if (!meta || !meta.type_name) {
       // Check if an alias is overriding this entry (e.g., "sash=Waistband_rose" instead of "waistband=Waistband_rose")
       const name = selection.name.split(" (")[0]; // Get base name without variant (e.g., "Waistband" from "Waistband (rose)")
-      const nameAndVariant = name.replaceAll(" ", "_") + (selection.variant ? `_${selection.variant}` : "");
+      const nameAndVariant =
+        name.replaceAll(" ", "_") +
+        (selection.variant ? `_${selection.variant}` : "");
       const aliasMeta = window.aliasMetadata?.[typeName]?.[nameAndVariant];
       if (!aliasMeta || !aliasMeta.typeName) continue;
 
@@ -143,9 +154,10 @@ export function getHashParamsforSelections(selections) {
 
       const variantPart = selection.variant ?? "";
       const recolorPart = selection.recolor ?? "";
-      const uscorePart = (variantPart || recolorPart) ? "_" : "";
-      const splitPart = (variantPart && recolorPart) ? "|" : "";
-      const value = namePart + uscorePart + variantPart + splitPart + recolorPart;
+      const uscorePart = variantPart || recolorPart ? "_" : "";
+      const splitPart = variantPart && recolorPart ? "|" : "";
+      const value =
+        namePart + uscorePart + variantPart + splitPart + recolorPart;
 
       params[key] = value;
     }
@@ -201,7 +213,7 @@ export function loadSelectionsFromHash(hashString = null) {
     let foundItemId = null;
     let matchedVariant = "";
     let matchedRecolor = "";
-  
+
     // Split on underscores and try different combinations
     const parts = nameAndVariant.split("_");
 
@@ -232,8 +244,12 @@ export function loadSelectionsFromHash(hashString = null) {
           }
           if (meta.recolors?.[0]?.variants.length > 0) {
             for (const variant of meta.recolors[0].variants) {
-              if ((recolorToMatch !== "" && variant.toLowerCase() === recolorToMatch.toLowerCase()) ||
-                  (recolorToMatch === "" && variant.toLowerCase() === variantToMatch.toLowerCase())) {
+              if (
+                (recolorToMatch !== "" &&
+                  variant.toLowerCase() === recolorToMatch.toLowerCase()) ||
+                (recolorToMatch === "" &&
+                  variant.toLowerCase() === variantToMatch.toLowerCase())
+              ) {
                 foundItemId = itemId;
                 matchedVariant = "";
                 matchedRecolor = variant;
@@ -265,7 +281,11 @@ export function loadSelectionsFromHash(hashString = null) {
     }
 
     // Use type_name as selection group
-    newSelections[typeName] = buildNewSelection(foundItemId, matchedVariant, matchedRecolor);
+    newSelections[typeName] = buildNewSelection(
+      foundItemId,
+      matchedVariant,
+      matchedRecolor,
+    );
   }
 
   // Check if Skipped Entries Are Sub-Items!

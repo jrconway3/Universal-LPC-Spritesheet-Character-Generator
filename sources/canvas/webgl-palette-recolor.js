@@ -168,7 +168,7 @@ function createPaletteTexture(gl, sourcePalette, targetPalette) {
     0,
     gl.RGBA,
     gl.UNSIGNED_BYTE,
-    data
+    data,
   );
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
@@ -298,7 +298,7 @@ export function recolorImageWebGL(sourceImage, sourcePalette, targetPalette) {
     const paletteTexture = createPaletteTexture(
       gl,
       sourcePalette,
-      targetPalette
+      targetPalette,
     );
 
     // Set uniforms
@@ -306,7 +306,7 @@ export function recolorImageWebGL(sourceImage, sourcePalette, targetPalette) {
     const paletteLocation = gl.getUniformLocation(sharedProgram, "u_palette");
     const paletteSizeLocation = gl.getUniformLocation(
       sharedProgram,
-      "u_paletteSize"
+      "u_paletteSize",
     );
 
     gl.uniform1i(imageLocation, 0);

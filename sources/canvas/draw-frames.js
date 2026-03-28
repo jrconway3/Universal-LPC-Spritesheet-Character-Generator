@@ -17,7 +17,7 @@ export function drawFrameToFrame(
   destFrameSize,
   src,
   srcPos,
-  srcFrameSize
+  srcFrameSize,
 ) {
   if (srcFrameSize === destFrameSize) {
     // Same size - direct copy
@@ -30,7 +30,7 @@ export function drawFrameToFrame(
       destPos.x,
       destPos.y,
       destFrameSize,
-      destFrameSize
+      destFrameSize,
     );
   } else {
     // Different sizes - center the source frame in the destination without scaling
@@ -45,7 +45,7 @@ export function drawFrameToFrame(
       destPos.x + offset,
       destPos.y + offset,
       srcFrameSize,
-      srcFrameSize // dest rect (centered, not scaled)
+      srcFrameSize, // dest rect (centered, not scaled)
     );
   }
 }
@@ -61,7 +61,7 @@ export function drawFramesToCustomAnimation(
   customAnimationContext,
   customAnimationDefinition,
   offsetY,
-  src
+  src,
 ) {
   const frameSize = customAnimationDefinition.frameSize;
 
@@ -99,7 +99,7 @@ export function drawFramesToCustomAnimation(
         frameSize, // dest frame size
         src,
         { x: srcX, y: srcY }, // source position
-        FRAME_SIZE // source frame size (64px)
+        FRAME_SIZE, // source frame size (64px)
       );
     }
   }

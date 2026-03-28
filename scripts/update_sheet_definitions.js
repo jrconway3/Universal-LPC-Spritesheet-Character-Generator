@@ -1,11 +1,11 @@
-const fs = require('fs').promises; // Use promises-based fs for async operations
-const path = require('path');
-const { debugLog } = require('./utils/debug.js');
-const { promisify } = require('util');
-const exec = require('child_process').exec;
+const fs = require("fs").promises; // Use promises-based fs for async operations
+const path = require("path");
+const { debugLog } = require("./utils/debug.js");
+const { promisify } = require("util");
+const exec = require("child_process").exec;
 const execAsync = promisify(exec);
 
-const otherBranch = 'master';
+const otherBranch = "master";
 
 // Function to get the content of a file from a specific branch
 async function getFileContentFromBranch(branch, filePath) {
@@ -14,7 +14,7 @@ async function getFileContentFromBranch(branch, filePath) {
     return JSON.parse(stdout);
   } catch (error) {
     // If the file doesn't exist on the other branch, return an empty object.
-    if (error.message.includes('exists on disk, but not in')) {
+    if (error.message.includes("exists on disk, but not in")) {
       return {};
     }
     throw error;
@@ -33,32 +33,36 @@ function restoreMissingKeys(target, source) {
 }
 
 async function restoreKeysFromBranch(branchToCompare, filePath) {
-  debugLog(`Restoring missing keys from '${branchToCompare}' into '${filePath}'...`);
+  debugLog(
+    `Restoring missing keys from '${branchToCompare}' into '${filePath}'...`,
+  );
 
   try {
     // 1. Read the JSON file from the target branch.
-    const sourceContent = await getFileContentFromBranch(branchToCompare, filePath);
+    const sourceContent = await getFileContentFromBranch(
+      branchToCompare,
+      filePath,
+    );
 
     // 2. Read the local version of the JSON file.
     let targetContent = {};
     try {
-      const targetFile = await fs.readFile(filePath, 'utf-8');
+      const targetFile = await fs.readFile(filePath, "utf-8");
       targetContent = JSON.parse(targetFile);
     } catch (err) {
-      if (err.code !== 'ENOENT') {
+      if (err.code !== "ENOENT") {
         throw err;
       }
     }
 
     // 3. Restore any keys present in the source but missing in the target.
     const restoredContent = restoreMissingKeys(targetContent, sourceContent);
-  
+
     return restoredContent;
   } catch (error) {
-    console.error('Error during key restoration:', error);
+    console.error("Error during key restoration:", error);
   }
 }
-
 
 async function walkAndModifyJson(directoryPath, updateFunction) {
   try {
@@ -71,17 +75,21 @@ async function walkAndModifyJson(directoryPath, updateFunction) {
       if (stats.isDirectory()) {
         debugLog(`Entering directory: ${filePath}`);
         await walkAndModifyJson(filePath, updateFunction); // Recurse into subdirectories
-      } else if (stats.isFile() && path.extname(filePath) === '.json') {
+      } else if (stats.isFile() && path.extname(filePath) === ".json") {
         try {
           debugLog(`Processing file: ${filePath}`);
-          const fileContent = await fs.readFile(filePath, 'utf8');
+          const fileContent = await fs.readFile(filePath, "utf8");
           let jsonData = JSON.parse(fileContent);
 
           // Apply the update function to the JSON data
-          jsonData = await updateFunction(jsonData, filePath); 
+          jsonData = await updateFunction(jsonData, filePath);
 
           // Write the updated JSON back to the file
-          await fs.writeFile(filePath, JSON.stringify(jsonData, null, 2), 'utf8');
+          await fs.writeFile(
+            filePath,
+            JSON.stringify(jsonData, null, 2),
+            "utf8",
+          );
           debugLog(`Updated: ${filePath}`);
         } catch (jsonError) {
           console.error(`Error processing JSON file ${filePath}:`, jsonError);
@@ -95,7 +103,7 @@ async function walkAndModifyJson(directoryPath, updateFunction) {
 
 // Example usage:
 // Define the directory to start walking from
-const startDirectory = './sheet_definitions'; // Replace with the actual directory path
+const startDirectory = "./sheet_definitions"; // Replace with the actual directory path
 
 // Define the update function to modify JSON data
 // This function receives the parsed JSON object and the file path
@@ -107,5 +115,5 @@ const myUpdateFunction = async (data, filePath) => {
 
 // Call the function to start walking and modifying
 walkAndModifyJson(startDirectory, myUpdateFunction)
-  .then(() => debugLog('Finished processing JSON files.'))
-  .catch((err) => console.error('An error occurred during the process:', err));
+  .then(() => debugLog("Finished processing JSON files."))
+  .catch((err) => console.error("An error occurred during the process:", err));

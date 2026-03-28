@@ -1,12 +1,21 @@
-import { ANIMATIONS } from './constants.js';
-import { getHashParamsforSelections } from './hash.js';
-import { variantToFilename, es6DynamicTemplate } from '../utils/helpers.js';
-import { debugLog } from '../utils/debug.js';
+import { ANIMATIONS } from "./constants.js";
+import { getHashParamsforSelections } from "./hash.js";
+import { variantToFilename, es6DynamicTemplate } from "../utils/helpers.js";
+import { debugLog } from "../utils/debug.js";
 
 /**
  * Build sprite path from item metadata for a specific animation
  */
-export function getSpritePath(itemId, variant, recolors, bodyType, animName, layerNum = 1, selections = {}, meta = null) {
+export function getSpritePath(
+  itemId,
+  variant,
+  recolors,
+  bodyType,
+  animName,
+  layerNum = 1,
+  selections = {},
+  meta = null,
+) {
   if (!meta) {
     meta = window.itemMetadata[itemId];
   }
@@ -21,63 +30,65 @@ export function getSpritePath(itemId, variant, recolors, bodyType, animName, lay
   if (!basePath) return null;
 
   // Replace template variables like ${head}
-  if (basePath.includes('${')) {
-	basePath = replaceInPath(basePath, selections, meta);
+  if (basePath.includes("${")) {
+    basePath = replaceInPath(basePath, selections, meta);
   }
 
   // If no variant specified, try to extract from itemId
   if (!variant && !recolors) {
-    const parts = itemId.split('_');
+    const parts = itemId.split("_");
     variant = parts[parts.length - 1];
   }
 
   // Determine animation name to use in path
-  const animation = ANIMATIONS.find(a => a.value === animName);
+  const animation = ANIMATIONS.find((a) => a.value === animName);
   if (animation?.folderName) {
-	animName = animation.folderName;
+    animName = animation.folderName;
   }
 
   // Build full path: spritesheets/ + basePath + animation/ + variant.png
-  const fileName = !recolors ? `/${variantToFilename(variant)}` : '';
+  const fileName = !recolors ? `/${variantToFilename(variant)}` : "";
   return `spritesheets/${basePath}${animName}${fileName}.png`;
 }
 
 // Replace template variables like ${head} in a path using current selections
 export function replaceInPath(path, selections, meta) {
-	if (path.includes("${")) {
-		// get params from selections
-		// TODO: this could be optimized to avoid recomputing every time
-		// or to only do it when relevant selections change
-		// or just use the selections directly instead of recomputing the hash params
-		const hashParams = getHashParamsforSelections(selections || {});
-		const replacements = Object.fromEntries(
-			Object.entries(hashParams).map(([typeName, nameAndVariant]) => {
-				const name = getNameWithoutVariant(typeName, nameAndVariant);
-				const replacement = meta.replace_in_path[typeName]?.[name];
-				if (path.includes(`\${${typeName}}`) && !replacement) {
-					debugLog(`Warning: No replacement found for ${typeName}="${name}" in path template.`);
-				}
-				return [typeName, replacement];
-			}),
-		);
+  if (path.includes("${")) {
+    // get params from selections
+    // TODO: this could be optimized to avoid recomputing every time
+    // or to only do it when relevant selections change
+    // or just use the selections directly instead of recomputing the hash params
+    const hashParams = getHashParamsforSelections(selections || {});
+    const replacements = Object.fromEntries(
+      Object.entries(hashParams).map(([typeName, nameAndVariant]) => {
+        const name = getNameWithoutVariant(typeName, nameAndVariant);
+        const replacement = meta.replace_in_path[typeName]?.[name];
+        if (path.includes(`\${${typeName}}`) && !replacement) {
+          debugLog(
+            `Warning: No replacement found for ${typeName}="${name}" in path template.`,
+          );
+        }
+        return [typeName, replacement];
+      }),
+    );
 
-		return es6DynamicTemplate(path, replacements);
-	}
+    return es6DynamicTemplate(path, replacements);
+  }
 
-	return path;
+  return path;
 }
 
 const indexedMetadataCache = new Map();
 
 for (const key of Object.keys(window.itemMetadata || {})) {
-	const item = window.itemMetadata[key];
-	const indexKey = item.type_name;
-	if (indexedMetadataCache.has(indexKey)) {
-		const existing = indexedMetadataCache.get(indexKey);
-		existing.push(item);
-	} else {
-		indexedMetadataCache.set(indexKey, [item]);
-	}
+  const item = window.itemMetadata[key];
+  const indexKey = item.type_name;
+  if (indexedMetadataCache.has(indexKey)) {
+    const existing = indexedMetadataCache.get(indexKey);
+    existing.push(item);
+  } else {
+    indexedMetadataCache.set(indexKey, [item]);
+  }
 }
 
 // Helper to extract name without variant from a nameAndVariant string
@@ -85,23 +96,28 @@ for (const key of Object.keys(window.itemMetadata || {})) {
 // Perhaps we should change the naming convention to avoid this ambiguity
 // e.g. use double underscore to separate name and variant in item ids
 function getNameWithoutVariant(typeName, nameAndVariant) {
-	let variant = '';
-	const nameAndVariantPath = nameAndVariant.split('_');
-	const l = nameAndVariantPath.length;
-	const names = indexedMetadataCache.get(typeName) || [];
-	const variants = names.flatMap(n => n.variants || []).map(v => v.toLowerCase());
-	const recolors = names.flatMap(n => n.recolors?.[0]?.variants || []).map(v => v.toLowerCase());
-	let j = l;
-	let v = 0;
-	while (--j > 0) {
-		const part = nameAndVariantPath.slice(j, l).join('_');
-		const hasPart = (flatMap, part) => flatMap?.includes(part.toLowerCase());
-		if (hasPart(variants, part) || hasPart(recolors, part)) {
-			variant = part;
-			v = j;
-		}
-	}
-	const name = variant ? nameAndVariantPath.slice(0, v).join('_') : nameAndVariantPath.slice(0, l - 1).join('_');
-	return name;
+  let variant = "";
+  const nameAndVariantPath = nameAndVariant.split("_");
+  const l = nameAndVariantPath.length;
+  const names = indexedMetadataCache.get(typeName) || [];
+  const variants = names
+    .flatMap((n) => n.variants || [])
+    .map((v) => v.toLowerCase());
+  const recolors = names
+    .flatMap((n) => n.recolors?.[0]?.variants || [])
+    .map((v) => v.toLowerCase());
+  let j = l;
+  let v = 0;
+  while (--j > 0) {
+    const part = nameAndVariantPath.slice(j, l).join("_");
+    const hasPart = (flatMap, part) => flatMap?.includes(part.toLowerCase());
+    if (hasPart(variants, part) || hasPart(recolors, part)) {
+      variant = part;
+      v = j;
+    }
+  }
+  const name = variant
+    ? nameAndVariantPath.slice(0, v).join("_")
+    : nameAndVariantPath.slice(0, l - 1).join("_");
+  return name;
 }
-
