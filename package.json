@@ -8,9 +8,6 @@
     "mithril": "^2.3.8"
   },
   "overrides": {
-    "testem": {
-      "tmp": "^0.2.5"
-    },
     "mocha": {
       "diff": "^8.0.3"
     }
