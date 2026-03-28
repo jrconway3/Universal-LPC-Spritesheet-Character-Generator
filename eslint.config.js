@@ -9,9 +9,15 @@ const sharedParserOptions = {
 };
 
 const commonRules = {
-	"no-unused-vars": "warn",
-	"no-useless-escape": "off",
-	"no-console": "off",
+	"no-unused-vars": [
+		"error",
+		{
+			argsIgnorePattern: "^_",
+			varsIgnorePattern: "^_",
+			caughtErrorsIgnorePattern: "^_",
+		},
+	],
+	"no-console": "warn",
 };
 
 module.exports = [
