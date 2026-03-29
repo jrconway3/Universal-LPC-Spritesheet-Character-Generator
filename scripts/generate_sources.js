@@ -172,7 +172,7 @@ function writeAliases(aliases, meta) {
     let targetName = "";
     let targetVariant = "";
 
-    // If Variant is *, Match Variant by Same Name as Original (for use in type name changes)
+    // If Variant is *, Match only by Type Name (forwards NameAndVariant from one type name to another type name)
     if (aliasVariant === "*" && aliasType) {
       targetName = aliasVariant;
       targetVariant = aliasVariant;
