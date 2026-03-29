@@ -7,9 +7,9 @@
  * @returns {CanvasRenderingContext2D} Context with smoothing disabled
  */
 export function get2DContext(canvas, willReadFrequently = false) {
-	const ctx = canvas.getContext('2d', { willReadFrequently });
-	ctx.imageSmoothingEnabled = false;
-	return ctx;
+  const ctx = canvas.getContext("2d", { willReadFrequently });
+  ctx.imageSmoothingEnabled = false;
+  return ctx;
 }
 
 /**
@@ -36,7 +36,7 @@ export function drawTransparencyBackground(
   context,
   width,
   height,
-  squareSize = 8
+  squareSize = 8,
 ) {
   const lightGray = "#CCCCCC";
   const darkGray = "#999999";

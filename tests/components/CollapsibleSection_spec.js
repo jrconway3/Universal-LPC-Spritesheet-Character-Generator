@@ -2,23 +2,23 @@
 import { CollapsibleSection } from "../../sources/components/CollapsibleSection.js";
 import { assert } from "chai";
 
-describe("CollapsibleSection", function() {
+describe("CollapsibleSection", function () {
   let container;
 
-  beforeEach(function() {
+  beforeEach(function () {
     // Create a fresh container for each test
     container = document.createElement("div");
     document.body.appendChild(container);
   });
 
-  afterEach(function() {
+  afterEach(function () {
     // Cleanup after each test
     if (container && container.parentNode) {
       container.parentNode.removeChild(container);
     }
   });
 
-  it("renders with a title", function() {
+  it("renders with a title", function () {
     m.render(container, m(CollapsibleSection, { title: "Test Section" }));
 
     // Check for exact element
@@ -31,17 +31,17 @@ describe("CollapsibleSection", function() {
     assert.notEqual(collapsibleTitle, null);
   });
 
-  it("renders children when not collapsed (defaultOpen: true)", function() {
+  it("renders children when not collapsed (defaultOpen: true)", function () {
     m.render(
       container,
       m(
         CollapsibleSection,
         {
           title: "Section",
-          defaultOpen: true
+          defaultOpen: true,
         },
-        "Child content"
-      )
+        "Child content",
+      ),
     );
 
     // Should show child content when open
@@ -50,17 +50,17 @@ describe("CollapsibleSection", function() {
     assert.strictEqual(child.textContent, "Child content");
   });
 
-  it("hides children when collapsed (defaultOpen: false)", function() {
+  it("hides children when collapsed (defaultOpen: false)", function () {
     m.render(
       container,
       m(
         CollapsibleSection,
         {
           title: "Section",
-          defaultOpen: false
+          defaultOpen: false,
         },
-        "Child content"
-      )
+        "Child content",
+      ),
     );
 
     // Should not show child content when collapsed
@@ -69,16 +69,16 @@ describe("CollapsibleSection", function() {
     assert.notInclude(container.textContent, "Child content");
   });
 
-  it("starts open by default", function() {
+  it("starts open by default", function () {
     m.render(
       container,
       m(
         CollapsibleSection,
         {
-          title: "Section"
+          title: "Section",
         },
-        "Content"
-      )
+        "Content",
+      ),
     );
 
     // Should be open by default (defaultOpen: true)
@@ -87,13 +87,13 @@ describe("CollapsibleSection", function() {
     assert.strictEqual(child.textContent, "Content");
   });
 
-  it("shows expanded arrow when open", function() {
+  it("shows expanded arrow when open", function () {
     m.render(
       container,
       m(CollapsibleSection, {
         title: "Section",
-        defaultOpen: true
-      })
+        defaultOpen: true,
+      }),
     );
 
     // Should have expanded arrow class
@@ -101,13 +101,13 @@ describe("CollapsibleSection", function() {
     assert.notEqual(arrow, null);
   });
 
-  it("shows collapsed arrow when closed", function() {
+  it("shows collapsed arrow when closed", function () {
     m.render(
       container,
       m(CollapsibleSection, {
         title: "Section",
-        defaultOpen: false
-      })
+        defaultOpen: false,
+      }),
     );
 
     // Should have collapsed arrow class
@@ -115,13 +115,13 @@ describe("CollapsibleSection", function() {
     assert.notEqual(arrow, null);
   });
 
-  it("applies custom box class", function() {
+  it("applies custom box class", function () {
     m.render(
       container,
       m(CollapsibleSection, {
         title: "Section",
-        boxClass: "custom-box"
-      })
+        boxClass: "custom-box",
+      }),
     );
 
     // Should have the custom class
@@ -129,12 +129,12 @@ describe("CollapsibleSection", function() {
     assert.notEqual(box, null);
   });
 
-  it("uses default box class when not specified", function() {
+  it("uses default box class when not specified", function () {
     m.render(
       container,
       m(CollapsibleSection, {
-        title: "Section"
-      })
+        title: "Section",
+      }),
     );
 
     // Should have default "box" class

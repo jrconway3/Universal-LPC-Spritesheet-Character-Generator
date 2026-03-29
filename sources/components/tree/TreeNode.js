@@ -1,148 +1,212 @@
 // Recursive tree node component
-import { state, getSelectionGroup } from '../../state/state.js';
+import { state, getSelectionGroup } from "../../state/state.js";
 import {
   isItemLicenseCompatible,
   isItemAnimationCompatible,
-  isNodeAnimationCompatible
-} from '../../state/filters.js';
-import { capitalize, matchesSearch, nodeHasMatches } from '../../utils/helpers.js';
-import { ItemWithVariants } from './ItemWithVariants.js';
-import { ItemWithRecolors } from './ItemWithRecolors.js';
+  isNodeAnimationCompatible,
+} from "../../state/filters.js";
+import {
+  capitalize,
+  matchesSearch,
+  nodeHasMatches,
+} from "../../utils/helpers.js";
+import { ItemWithVariants } from "./ItemWithVariants.js";
+import { ItemWithRecolors } from "./ItemWithRecolors.js";
 
 export const TreeNode = {
-	view: function(vnode) {
-		const { name, node, pathPrefix = "", label } = vnode.attrs;
-		const nodePath = pathPrefix ? `${pathPrefix}-${name}` : name;
-		const searchQuery = state.searchQuery;
-		const hasSearchMatches = nodeHasMatches(node, searchQuery);
-		const isNodeAnimCompatible = isNodeAnimationCompatible(node);
+  view: function (vnode) {
+    const { name, node, pathPrefix = "" } = vnode.attrs;
+    const nodePath = pathPrefix ? `${pathPrefix}-${name}` : name;
+    const searchQuery = state.searchQuery;
+    const hasSearchMatches = nodeHasMatches(node, searchQuery);
+    const isNodeAnimCompatible = isNodeAnimationCompatible(node);
 
-		// Filter: Only show items compatible with current body type
-		if (node.required && node.required.length > 0 && !node.required.includes(state.bodyType)) return false;
+    // Filter: Only show items compatible with current body type
+    if (
+      node.required &&
+      node.required.length > 0 &&
+      !node.required.includes(state.bodyType)
+    )
+      return false;
 
-		// Hide this node if search is active and there are no matches
-		if (searchQuery && searchQuery.length >= 2 && !hasSearchMatches) {
-			return null;
-		}
+    // Hide this node if search is active and there are no matches
+    if (searchQuery && searchQuery.length >= 2 && !hasSearchMatches) {
+      return null;
+    }
 
-		// Get supported animations for this item
-		const supportedAnims = node.animations || [];
-		const animsText = supportedAnims.length > 0 ?
-			`Animations: ${supportedAnims.join(', ')}` :
-			null;
+    // Get supported animations for this item
+    const supportedAnims = node.animations || [];
+    const animsText =
+      supportedAnims.length > 0
+        ? `Animations: ${supportedAnims.join(", ")}`
+        : null;
 
-		// Build tooltip text
-		let tooltipText = '';
-		if (!isNodeAnimCompatible) {
-			tooltipText = `⚠️ Incompatible with selected animations\n`;
-		}
-		tooltipText += `${animsText}`;
+    // Build tooltip text
+    let tooltipText = "";
+    if (!isNodeAnimCompatible) {
+      tooltipText = `⚠️ Incompatible with selected animations\n`;
+    }
+    tooltipText += `${animsText}`;
 
-		// Auto-expand if search is active and has matches
-		const isExpanded = (searchQuery && searchQuery.length >= 2 && hasSearchMatches) || state.expandedNodes[nodePath] || false;
-		const displayName = node.label ?? capitalize(name);
+    // Auto-expand if search is active and has matches
+    const isExpanded =
+      (searchQuery && searchQuery.length >= 2 && hasSearchMatches) ||
+      state.expandedNodes[nodePath] ||
+      false;
+    const displayName = node.label ?? capitalize(name);
 
-		return m("div",
-			m("div.tree-label", {
-				class: `${!isNodeAnimCompatible ? "has-text-grey" : ""}`,
-				title: tooltipText,
-				onclick: () => {
-					if (!isNodeAnimCompatible) return; // Prevent selecting incompatible
-					state.expandedNodes[nodePath] = !isExpanded;
-				}
-			}, [
-				m("span.tree-arrow", { class: isExpanded ? 'expanded' : 'collapsed' }),
-				m("span", displayName),
-				!isNodeAnimCompatible ? m("span.ml-1", "⚠️") : null
-			]),
-			isExpanded ? m("div.ml-4", [
-				// Render child categories
-				Object.entries(node.children || {}).map(([childName, childNode]) =>
-					m(TreeNode, { key: childName, name: childName, node: childNode, pathPrefix: nodePath })
-				),
-				// Render items in this category
-				(node.items || [])
-					.filter(itemId => {
-						const meta = window.itemMetadata[itemId];
-						// Filter: Only show items compatible with current body type
-						if (!meta || !meta.required.includes(state.bodyType)) return false;
-						if (!isItemAnimationCompatible(itemId) || !isNodeAnimCompatible) return false;
+    return m(
+      "div",
+      m(
+        "div.tree-label",
+        {
+          class: `${!isNodeAnimCompatible ? "has-text-grey" : ""}`,
+          title: tooltipText,
+          onclick: () => {
+            if (!isNodeAnimCompatible) return; // Prevent selecting incompatible
+            state.expandedNodes[nodePath] = !isExpanded;
+          },
+        },
+        [
+          m("span.tree-arrow", {
+            class: isExpanded ? "expanded" : "collapsed",
+          }),
+          m("span", displayName),
+          !isNodeAnimCompatible ? m("span.ml-1", "⚠️") : null,
+        ],
+      ),
+      isExpanded
+        ? m("div.ml-4", [
+            // Render child categories
+            Object.entries(node.children || {}).map(([childName, childNode]) =>
+              m(TreeNode, {
+                key: childName,
+                name: childName,
+                node: childNode,
+                pathPrefix: nodePath,
+              }),
+            ),
+            // Render items in this category
+            (node.items || [])
+              .filter((itemId) => {
+                const meta = window.itemMetadata[itemId];
+                // Filter: Only show items compatible with current body type
+                if (!meta || !meta.required.includes(state.bodyType))
+                  return false;
+                if (!isItemAnimationCompatible(itemId) || !isNodeAnimCompatible)
+                  return false;
 
-						// Filter: Only show items matching search query
-						if (searchQuery && searchQuery.length >= 2 && !matchesSearch(meta.name, searchQuery)) {
-							return false;
-						}
+                // Filter: Only show items matching search query
+                if (
+                  searchQuery &&
+                  searchQuery.length >= 2 &&
+                  !matchesSearch(meta.name, searchQuery)
+                ) {
+                  return false;
+                }
 
-						return true;
-					})
-					.map(itemId => {
-						const meta = window.itemMetadata[itemId];
-						const displayName = meta.name;
-						const hasVariants = meta.variants && meta.variants.length > 0;
-						const hasRecolors = !hasVariants && meta.recolors && meta.recolors.length > 0;
-						const isSearchMatch = searchQuery && searchQuery.length >= 2 && matchesSearch(meta.name, searchQuery);
+                return true;
+              })
+              .map((itemId) => {
+                const meta = window.itemMetadata[itemId];
+                const displayName = meta.name;
+                const hasVariants = meta.variants && meta.variants.length > 0;
+                const hasRecolors =
+                  !hasVariants && meta.recolors && meta.recolors.length > 0;
+                const isSearchMatch =
+                  searchQuery &&
+                  searchQuery.length >= 2 &&
+                  matchesSearch(meta.name, searchQuery);
 
-						const isLicenseCompatibleFlag = isItemLicenseCompatible(itemId);
-						const isAnimCompatibleFlag = isItemAnimationCompatible(itemId) && isNodeAnimCompatible;
-						const isCompatible = isLicenseCompatibleFlag && isAnimCompatibleFlag;
+                const isLicenseCompatibleFlag = isItemLicenseCompatible(itemId);
+                const isAnimCompatibleFlag =
+                  isItemAnimationCompatible(itemId) && isNodeAnimCompatible;
+                const isCompatible =
+                  isLicenseCompatibleFlag && isAnimCompatibleFlag;
 
-						// Build tooltip text
-						const allLicenses = new Set();
-						if (meta?.credits) {
-							meta.credits.forEach(credit => {
-								if (credit.licenses) {
-									credit.licenses.forEach(lic => allLicenses.add(lic.trim()));
-								}
-							});
-						}
-						const licensesText = allLicenses.size > 0 ?
-							`Licenses: ${Array.from(allLicenses).join(', ')}` :
-							'No license info';
+                // Build tooltip text
+                const allLicenses = new Set();
+                if (meta?.credits) {
+                  meta.credits.forEach((credit) => {
+                    if (credit.licenses) {
+                      credit.licenses.forEach((lic) =>
+                        allLicenses.add(lic.trim()),
+                      );
+                    }
+                  });
+                }
+                const licensesText =
+                  allLicenses.size > 0
+                    ? `Licenses: ${Array.from(allLicenses).join(", ")}`
+                    : "No license info";
 
-						const supportedAnims = meta?.animations || [];
-						const animsText = supportedAnims.length > 0 ?
-							`Animations: ${supportedAnims.join(', ')}` :
-							'No animation info';
+                const supportedAnims = meta?.animations || [];
+                const animsText =
+                  supportedAnims.length > 0
+                    ? `Animations: ${supportedAnims.join(", ")}`
+                    : "No animation info";
 
-						let tooltipText = '';
-						if (!isCompatible) {
-							const issues = [];
-							if (!isLicenseCompatibleFlag) issues.push('licenses');
-							if (!isAnimCompatibleFlag) issues.push('animations');
-							tooltipText = `⚠️ Incompatible with selected ${issues.join(' and ')}\n`;
-						}
-						tooltipText += `${licensesText}\n${animsText}`;
+                let tooltipText = "";
+                if (!isCompatible) {
+                  const issues = [];
+                  if (!isLicenseCompatibleFlag) issues.push("licenses");
+                  if (!isAnimCompatibleFlag) issues.push("animations");
+                  tooltipText = `⚠️ Incompatible with selected ${issues.join(" and ")}\n`;
+                }
+                tooltipText += `${licensesText}\n${animsText}`;
 
-						if (!hasVariants && !hasRecolors) {
-							// Simple item with no variants or recolors
-							const selectionGroup = getSelectionGroup(itemId);
-							const isSelected = state.selections[selectionGroup]?.itemId === itemId;
-							return m("div.tree-node", {
-								key: itemId,
-								class: `${isSearchMatch ? "search-result" : ""} ${!isCompatible ? "has-text-grey" : ""}`,
-								style: (isSelected ? " font-weight: bold; color: #3273dc;" : ""),
-								title: tooltipText,
-								onclick: () => {
-									if (!isCompatible) return; // Prevent selecting incompatible
-									if (isSelected) {
-										delete state.selections[selectionGroup];
-									} else {
-										state.selections[selectionGroup] = { itemId, name: displayName };
-									}
-								}
-							}, [
-								displayName,
-								!isCompatible ? m("span.ml-1", "⚠️") : null
-							]);
-						}
+                if (!hasVariants && !hasRecolors) {
+                  // Simple item with no variants or recolors
+                  const selectionGroup = getSelectionGroup(itemId);
+                  const isSelected =
+                    state.selections[selectionGroup]?.itemId === itemId;
+                  return m(
+                    "div.tree-node",
+                    {
+                      key: itemId,
+                      class: `${isSearchMatch ? "search-result" : ""} ${!isCompatible ? "has-text-grey" : ""}`,
+                      style: isSelected
+                        ? " font-weight: bold; color: #3273dc;"
+                        : "",
+                      title: tooltipText,
+                      onclick: () => {
+                        if (!isCompatible) return; // Prevent selecting incompatible
+                        if (isSelected) {
+                          delete state.selections[selectionGroup];
+                        } else {
+                          state.selections[selectionGroup] = {
+                            itemId,
+                            name: displayName,
+                          };
+                        }
+                      },
+                    },
+                    [displayName, !isCompatible ? m("span.ml-1", "⚠️") : null],
+                  );
+                }
 
-						// Item with variants or recolors - create a sub-component
-						if (hasRecolors) {
-							return m(ItemWithRecolors, { key: itemId, itemId, meta, isSearchMatch, isCompatible, tooltipText });
-						}
-						return m(ItemWithVariants, { key: itemId, itemId, meta, isSearchMatch, isCompatible, tooltipText });
-					})
-			]) : null
-		);
-	}
+                // Item with variants or recolors - create a sub-component
+                if (hasRecolors) {
+                  return m(ItemWithRecolors, {
+                    key: itemId,
+                    itemId,
+                    meta,
+                    isSearchMatch,
+                    isCompatible,
+                    tooltipText,
+                  });
+                }
+                return m(ItemWithVariants, {
+                  key: itemId,
+                  itemId,
+                  meta,
+                  isSearchMatch,
+                  isCompatible,
+                  tooltipText,
+                });
+              }),
+          ])
+        : null,
+    );
+  },
 };

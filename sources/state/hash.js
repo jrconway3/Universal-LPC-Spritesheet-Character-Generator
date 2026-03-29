@@ -1,5 +1,6 @@
 import { state, selectDefaults } from "./state.js";
 import { parseRecolorKey } from "./palettes.js";
+import { debugWarn } from "../utils/debug.js";
 
 // Dependency injection for testability
 export function getState() {
@@ -82,7 +83,12 @@ export function setHashParams(params) {
   setHash(hash);
 }
 
-export function buildNewSelection(foundItemId, matchedVariant, matchedRecolor, subId = null) {
+export function buildNewSelection(
+  foundItemId,
+  matchedVariant,
+  matchedRecolor,
+  subId = null,
+) {
   // Get Meta Data for Item ID
   const meta = window.itemMetadata[foundItemId];
   const subMeta = meta.recolors?.[subId ?? 0];
@@ -91,22 +97,26 @@ export function buildNewSelection(foundItemId, matchedVariant, matchedRecolor, s
   let newSelection = {
     itemId: foundItemId,
     subId,
-    variant: matchedVariant || (matchedRecolor != "" ? "" : meta.variants?.[0] || ""),
-    recolor: matchedRecolor || ((meta.variants?.length ?? 0) === 0 ? subMeta?.variants[0] || "" : ""),
-    name: subId ? subMeta?.label : meta.name
+    variant:
+      matchedVariant || (matchedRecolor != "" ? "" : meta.variants?.[0] || ""),
+    recolor:
+      matchedRecolor ||
+      ((meta.variants?.length ?? 0) === 0 ? subMeta?.variants[0] || "" : ""),
+    name: subId ? subMeta?.label : meta.name,
   };
 
   if (newSelection.variant || newSelection.recolor) {
     let recolorLabel = newSelection.recolor;
     if (recolorLabel) {
-      const [mat, ver, recolor] = parseRecolorKey(newSelection.recolor, subMeta);
-      recolorLabel = (ver !== subMeta?.default ? `${ver} ${recolor}` : recolor);
+      const [, ver, recolor] = parseRecolorKey(newSelection.recolor, subMeta);
+      recolorLabel = ver !== subMeta?.default ? `${ver} ${recolor}` : recolor;
     }
-    newSelection.name += " (" +
+    newSelection.name +=
+      " (" +
       (newSelection.variant ? `${newSelection.variant}` : "") +
       (newSelection.variant && newSelection.recolor ? " | " : "") +
       (newSelection.recolor ? `${recolorLabel}` : "") +
-    ")";
+      ")";
   }
   return newSelection;
 }
@@ -124,7 +134,9 @@ export function getHashParamsforSelections(selections) {
     if (!meta || !meta.type_name) {
       // Check if an alias is overriding this entry (e.g., "sash=Waistband_rose" instead of "waistband=Waistband_rose")
       const name = selection.name.split(" (")[0]; // Get base name without variant (e.g., "Waistband" from "Waistband (rose)")
-      const nameAndVariant = name.replaceAll(" ", "_") + (selection.variant ? `_${selection.variant}` : "");
+      const nameAndVariant =
+        name.replaceAll(" ", "_") +
+        (selection.variant ? `_${selection.variant}` : "");
       const aliasMeta = window.aliasMetadata?.[typeName]?.[nameAndVariant];
       if (!aliasMeta || !aliasMeta.typeName) continue;
 
@@ -142,9 +154,10 @@ export function getHashParamsforSelections(selections) {
 
       const variantPart = selection.variant ?? "";
       const recolorPart = selection.recolor ?? "";
-      const uscorePart = (variantPart || recolorPart) ? "_" : "";
-      const splitPart = (variantPart && recolorPart) ? "|" : "";
-      const value = namePart + uscorePart + variantPart + splitPart + recolorPart;
+      const uscorePart = variantPart || recolorPart ? "_" : "";
+      const splitPart = variantPart && recolorPart ? "|" : "";
+      const value =
+        namePart + uscorePart + variantPart + splitPart + recolorPart;
 
       params[key] = value;
     }
@@ -200,7 +213,7 @@ export function loadSelectionsFromHash(hashString = null) {
     let foundItemId = null;
     let matchedVariant = "";
     let matchedRecolor = "";
-  
+
     // Split on underscores and try different combinations
     const parts = nameAndVariant.split("_");
 
@@ -231,8 +244,12 @@ export function loadSelectionsFromHash(hashString = null) {
           }
           if (meta.recolors?.[0]?.variants.length > 0) {
             for (const variant of meta.recolors[0].variants) {
-              if ((recolorToMatch !== "" && variant.toLowerCase() === recolorToMatch.toLowerCase()) ||
-                  (recolorToMatch === "" && variant.toLowerCase() === variantToMatch.toLowerCase())) {
+              if (
+                (recolorToMatch !== "" &&
+                  variant.toLowerCase() === recolorToMatch.toLowerCase()) ||
+                (recolorToMatch === "" &&
+                  variant.toLowerCase() === variantToMatch.toLowerCase())
+              ) {
                 foundItemId = itemId;
                 matchedVariant = "";
                 matchedRecolor = variant;
@@ -257,16 +274,18 @@ export function loadSelectionsFromHash(hashString = null) {
 
     if (!foundItemId) {
       skippedEntries[typeName] = nameAndVariant;
-      if (window.DEBUG) {
-        console.warn(
-          `No item found with type_name "${typeName}" and nameAndVariant "${nameAndVariant}"`,
-        );
-      }
+      debugWarn(
+        `No item found with type_name "${typeName}" and nameAndVariant "${nameAndVariant}"`,
+      );
       continue;
     }
 
     // Use type_name as selection group
-    newSelections[typeName] = buildNewSelection(foundItemId, matchedVariant, matchedRecolor);
+    newSelections[typeName] = buildNewSelection(
+      foundItemId,
+      matchedVariant,
+      matchedRecolor,
+    );
   }
 
   // Check if Skipped Entries Are Sub-Items!
@@ -349,9 +368,6 @@ export function loadSelectionsFromHash(hashString = null) {
 
 // Initialize hash change listener
 export function initHashChangeListener(listener) {
-  // Store the current hash to detect external changes
-  let lastKnownHash = getHash();
-
   if (listener) {
     window.addEventListener("hashchange", listener);
     return;
@@ -382,7 +398,6 @@ export function initHashChangeListener(listener) {
 
     // If the hash matches what we expect from current state, ignore (it's our own update)
     if (currentHash === expectedHash) {
-      lastKnownHash = currentHash;
       return;
     }
 
@@ -396,7 +411,5 @@ export function initHashChangeListener(listener) {
 
     // Trigger redraw which calls App.onupdate (syncs hash and renders canvas)
     m.redraw();
-
-    lastKnownHash = currentHash;
   });
 }

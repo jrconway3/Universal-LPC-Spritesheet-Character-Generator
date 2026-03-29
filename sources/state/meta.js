@@ -1,10 +1,10 @@
-import { getZPos } from '../canvas/canvas-utils.js';
-import { variantToFilename } from '../utils/helpers.js';
-import { replaceInPath } from './path.js';
+import { getZPos } from "../canvas/canvas-utils.js";
+import { variantToFilename } from "../utils/helpers.js";
+import { replaceInPath } from "./path.js";
 
 /**
  * Sort Layers by zPos
- * 
+ *
  * @param {string} itemId - The ID of the item to get layers for
  * @param {boolean} standardOnly - If true, only include standard animation layers
  * @returns {Array} Sorted array of layers with layerNum and zPos
@@ -12,10 +12,10 @@ import { replaceInPath } from './path.js';
 export function getSortedLayers(itemId, standardOnly = false) {
   const meta = window.itemMetadata[itemId];
   if (!meta) {
-    console.error('Item metadata not found:', itemId);
+    console.error("Item metadata not found:", itemId);
     return null;
   }
-  
+
   // Build list of layers for itemId
   const layersList = [];
   for (let layerNum = 1; layerNum < 10; layerNum++) {
@@ -38,7 +38,7 @@ export function getSortedLayers(itemId, standardOnly = false) {
 
 /**
  * Split Layers by Animation Type, Then Sort by zPos
- * 
+ *
  * @param {string} itemId - The ID of the item to get layers for
  * @param {boolean} customOnly - If true, only include custom animation layers
  * @returns {Object} Object with animation names as keys and sorted arrays of layers
@@ -46,10 +46,10 @@ export function getSortedLayers(itemId, standardOnly = false) {
 export function getSortedLayersByAnim(itemId, customOnly = false) {
   const meta = window.itemMetadata[itemId];
   if (!meta) {
-    console.error('Item metadata not found:', itemId);
+    console.error("Item metadata not found:", itemId);
     return null;
   }
-  
+
   // Build list of layers for itemId
   const animsList = {};
   for (let layerNum = 1; layerNum < 10; layerNum++) {
@@ -58,7 +58,7 @@ export function getSortedLayersByAnim(itemId, customOnly = false) {
     if (!layer) break;
     if (customOnly && !layer.custom_animation) continue;
 
-    const animName = layer.custom_animation || 'standard';
+    const animName = layer.custom_animation || "standard";
     if (!animsList[animName]) {
       animsList[animName] = [];
     }
@@ -70,11 +70,17 @@ export function getSortedLayersByAnim(itemId, customOnly = false) {
 
   // Sort Each Animation's Layers By zPos
   for (const animName in animsList) {
-    animsList[animName] = animsList[animName].sort((a, b) => {
-      return a.zPos - b.zPos;
-    }).map((layer, index) => {
-      return { layerNum: layer.layerNum, animLayerNum: index + 1, zPos: layer.zPos };
-    });
+    animsList[animName] = animsList[animName]
+      .sort((a, b) => {
+        return a.zPos - b.zPos;
+      })
+      .map((layer, index) => {
+        return {
+          layerNum: layer.layerNum,
+          animLayerNum: index + 1,
+          zPos: layer.zPos,
+        };
+      });
   }
 
   return animsList;
@@ -92,7 +98,9 @@ export function getLayersToLoad(meta, bodyType, selections, variant = null) {
   // Check if this item uses a custom animation
   const layer1 = meta.layers?.layer_1;
   const hasCustomAnimation = layer1?.custom_animation;
-  const layer1CustomAnimation = hasCustomAnimation ? layer1.custom_animation : null;
+  const layer1CustomAnimation = hasCustomAnimation
+    ? layer1.custom_animation
+    : null;
 
   // Collect all layers for this item
   // Only include layers that match layer_1's custom animation (if any)
@@ -112,23 +120,26 @@ export function getLayersToLoad(meta, bodyType, selections, variant = null) {
     }
 
     // Replace template variables like ${head}
-    if (layerPath.includes('${')) {
+    if (layerPath.includes("${")) {
       layerPath = replaceInPath(layerPath, selections, meta);
     }
 
     const hasCustomAnim = layer.custom_animation;
     let imagePath;
-    const variantFileName = variant !== null ? `${variantToFilename(variant)}` : '';
+    const variantFileName =
+      variant !== null ? `${variantToFilename(variant)}` : "";
     if (hasCustomAnim) {
       imagePath = `spritesheets/${layerPath}${variantFileName}.png`;
     } else {
-      const defaultAnim = meta.animations.includes('walk') ? 'walk' : meta.animations[0];
-      imagePath = `spritesheets/${layerPath}${defaultAnim}${variantFileName ? `/${variantFileName}` : ''}.png`;
+      const defaultAnim = meta.animations.includes("walk")
+        ? "walk"
+        : meta.animations[0];
+      imagePath = `spritesheets/${layerPath}${defaultAnim}${variantFileName ? `/${variantFileName}` : ""}.png`;
     }
 
     layersToLoad.push({
       zPos: layer.zPos ?? 100,
-      path: imagePath
+      path: imagePath,
     });
   }
   return layersToLoad.sort((a, b) => a.zPos - b.zPos);
