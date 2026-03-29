@@ -10,6 +10,7 @@ import {
   get2DContext,
   hasContentInRegion,
 } from "../canvas/canvas-utils.js";
+import { debugLog, debugWarn } from "../utils/debug.js";
 
 /**
  * Maps direction names to row indices on a custom-animation grid (LPC order:
@@ -47,7 +48,7 @@ function blitFrameFromSheet(destCtx, sourceCanvas, sourceX, sourceY, size) {
     0,
     0,
     size,
-    size
+    size,
   );
 }
 
@@ -79,7 +80,12 @@ export function newAnimationFromSheet(src, srcRect) {
   return animCanvas;
 }
 
-export async function addAnimationToZipFolder(folder, fileName, srcCanvas, srcRect) {
+export async function addAnimationToZipFolder(
+  folder,
+  fileName,
+  srcCanvas,
+  srcRect,
+) {
   if (srcCanvas) {
     const animCanvas = newAnimationFromSheet(srcCanvas, srcRect);
     if (animCanvas) {
@@ -87,14 +93,12 @@ export async function addAnimationToZipFolder(folder, fileName, srcCanvas, srcRe
       const zipEntryName = fileName.endsWith(".png")
         ? fileName
         : `${fileName}.png`;
-      if (window.DEBUG) {
-        console.log(
-          `Adding to ZIP: `,
-          `${folder.root}${zipEntryName}`,
-          "size: ",
-          blob.size
-        );
-      }
+      debugLog(
+        `Adding to ZIP: `,
+        `${folder.root}${zipEntryName}`,
+        "size: ",
+        blob.size,
+      );
       folder.file(zipEntryName, blob);
       return animCanvas;
     }
@@ -124,7 +128,7 @@ export async function addStandardAnimationToZipCustomFolder(
   custAnimFolder,
   itemFileName,
   src,
-  custAnim
+  custAnim,
 ) {
   const custCanvas = newStandardAnimationForCustomAnimation(src, custAnim);
   const custBlob = await canvasToBlob(custCanvas);
@@ -139,7 +143,7 @@ export async function addStandardAnimationToZipCustomFolder(
 export function extractFramesFromAnimation(
   animationCanvas,
   animationName,
-  directions = ["up", "down", "left", "right"]
+  directions = ["up", "down", "left", "right"],
 ) {
   const frames = {};
   const config = ANIMATION_CONFIGS[animationName];
@@ -160,7 +164,7 @@ export function extractFramesFromAnimation(
   const canvasPool = createFrameCanvasPool(
     directions.length * framesPerRow,
     frameWidth,
-    frameHeight
+    frameHeight,
   );
 
   let poolIndex = 0;
@@ -179,7 +183,7 @@ export function extractFramesFromAnimation(
       0,
       sourceY,
       animationCanvas.width,
-      frameHeight
+      frameHeight,
     );
 
     for (let frameIndex = 0; frameIndex < framesPerRow; frameIndex++) {
@@ -189,7 +193,7 @@ export function extractFramesFromAnimation(
         rowImageData,
         sourceX,
         frameWidth,
-        frameHeight
+        frameHeight,
       );
 
       if (hasContent && poolIndex < canvasPool.length) {
@@ -200,7 +204,7 @@ export function extractFramesFromAnimation(
           animationCanvas,
           sourceX,
           sourceY,
-          frameWidth
+          frameWidth,
         );
 
         frames[direction].push({
@@ -222,7 +226,7 @@ export function checkFrameContentFromImageData(
   imageData,
   startX,
   frameWidth,
-  frameHeight
+  frameHeight,
 ) {
   const data = imageData.data;
   const imageWidth = imageData.width;
@@ -247,22 +251,20 @@ export function checkFrameContentFromImageData(
 export function extractFramesFromCustomAnimation(
   animationCanvas,
   customAnimationDef,
-  directions = ["up", "down", "left", "right"]
+  directions = ["up", "down", "left", "right"],
 ) {
   const frames = {};
   const frameSize = customAnimationDef.frameSize;
   const animationFrames = customAnimationDef.frames;
 
-  if (window.DEBUG) {
-    console.log(`Extracting frames from custom animation:`, {
-      frameSize,
-      animationFrames,
-      canvasSize: {
-        width: animationCanvas.width,
-        height: animationCanvas.height,
-      },
-    });
-  }
+  debugLog(`Extracting frames from custom animation:`, {
+    frameSize,
+    animationFrames,
+    canvasSize: {
+      width: animationCanvas.width,
+      height: animationCanvas.height,
+    },
+  });
 
   const sourceCtx = animationCanvas.getContext("2d", {
     willReadFrequently: true,
@@ -276,7 +278,7 @@ export function extractFramesFromCustomAnimation(
   const canvasPool = createFrameCanvasPool(
     directions.length * maxFrames,
     frameSize,
-    frameSize
+    frameSize,
   );
 
   let poolIndex = 0;
@@ -284,11 +286,9 @@ export function extractFramesFromCustomAnimation(
   for (const direction of directions) {
     const dirIndex = CUSTOM_ANIM_DIRECTION_TO_ROW[direction];
     if (dirIndex >= animationFrames.length) {
-      if (window.DEBUG) {
-        console.log(
-          `Skipping direction ${direction} (index ${dirIndex}) - not enough rows in animation frames`
-        );
-      }
+      debugLog(
+        `Skipping direction ${direction} (index ${dirIndex}) - not enough rows in animation frames`,
+      );
       continue;
     }
 
@@ -296,14 +296,12 @@ export function extractFramesFromCustomAnimation(
     const frameRow = animationFrames[dirIndex];
     const sourceY = dirIndex * frameSize;
 
-    if (window.DEBUG) {
-      console.log(`Processing direction ${direction} (row ${dirIndex}):`, frameRow);
-    }
+    debugLog(`Processing direction ${direction} (row ${dirIndex}):`, frameRow);
 
     try {
       sourceCtx.getImageData(0, sourceY, animationCanvas.width, frameSize);
     } catch (e) {
-      console.warn(`Failed to get image data for row ${dirIndex}:`, e);
+      debugWarn(`Failed to get image data for row ${dirIndex}:`, e);
       continue;
     }
 
@@ -319,7 +317,7 @@ export function extractFramesFromCustomAnimation(
         animationCanvas,
         sourceX,
         sourceY,
-        frameSize
+        frameSize,
       );
 
       frames[direction].push({
@@ -327,9 +325,7 @@ export function extractFramesFromCustomAnimation(
         frameNumber: frameIndex + 1,
       });
 
-      if (window.DEBUG) {
-        console.log(`Added frame ${frameIndex + 1} for direction ${direction}`);
-      }
+      debugLog(`Added frame ${frameIndex + 1} for direction ${direction}`);
     }
   }
 

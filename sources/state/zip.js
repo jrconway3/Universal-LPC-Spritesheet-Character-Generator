@@ -9,7 +9,7 @@ import {
   customAreaItems,
   addedCustomAnimations,
 } from "../canvas/renderer.js";
-import { getMultiRecolors } from "../recolors/recolors.js";
+import { getMultiRecolors } from "./palettes.js";
 import { getAllCredits, creditsToTxt, creditsToCsv } from "../utils/credits.js";
 import { getItemFileName } from "../utils/fileName.js";
 import { loadImage } from "../canvas/load-image.js";

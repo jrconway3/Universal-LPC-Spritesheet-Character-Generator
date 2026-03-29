@@ -1,6 +1,10 @@
 import { expect } from "chai";
 import sinon from "sinon";
-import { customAnimations, customAnimationSize } from "../../sources/custom-animations.js";
+import { describe, it, afterEach } from "mocha-globals";
+import {
+  customAnimations,
+  customAnimationSize,
+} from "../../sources/custom-animations.js";
 import {
   addAnimationToZipFolder,
   addStandardAnimationToZipCustomFolder,
@@ -151,12 +155,12 @@ describe("utils/zip-helpers.js", () => {
     it("does nothing when newAnimationFromSheet returns null", async () => {
       const folder = createFakeFolder();
       const src = createCanvas(20, 20);
-      await addAnimationToZipFolder(
-        folder,
-        "out.png",
-        src,
-        { x: 2, y: 2, width: 8, height: 8 }
-      );
+      await addAnimationToZipFolder(folder, "out.png", src, {
+        x: 2,
+        y: 2,
+        width: 8,
+        height: 8,
+      });
       expect(folder.files).to.have.length(0);
     });
 
@@ -232,7 +236,7 @@ describe("utils/zip-helpers.js", () => {
       const src = createWheelchairTestSrc();
       const out = newStandardAnimationForCustomAnimation(
         src,
-        customAnimations.wheelchair
+        customAnimations.wheelchair,
       );
 
       const d = out.getContext("2d").getImageData(0, 0, 1, 1).data;
@@ -265,7 +269,7 @@ describe("utils/zip-helpers.js", () => {
         folder,
         "050_body_male.png",
         src,
-        custAnim
+        custAnim,
       );
 
       expect(folder.files).to.have.length(1);
@@ -289,7 +293,7 @@ describe("utils/zip-helpers.js", () => {
           folder,
           "x.png",
           src,
-          customAnimations.wheelchair
+          customAnimations.wheelchair,
         );
         expect.fail("expected rejection");
       } catch (err) {
@@ -343,9 +347,7 @@ describe("utils/zip-helpers.js", () => {
       expect(out.up[0].frameNumber).to.equal(3);
       expect(out.up[0].canvas.width).to.equal(64);
       expect(out.up[0].canvas.height).to.equal(64);
-      const d = out.up[0].canvas
-        .getContext("2d")
-        .getImageData(0, 0, 1, 1).data;
+      const d = out.up[0].canvas.getContext("2d").getImageData(0, 0, 1, 1).data;
       expect(d[0]).to.equal(17);
       expect(d[1]).to.equal(34);
       expect(d[2]).to.equal(51);
@@ -385,7 +387,7 @@ describe("utils/zip-helpers.js", () => {
       const imageData = canvas.getContext("2d").getImageData(0, 0, 64, 64);
 
       expect(checkFrameContentFromImageData(imageData, 0, 64, 64)).to.equal(
-        false
+        false,
       );
     });
 
@@ -397,7 +399,7 @@ describe("utils/zip-helpers.js", () => {
       const imageData = ctx.getImageData(0, 0, 128, 64);
 
       expect(checkFrameContentFromImageData(imageData, 64, 64, 64)).to.equal(
-        true
+        true,
       );
     });
 
@@ -406,7 +408,9 @@ describe("utils/zip-helpers.js", () => {
       imageData.data[0] = 255;
       imageData.data[3] = 0;
 
-      expect(checkFrameContentFromImageData(imageData, 0, 4, 4)).to.equal(false);
+      expect(checkFrameContentFromImageData(imageData, 0, 4, 4)).to.equal(
+        false,
+      );
     });
 
     it("only inspects x in [startX, startX + frameWidth) and within image width", () => {
@@ -414,8 +418,12 @@ describe("utils/zip-helpers.js", () => {
       const idx = (0 * 10 + 5) * 4;
       imageData.data[idx + 3] = 255;
 
-      expect(checkFrameContentFromImageData(imageData, 6, 4, 2)).to.equal(false);
-      expect(checkFrameContentFromImageData(imageData, 0, 64, 2)).to.equal(true);
+      expect(checkFrameContentFromImageData(imageData, 6, 4, 2)).to.equal(
+        false,
+      );
+      expect(checkFrameContentFromImageData(imageData, 0, 64, 2)).to.equal(
+        true,
+      );
     });
   });
 
@@ -506,7 +514,10 @@ describe("utils/zip-helpers.js", () => {
       const def = minimalFourRowDef();
       const canvas = createFourRowCustomCanvas(def);
 
-      const out = extractFramesFromCustomAnimation(canvas, def, ["up", "right"]);
+      const out = extractFramesFromCustomAnimation(canvas, def, [
+        "up",
+        "right",
+      ]);
 
       expect(Object.keys(out).sort()).to.deep.equal(["right", "up"]);
       expect(out.up).to.have.length(2);
@@ -542,7 +553,7 @@ describe("utils/zip-helpers.js", () => {
         if (sy >= 2 * fs) {
           throw new DOMException(
             "The source width is outside the canvas",
-            "IndexSizeError"
+            "IndexSizeError",
           );
         }
         return origGetImageData(sx, sy, sw, sh);

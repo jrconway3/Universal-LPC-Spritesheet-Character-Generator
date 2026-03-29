@@ -1,5 +1,6 @@
 import { expect } from "chai";
 import sinon from "sinon";
+import { describe, it, afterEach } from "mocha-globals";
 import {
   canvasToBlob,
   drawTransparencyBackground,
@@ -57,7 +58,7 @@ describe("canvasToBlob", () => {
     } catch (err) {
       expect(err).to.be.instanceOf(Error);
       expect(err.message).to.equal(
-        "Canvas to Blob conversion failed: toBlob failed"
+        "Canvas to Blob conversion failed: toBlob failed",
       );
     }
   });
@@ -119,7 +120,9 @@ describe("hasContentInRegion", () => {
 
     expect(hasContentInRegion(ctx, 0, 0, 8, 8)).to.equal(false);
     expect(warnSpy.calledOnce).to.be.true;
-    expect(warnSpy.firstCall.args[0]).to.equal("Error checking region content:");
+    expect(warnSpy.firstCall.args[0]).to.equal(
+      "Error checking region content:",
+    );
   });
 });
 

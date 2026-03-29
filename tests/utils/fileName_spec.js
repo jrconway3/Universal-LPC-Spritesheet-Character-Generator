@@ -1,4 +1,5 @@
 import { expect } from "chai";
+import { describe, it, before, after } from "mocha-globals";
 import { getItemFileName } from "../../sources/utils/fileName.js";
 
 describe("getItemFileName", () => {

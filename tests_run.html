@@ -16,7 +16,8 @@
       {
         "imports": {
           "chai": "https://cdn.jsdelivr.net/npm/chai@6.2.2+esm",
-          "sinon": "https://cdn.jsdelivr.net/npm/sinon@21.0.3/+esm"
+          "sinon": "https://cdn.jsdelivr.net/npm/sinon@21.0.3/+esm",
+          "mocha-globals": "./tests/bdd-globals.js"
         },
         "integrity": {
           "https://cdn.jsdelivr.net/npm/chai@6.2.2+esm": "sha384-SWE7bILZhmiEGZEPMGrdVNNnO7SQtv32XlAQcpwNjVMXsPFsC2jPN7ccZg7LOuh1",
@@ -31,11 +32,11 @@
     <div id="mocha"></div>
 
     <script type="module">
-      mocha.setup('bdd');
+      globalThis.mocha.setup("bdd");
     </script>
     <script src="/testem.js"></script>
     <script type="module" src="tests/tests.js"></script>
     <script type="module">
-      mocha.run();
+      globalThis.mocha.run();
     </script>
 </html>

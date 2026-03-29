@@ -11,18 +11,18 @@ export function getMultiRecolors(itemId, selections) {
   // Implementation for getting multiple recolor options from selections
   const meta = window.itemMetadata[itemId];
   const types = [meta.type_name];
-  meta.recolors.forEach((recolor) => {
+  for (const recolor of meta.recolors ?? []) {
     if (recolor.type_name && !types.includes(recolor.type_name)) {
       types.push(recolor.type_name);
     }
-  });
+  }
 
   // Filter Selections to Item ID
   const recolors = {};
   for (const [, selection] of Object.entries(selections)) {
     const subMeta = window.itemMetadata?.[selection.itemId];
     const typeName =
-      subMeta?.recolors[selection.subId]?.type_name ??
+      subMeta?.recolors?.[selection.subId]?.type_name ??
       subMeta?.type_name ??
       meta.type_name;
     if (

@@ -1,5 +1,7 @@
 // Canvas utility functions
 
+import { debugWarn } from "../utils/debug.js";
+
 /**
  * Encode a canvas as a PNG Blob (rejects if toBlob yields null or throws).
  * @param {HTMLCanvasElement} canvas
@@ -59,7 +61,7 @@ export function hasContentInRegion(ctx, x, y, width, height) {
     const imageData = ctx.getImageData(x, y, width, height);
     return imageData.data.some((pixel) => pixel !== 0);
   } catch (e) {
-    console.warn("Error checking region content:", e);
+    debugWarn("Error checking region content:", e);
     return false;
   }
 }

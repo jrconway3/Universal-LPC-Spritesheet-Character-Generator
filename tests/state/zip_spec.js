@@ -1,5 +1,6 @@
 import { expect } from "chai";
 import sinon from "sinon";
+import { describe, it, beforeEach, afterEach } from "mocha-globals";
 import {
   initCanvas,
   canvas as rendererCanvas,
@@ -212,7 +213,7 @@ describe("state/zip.js", () => {
         ANIMATIONS[0].value,
       ]);
       expect(metadata.standardAnimations.failed).to.deep.equal(
-        ANIMATIONS.slice(1).map((a) => a.value)
+        ANIMATIONS.slice(1).map((a) => a.value),
       );
       expect(alertStub.called).to.be.true;
     });
@@ -294,14 +295,15 @@ describe("state/zip.js", () => {
       });
 
       const bodyLayers = getSortedLayers("body", true);
-      expect(bodyLayers, "body item should have layers in itemMetadata").to.be.ok;
+      expect(bodyLayers, "body item should have layers in itemMetadata").to.be
+        .ok;
       expect(bodyLayers.length).to.be.at.least(1);
 
       const expectedFileName = getItemFileName(
         "body",
         "light",
         "Body color (light)",
-        bodyLayers[0].layerNum
+        bodyLayers[0].layerNum,
       );
 
       expect(addSpy.callCount).to.equal(bodyLayers.length);
@@ -320,9 +322,10 @@ describe("state/zip.js", () => {
       const renderCall = renderStub.firstCall;
       expect(renderCall.args[0]).to.equal("body");
       expect(renderCall.args[1]).to.equal("light");
-      expect(renderCall.args[2]).to.equal(state.bodyType);
-      expect(renderCall.args[3]).to.equal(state.selections);
-      expect(renderCall.args[4]).to.equal(bodyLayers[0].layerNum);
+      expect(renderCall.args[2]).to.equal(null);
+      expect(renderCall.args[3]).to.equal(state.bodyType);
+      expect(renderCall.args[4]).to.equal(state.selections);
+      expect(renderCall.args[5]).to.equal(bodyLayers[0].layerNum);
     });
 
     it("writes PNG blobs under items/ when render succeeds", async () => {
@@ -337,7 +340,7 @@ describe("state/zip.js", () => {
         "body",
         "light",
         "Body color (light)",
-        bodyLayers[0].layerNum
+        bodyLayers[0].layerNum,
       );
 
       expect(fakeZip.files.get(`items/${expectedFileName}.png`)).to.exist;
@@ -373,22 +376,24 @@ describe("state/zip.js", () => {
         "body",
         "light",
         "Body color (light)",
-        bodyLayers[0].layerNum
+        bodyLayers[0].layerNum,
       );
       const secondFileName = getItemFileName(
         "heads_human_male",
         "light",
         "Human male (light)",
-        headLayers[0].layerNum
+        headLayers[0].layerNum,
       );
 
       expect(fakeZip.files.get(`items/${firstFileName}.png`)).to.exist;
-      expect(fakeZip.files.get(`items/${secondFileName}.png`)).to.equal(undefined);
+      expect(fakeZip.files.get(`items/${secondFileName}.png`)).to.equal(
+        undefined,
+      );
       expect(alertStub.called).to.be.true;
       const issueAlert = alertStub
         .getCalls()
         .find((c) =>
-          String(c.args[0]).includes("Export completed with some issues")
+          String(c.args[0]).includes("Export completed with some issues"),
         );
       expect(issueAlert, "partial failure alert").to.exist;
       expect(String(issueAlert.args[0])).to.include(secondFileName);
@@ -471,7 +476,8 @@ describe("state/zip.js", () => {
       });
 
       const bodyLayers = getSortedLayers("body", true);
-      expect(bodyLayers, "body item should have layers in itemMetadata").to.be.ok;
+      expect(bodyLayers, "body item should have layers in itemMetadata").to.be
+        .ok;
       expect(bodyLayers.length).to.be.at.least(1);
 
       const walkCalls = addSpy
@@ -483,7 +489,7 @@ describe("state/zip.js", () => {
         "body",
         "light",
         "Body color (light)",
-        bodyLayers[0].layerNum
+        bodyLayers[0].layerNum,
       );
 
       const [folder, zipName, canvas] = walkCalls[0].args;
@@ -496,16 +502,19 @@ describe("state/zip.js", () => {
       const rc = renderStub.firstCall;
       expect(rc.args[0]).to.equal("body");
       expect(rc.args[1]).to.equal("light");
-      expect(rc.args[2]).to.equal(state.bodyType);
-      expect(rc.args[3]).to.equal("walk");
-      expect(rc.args[4]).to.equal(state.selections);
-      expect(rc.args[5]).to.equal(bodyLayers[0].layerNum);
+      expect(rc.args[2]).to.equal(null);
+      expect(rc.args[3]).to.equal(state.bodyType);
+      expect(rc.args[4]).to.equal("walk");
+      expect(rc.args[5]).to.equal(state.selections);
+      expect(rc.args[6]).to.equal(bodyLayers[0].layerNum);
     });
 
     it("writes metadata.json with standardAnimations.exported / failed maps per animation (walk only in fixture)", async () => {
       const renderStub = sandbox.stub().resolves(nonEmptyAnimCanvas());
 
-      await exportSplitItemAnimations({ renderSingleItemAnimation: renderStub });
+      await exportSplitItemAnimations({
+        renderSingleItemAnimation: renderStub,
+      });
 
       const metadataEntry = fakeZip.files.get("credits/metadata.json");
       expect(metadataEntry, "metadata.json should exist").to.exist;
@@ -516,7 +525,7 @@ describe("state/zip.js", () => {
         "body",
         "light",
         "Body color (light)",
-        bodyLayers[0].layerNum
+        bodyLayers[0].layerNum,
       );
 
       expect(metadata.standardAnimations.exported.walk).to.deep.equal([
@@ -547,7 +556,9 @@ describe("state/zip.js", () => {
 
       const renderStub = sandbox.stub().resolves(nonEmptyAnimCanvas());
 
-      await exportSplitItemAnimations({ renderSingleItemAnimation: renderStub });
+      await exportSplitItemAnimations({
+        renderSingleItemAnimation: renderStub,
+      });
 
       const bodyLayers = getSortedLayers("body", true);
       const headLayers = getSortedLayers("heads_human_male", true);
@@ -555,18 +566,18 @@ describe("state/zip.js", () => {
         "body",
         "light",
         "Body color (light)",
-        bodyLayers[0].layerNum
+        bodyLayers[0].layerNum,
       );
       const headFileName = getItemFileName(
         "heads_human_male",
         "light",
         "Human male (light)",
-        headLayers[0].layerNum
+        headLayers[0].layerNum,
       );
 
       expect(fakeZip.files.get(`standard/walk/${bodyFileName}.png`)).to.exist;
       expect(fakeZip.files.get(`standard/walk/${headFileName}.png`)).to.equal(
-        undefined
+        undefined,
       );
 
       const metadataEntry = fakeZip.files.get("credits/metadata.json");
@@ -581,7 +592,9 @@ describe("state/zip.js", () => {
       expect(alertStub.called).to.be.true;
       const issueAlert = alertStub
         .getCalls()
-        .find((c) => String(c.args[0]).includes("Export completed with some issues"));
+        .find((c) =>
+          String(c.args[0]).includes("Export completed with some issues"),
+        );
       expect(issueAlert, "partial failure alert").to.exist;
       expect(String(issueAlert.args[0])).to.include(headFileName);
     });
@@ -670,9 +683,8 @@ describe("state/zip.js", () => {
       expect(first.args[1]).to.equal(ANIMATIONS[0].value);
       expect(first.args[2]).to.deep.equal(directions);
       expect(first.args[0]).to.be.instanceOf(HTMLCanvasElement);
-      expect(
-        fakeZip.files.get(`standard/${ANIMATIONS[0].value}/up/0.png`)
-      ).to.exist;
+      expect(fakeZip.files.get(`standard/${ANIMATIONS[0].value}/up/0.png`)).to
+        .exist;
     });
 
     it("writes metadata.json with structure.standard exported / failed and completes when extract succeeds", async () => {
@@ -688,11 +700,10 @@ describe("state/zip.js", () => {
       const metadata = JSON.parse(metadataEntry);
       expect(metadata.structure.standard.failed).to.deep.equal([]);
       expect(metadata.structure.standard.exported).to.deep.equal(
-        ANIMATIONS.map((a) => a.value)
+        ANIMATIONS.map((a) => a.value),
       );
-      expect(
-        alertStub.calledWith("Individual frames export complete!")
-      ).to.be.true;
+      expect(alertStub.calledWith("Individual frames export complete!")).to.be
+        .true;
     });
 
     it("records failed standard animations when extractAnimationFromCanvas throws for an animation", async () => {
@@ -715,12 +726,12 @@ describe("state/zip.js", () => {
       expect(metadata.structure.standard.exported).to.not.include("thrust");
       expect(metadata.structure.standard.exported).to.include("spellcast");
       expect(metadata.structure.standard.exported).to.deep.equal(
-        ANIMATIONS.filter((a) => a.value !== "thrust").map((a) => a.value)
+        ANIMATIONS.filter((a) => a.value !== "thrust").map((a) => a.value),
       );
       const issueAlert = alertStub
         .getCalls()
         .find((c) =>
-          String(c.args[0]).includes("Export completed with some issues")
+          String(c.args[0]).includes("Export completed with some issues"),
         );
       expect(issueAlert, "partial failure alert").to.exist;
       expect(String(issueAlert.args[0])).to.include("thrust");
