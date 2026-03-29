@@ -133,12 +133,12 @@ export function getHashParamsforSelections(selections) {
       if (aliasMeta && aliasMeta.typeName) {
         params[aliasMeta.typeName] = `${aliasMeta.name}_${aliasMeta.variant}`;
       } else {
-        // If no exact match, check if there's an alias with a wildcard variant (e.g., "Tiara=*")
+        // If no exact match, check if there's a type-name wildcard alias entry (aliasType["*"]) that applies to any name+variant
         const anyAliasMeta = aliasType?.[`*`];
         if (!anyAliasMeta || !anyAliasMeta.typeName) {
           continue;
         }
-        params[anyAliasMeta.typeName] = nameAndVariant; // Use the original name and variant if wildcard alias exists
+        params[anyAliasMeta.typeName] = nameAndVariant; // Use the original name and variant if a type-name wildcard alias exists
       }
     } else {
       // Get Subcolor Metadata if applicable
