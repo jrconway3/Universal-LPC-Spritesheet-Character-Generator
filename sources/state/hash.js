@@ -137,10 +137,21 @@ export function getHashParamsforSelections(selections) {
       const nameAndVariant =
         name.replaceAll(" ", "_") +
         (selection.variant ? `_${selection.variant}` : "");
-      const aliasMeta = window.aliasMetadata?.[typeName]?.[nameAndVariant];
-      if (!aliasMeta || !aliasMeta.typeName) continue;
+      const aliasType = window.aliasMetadata?.[typeName];
+      if (!aliasType) continue;
 
-      params[aliasMeta.typeName] = `${aliasMeta.name}_${aliasMeta.variant}`;
+      // Check Name and Variant
+      const aliasMeta = aliasType?.[nameAndVariant];
+      if (aliasMeta && aliasMeta.typeName) {
+        params[aliasMeta.typeName] = `${aliasMeta.name}_${aliasMeta.variant}`;
+      } else {
+        // If no exact match, check if there's a type-name wildcard alias entry (aliasType["*"]) that applies to any name+variant
+        const anyAliasMeta = aliasType?.[`*`];
+        if (!anyAliasMeta || !anyAliasMeta.typeName) {
+          continue;
+        }
+        params[anyAliasMeta.typeName] = nameAndVariant; // Use the original name and variant if a type-name wildcard alias exists
+      }
     } else {
       // Get Subcolor Metadata if applicable
       const subMeta = meta.recolors?.[selection.subId];
@@ -194,11 +205,19 @@ export function loadSelectionsFromHash(hashString = null) {
       continue;
     }
 
-    // Check if this is an aliased selection and resolve it to the canonical type, name, and variant
-    const aliasMeta = window.aliasMetadata?.[typeName]?.[nameAndVariant];
+    // Check Name and Variant
+    const aliasType = window.aliasMetadata?.[typeName];
+    const aliasMeta = aliasType?.[nameAndVariant];
     if (aliasMeta) {
       typeName = aliasMeta.typeName;
       nameAndVariant = `${aliasMeta.name}_${aliasMeta.variant}`;
+    } else {
+      // If no exact match, check if there's a type name alias
+      const anyAliasMeta = aliasType?.[`*`];
+      if (anyAliasMeta) {
+        typeName = anyAliasMeta.typeName;
+        // Keep the original nameAndVariant since the wildcard alias can match any variant
+      }
     }
 
     // Skip "none" selections

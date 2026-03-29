@@ -425,6 +425,45 @@ describe("state/hash.js", () => {
         "#sex=male&body=Body_Color_light&waist=Robe_Belt_white",
       );
     });
+
+    it("should forward only type name, wrinkes > wrinkles", () => {
+      setHash("#body=Body_color_light&wrinkes=Wrinkles_light");
+      window.itemMetadata = {
+        1: { type_name: "body", name: "Body_Color", variants: ["light"] },
+        2: { type_name: "belt", name: "Other_belts", variants: ["white"] },
+        4: { type_name: "wrinkles", name: "Wrinkles", variants: ["light"] },
+      };
+      window.aliasMetadata = {
+        wrinkes: {
+          "*": {
+            typeName: "wrinkles",
+            name: "*",
+            variant: "*",
+          },
+        },
+      };
+
+      loadSelectionsFromHash();
+      expect(getState().selections).to.deep.equal({
+        body: {
+          itemId: "1",
+          subId: null,
+          variant: "light",
+          recolor: "",
+          name: "Body_Color (light)",
+        },
+        wrinkles: {
+          itemId: "4",
+          subId: null,
+          variant: "light",
+          recolor: "",
+          name: "Wrinkles (light)",
+        },
+      });
+      expect(getHash()).to.equal(
+        "#sex=male&body=Body_Color_light&wrinkles=Wrinkles_light",
+      );
+    });
   });
 
   describe("initHashChangeListener", () => {

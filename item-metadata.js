@@ -1675,7 +1675,7 @@ window.itemMetadata = {
   "head_wrinkles": {
     "name": "Wrinkles",
     "priority": 80,
-    "type_name": "wrinkes",
+    "type_name": "wrinkles",
     "required": [
       "male",
       "female",
@@ -96672,6 +96672,13 @@ window.itemMetadata = {
 };
 
 window.aliasMetadata = {
+  "wrinkes": {
+    "*": {
+      "typeName": "wrinkles",
+      "name": "*",
+      "variant": "*"
+    }
+  },
   "belt": {
     "Other_belts_formal": {
       "typeName": "belt",

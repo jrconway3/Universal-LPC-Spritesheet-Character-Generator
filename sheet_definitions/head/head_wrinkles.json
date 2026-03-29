@@ -54,5 +54,8 @@
       "all.lpcr"
     ]
   },
-  "type_name": "wrinkes"
+  "aliases": {
+    "wrinkes=*": "wrinkles=*"
+  },
+  "type_name": "wrinkles"
 }
