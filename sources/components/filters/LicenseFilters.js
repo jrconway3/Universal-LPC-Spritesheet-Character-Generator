@@ -24,7 +24,6 @@ export function getLicenseConfig() {
 }
 
 export const LicenseFilters = {
-
   oninit: function (vnode) {
     vnode.state.isExpanded = false; // Start collapsed by default
   },

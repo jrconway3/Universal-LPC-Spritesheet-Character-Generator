@@ -34,6 +34,7 @@ describe("LicenseFilters Component", () => {
 
     alertStub = sinon
       .stub(window, "alert")
+      // eslint-disable-next-line no-console
       .callsFake((message) => console.log("ALERT:", message));
   });
 

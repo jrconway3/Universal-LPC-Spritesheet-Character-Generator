@@ -5,12 +5,12 @@ import {
   recolorImageWebGL,
   isWebGLAvailable,
 } from "./webgl-palette-recolor.js";
-import { getDebugParam } from "../main.js";
+import { debugLog, debugWarn } from "../utils/debug.js";
 import { get2DContext } from "./canvas-utils.js";
-import { state } from '../state/state.js';
-import { getLayersToLoad } from '../state/meta.js';
-import { getPalettesForItem, getTargetPalette } from '../state/palettes.js';
-import { COMPACT_FRAME_SIZE, FRAME_SIZE } from '../state/constants.js';
+import { state } from "../state/state.js";
+import { getLayersToLoad } from "../state/meta.js";
+import { getPalettesForItem, getTargetPalette } from "../state/palettes.js";
+import { COMPACT_FRAME_SIZE, FRAME_SIZE } from "../state/constants.js";
 
 // Configuration flags
 let config = {
@@ -22,19 +22,14 @@ let config = {
 const USE_WEBGL = config.useWebGL && !config.forceCPU;
 
 // Log which method will be used
-const DEBUG = getDebugParam();
-if (DEBUG) {
-  if (USE_WEBGL) {
-    console.log("🎨 Palette recoloring: WebGL GPU-accelerated mode enabled");
-    console.log("💡 To check stats, run: window.getPaletteRecolorStats()");
-    console.log(
-      '💡 To force CPU mode, run: window.setPaletteRecolorMode("cpu")'
-    );
-  } else if (config.forceCPU) {
-    console.log("🎨 Palette recoloring: CPU mode (forced by configuration)");
-  } else {
-    console.log("🎨 Palette recoloring: CPU mode (WebGL not available)");
-  }
+if (USE_WEBGL) {
+  debugLog("🎨 Palette recoloring: WebGL GPU-accelerated mode enabled");
+  debugLog("💡 To check stats, run: window.getPaletteRecolorStats()");
+  debugLog('💡 To force CPU mode, run: window.setPaletteRecolorMode("cpu")');
+} else if (config.forceCPU) {
+  debugLog("🎨 Palette recoloring: CPU mode (forced by configuration)");
+} else {
+  debugLog("🎨 Palette recoloring: CPU mode (WebGL not available)");
 }
 
 /**
@@ -173,13 +168,13 @@ export function resetRecolorStats() {
 export function setPaletteRecolorMode(mode) {
   if (mode === "cpu") {
     config.forceCPU = true;
-    console.log("🎨 Switched to CPU mode (forced)");
+    debugLog("🎨 Switched to CPU mode (forced)");
   } else if (mode === "webgl") {
     if (config.useWebGL) {
       config.forceCPU = false;
-      console.log("🎨 Switched to WebGL mode");
+      debugLog("🎨 Switched to WebGL mode");
     } else {
-      console.warn("⚠️ WebGL not available on this browser");
+      debugWarn("⚠️ WebGL not available on this browser");
     }
   } else {
     console.error('Invalid mode. Use "webgl" or "cpu"');
@@ -213,6 +208,7 @@ export function recolorImage(sourceImage, sourcePalette, targetPalette) {
       recolorStats.webgl++;
       return recolorImageWebGL(sourceImage, sourcePalette, targetPalette);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.warn("⚠️ WebGL recoloring failed, falling back to CPU:", error);
       recolorStats.fallback++;
       return recolorImageCPU(sourceImage, sourcePalette, targetPalette);
@@ -257,7 +253,7 @@ export async function getImageToDraw(img, itemId, recolors) {
     } catch (err) {
       console.error(
         `Failed to recolor ${paletteConfig[meta.type_name].material} color ${JSON.stringify(recolors)}:`,
-        err
+        err,
       );
       return img; // Fallback to original on error
     }
@@ -276,14 +272,19 @@ export async function getImageToDraw(img, itemId, recolors) {
 export async function recolorWithPalette(
   sourceImage,
   targetColors,
-  sourcePalettes
+  sourcePalettes,
 ) {
   // Loop All Palettes to Recolor
   for (const [typeName, palette] of Object.entries(sourcePalettes)) {
     // Get Target Palette
-    const targetPalette = getTargetPalette(palette.material, targetColors[typeName]);
+    const targetPalette = getTargetPalette(
+      palette.material,
+      targetColors[typeName],
+    );
     if (!targetPalette) {
-      throw new Error(`Unknown target palette color: ${JSON.stringify(targetColors)}`);
+      throw new Error(
+        `Unknown target palette color: ${JSON.stringify(targetColors)}`,
+      );
     }
 
     sourceImage = recolorImage(sourceImage, palette.colors, targetPalette);
@@ -300,7 +301,13 @@ export async function recolorWithPalette(
  * @param {number|null} [renderId] - Optional render identifier used to detect and skip stale renders
  * @returns {number} Numeric status code (0 if no render was performed or the render is stale)
  */
-export async function drawRecolorPreview(itemId, meta, canvas, selectedColors, renderId = null) {
+export async function drawRecolorPreview(
+  itemId,
+  meta,
+  canvas,
+  selectedColors,
+  renderId = null,
+) {
   if (!canvas || !canvas.isConnected) {
     return 0;
   }
@@ -309,14 +316,14 @@ export async function drawRecolorPreview(itemId, meta, canvas, selectedColors, r
     if (!canvas.isConnected) {
       return true;
     }
-    if (typeof renderId === 'number' && canvas._recolorRenderId !== renderId) {
+    if (typeof renderId === "number" && canvas._recolorRenderId !== renderId) {
       return true;
     }
     return false;
   };
 
   // Skip if canvas is not connected or renderId doesn't match (stale render)
-  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
   if (!ctx || isStaleRender()) {
     return 0;
   }
@@ -331,18 +338,19 @@ export async function drawRecolorPreview(itemId, meta, canvas, selectedColors, r
 
   // Load and draw all layers
   let imagesLoaded = 0;
-  const loadedLayers = await Promise.all(layersToLoad.map(layer => {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => resolve({ img, layer });
-      img.onerror = () => {
-        if (DEBUG)
-          console.warn(`Failed to load image for layer ${layer.path}`);
-        resolve({ img: null, layer });
-      }
-      img.src = layer.path;
-    });
-  }));
+  const loadedLayers = await Promise.all(
+    layersToLoad.map((layer) => {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve({ img, layer });
+        img.onerror = () => {
+          debugWarn(`Failed to load image for layer ${layer.path}`);
+          resolve({ img: null, layer });
+        };
+        img.src = layer.path;
+      });
+    }),
+  );
   if (isStaleRender()) {
     return 0;
   }
@@ -351,7 +359,7 @@ export async function drawRecolorPreview(itemId, meta, canvas, selectedColors, r
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   // Draw each layer in zPos order
   imagesLoaded = 0;
-  for (const { img, layer } of loadedLayers) {
+  for (const { img } of loadedLayers) {
     if (isStaleRender()) {
       return 0;
     }
@@ -362,9 +370,15 @@ export async function drawRecolorPreview(itemId, meta, canvas, selectedColors, r
       const srcX = previewCol * FRAME_SIZE + previewXOffset;
       const srcY = previewRow * FRAME_SIZE + previewYOffset;
       ctx.drawImage(
-          imageToDraw,
-          srcX, srcY, FRAME_SIZE, FRAME_SIZE,
-          0, 0, size, size
+        imageToDraw,
+        srcX,
+        srcY,
+        FRAME_SIZE,
+        FRAME_SIZE,
+        0,
+        0,
+        size,
+        size,
       );
       imagesLoaded++;
     }

@@ -20,7 +20,8 @@ describe("applyTransparencyMaskToCanvas", () => {
   it("should log an error if canvas is not initialized", () => {
     const consoleErrorStub = sinon.stub(console, "error");
     applyTransparencyMaskToCanvas(null, ctx);
-    expect(consoleErrorStub.calledOnceWith("Canvas not initialized")).to.be.true;
+    expect(consoleErrorStub.calledOnceWith("Canvas not initialized")).to.be
+      .true;
     consoleErrorStub.restore();
   });
 

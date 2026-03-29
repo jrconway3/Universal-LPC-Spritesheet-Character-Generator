@@ -10,7 +10,10 @@
  */
 // copied from https://github.com/mikemaccana/dynamic-template/blob/046fee36aecc1f48cf3dc454d9d36bb0e96e0784/index.js
 export const es6DynamicTemplate = (templateString, templateVariables) =>
-	templateString.replace(/\${(.*?)}/g, (_, g) => templateVariables[g] ?? `\${${g}}`);
+  templateString.replace(
+    /\${(.*?)}/g,
+    (_, g) => templateVariables[g] ?? `\${${g}}`,
+  );
 
 /**
  * Convert variant name to filename format (spaces to underscores)
@@ -18,49 +21,57 @@ export const es6DynamicTemplate = (templateString, templateVariables) =>
  * @returns {string} - Filename format (e.g., "light_brown")
  */
 export function variantToFilename(variant) {
-	return variant.replaceAll(' ', '_');
+  return variant.replaceAll(" ", "_");
 }
 
 /**
  * Helper function to capitalize strings for display
  */
 export function capitalize(str) {
-	return str.charAt(0).toUpperCase() + str.slice(1);
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 /**
  * Helper function to capitalize all words in a string for display
  */
 export function ucwords(str) {
-	return str.split(' ').map(word => capitalize(word)).join(' ');
+  return str
+    .split(" ")
+    .map((word) => capitalize(word))
+    .join(" ");
 }
 
 /**
  * Helper function to check if item matches search query
  */
 export function matchesSearch(text, query) {
-	if (!query || query.length < 2) return true;
-	return text.toLowerCase().includes(query.toLowerCase());
+  if (!query || query.length < 2) return true;
+  return text.toLowerCase().includes(query.toLowerCase());
 }
 
 /**
  * Helper function to check if a node or its children contain search matches
  */
 export function nodeHasMatches(node, query) {
-	if (!query || query.length < 2) return true;
+  if (!query || query.length < 2) return true;
 
-	// Check if any items in this node match
-	if (node.items && node.items.some(itemId => {
-		const meta = window.itemMetadata[itemId];
-		return meta && matchesSearch(meta.name, query);
-	})) {
-		return true;
-	}
+  // Check if any items in this node match
+  if (
+    node.items &&
+    node.items.some((itemId) => {
+      const meta = window.itemMetadata[itemId];
+      return meta && matchesSearch(meta.name, query);
+    })
+  ) {
+    return true;
+  }
 
-	// Check if any child nodes have matches
-	if (node.children) {
-		return Object.values(node.children).some(childNode => nodeHasMatches(childNode, query));
-	}
+  // Check if any child nodes have matches
+  if (node.children) {
+    return Object.values(node.children).some((childNode) =>
+      nodeHasMatches(childNode, query),
+    );
+  }
 
-	return false;
+  return false;
 }
