@@ -20,3 +20,4 @@ import "./state/hash_spec.js";
 import "./utils/fileName_spec.js";
 import "./utils/helpers_spec.js";
 import "./utils/zip-helpers_spec.js";
+import "./state/zip_spec.js";
