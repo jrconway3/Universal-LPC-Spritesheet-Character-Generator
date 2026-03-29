@@ -2,12 +2,12 @@
 // Uses GPU shaders for fast color replacement
 
 import { get2DContext } from "./canvas-utils.js";
+import { debugLog } from "../utils/debug.js";
 
 // Shared WebGL resources for reuse
 let sharedGL = null;
 let sharedCanvas = null;
 let sharedProgram = null;
-let sharedQuadBuffer = null;
 
 /**
  * Vertex shader - renders a full-screen quad
@@ -136,7 +136,6 @@ function hexToRgbNormalized(hex) {
  * @returns {WebGLTexture} Palette texture
  */
 function createPaletteTexture(gl, sourcePalette, targetPalette) {
-  const size = Math.max(sourcePalette.length, targetPalette.length);
   const data = new Uint8Array(32 * 2 * 4); // 32 colors × 2 rows × RGBA
 
   // First row: source colors
@@ -169,7 +168,7 @@ function createPaletteTexture(gl, sourcePalette, targetPalette) {
     0,
     gl.RGBA,
     gl.UNSIGNED_BYTE,
-    data
+    data,
   );
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
@@ -262,9 +261,7 @@ function initSharedWebGL() {
   // Setup quad geometry once
   setupQuad(sharedGL, sharedProgram);
 
-  if (window.DEBUG) {
-    console.log("WebGL palette recoloring initialized (shared context)");
-  }
+  debugLog("WebGL palette recoloring initialized (shared context)");
 }
 
 /**
@@ -301,7 +298,7 @@ export function recolorImageWebGL(sourceImage, sourcePalette, targetPalette) {
     const paletteTexture = createPaletteTexture(
       gl,
       sourcePalette,
-      targetPalette
+      targetPalette,
     );
 
     // Set uniforms
@@ -309,7 +306,7 @@ export function recolorImageWebGL(sourceImage, sourcePalette, targetPalette) {
     const paletteLocation = gl.getUniformLocation(sharedProgram, "u_palette");
     const paletteSizeLocation = gl.getUniformLocation(
       sharedProgram,
-      "u_paletteSize"
+      "u_paletteSize",
     );
 
     gl.uniform1i(imageLocation, 0);
@@ -355,7 +352,7 @@ export function isWebGLAvailable() {
     return !!(
       canvas.getContext("webgl") || canvas.getContext("experimental-webgl")
     );
-  } catch (e) {
+  } catch {
     return false;
   }
 }

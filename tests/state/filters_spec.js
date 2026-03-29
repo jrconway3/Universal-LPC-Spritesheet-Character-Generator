@@ -198,11 +198,7 @@ describe("state/filters.js", () => {
       };
 
       // Reset dependencies
-      setAnimations([
-        { value: "walk" },
-        { value: "run" },
-        { value: "jump" },
-      ]);
+      setAnimations([{ value: "walk" }, { value: "run" }, { value: "jump" }]);
       setEnabledAnimations([]);
       setCustomAnimations({});
       setCustomAnimationBase(() => null);
@@ -232,7 +228,7 @@ describe("state/filters.js", () => {
 
     it("should return true if the item's animations include a base animation from custom animations", () => {
       setCustomAnimations({
-        "customRun": { base: "run" },
+        customRun: { base: "run" },
       });
       setCustomAnimationBase((anim) => anim.base);
       setEnabledAnimations(["run"]);
@@ -244,7 +240,7 @@ describe("state/filters.js", () => {
 
     it("should return false if the item's animations do not include a base animation from custom animations", () => {
       setCustomAnimations({
-        "customFly": { base: "fly" },
+        customFly: { base: "fly" },
       });
       setCustomAnimationBase((anim) => anim.base);
       setEnabledAnimations(["run"]);
@@ -305,7 +301,7 @@ describe("state/filters.js", () => {
 
     it("should return true if the node's animations include a base animation from custom animations", () => {
       setCustomAnimations({
-        "customRun": { base: "run" },
+        customRun: { base: "run" },
       });
       setCustomAnimationBase((anim) => anim.base);
       setEnabledAnimations(["run"]);
@@ -315,7 +311,7 @@ describe("state/filters.js", () => {
 
     it("should return false if the node's animations do not include a base animation from custom animations", () => {
       setCustomAnimations({
-        "customFly": { base: "fly" },
+        customFly: { base: "fly" },
       });
       setCustomAnimationBase((anim) => anim.base);
       setEnabledAnimations(["run"]);

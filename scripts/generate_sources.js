@@ -1,10 +1,10 @@
 const fs = require("fs");
 const path = require("path");
+const { debugLog, debugWarn } = require("./utils/debug.js");
 
 const SHEETS_DIR = "sheet_definitions" + path.sep;
 const PALETTES_DIR = "palette_definitions" + path.sep;
 
-const DEBUG = false; // change this to print debug log
 const onlyIfTemplate = false; // print debugging log only if there is a template
 
 require("child_process").fork("scripts/zPositioning/parse_zpos.js");
@@ -13,14 +13,17 @@ require("child_process").fork("scripts/zPositioning/parse_zpos.js");
  * Helper function to capitalize strings for display
  */
 function capitalize(str) {
-	return str.charAt(0).toUpperCase() + str.slice(1);
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 /**
  * Helper function to capitalize all words in a string for display
  */
 function ucwords(str) {
-	return str.split(' ').map(word => capitalize(word)).join(' ');
+  return str
+    .split(" ")
+    .map((word) => capitalize(word))
+    .join(" ");
 }
 
 // Collect metadata for runtime use
@@ -32,14 +35,12 @@ const categoryTree = { items: [], children: {} };
 
 function searchCredit(fileName, credits, origFileName) {
   if (credits.count <= 0) {
-    if (DEBUG)
-      console.error("no credits for filename:", fileName);
+    console.error("no credits for filename:", fileName);
     return undefined;
   }
   if (credits.count === 1) {
     if (!credits[0].file.includes(fileName)) {
-      if (DEBUG)
-        console.error("Wrong credit at filename:", fileName);
+      console.error("Wrong credit at filename:", fileName);
     }
     return undefined;
   }
@@ -58,33 +59,38 @@ function searchCredit(fileName, credits, origFileName) {
   const index = fileName.lastIndexOf("/");
   if (index > -1) {
     return searchCredit(fileName.substring(0, index), credits, origFileName);
-  } else if (DEBUG) {
+  } else {
     console.error(
       "missing credit after searching recursively filename:",
-      origFileName
+      origFileName,
     );
   }
   return undefined;
 }
 
 // Parse credits from item definition and add to global list
-function parseCredits(fileName, credits, listCreditToUse, addedCreditsFor, sex, jdx) {
+function parseCredits(
+  fileName,
+  credits,
+  listCreditToUse,
+  addedCreditsFor,
+  sex,
+  jdx,
+) {
   let fileNameForCreditSearch = fileName;
   let imageFileName = '"' + fileName + '.png" ';
-  if (DEBUG && !onlyIfTemplate)
-    console.log(
-      `Searching for credits to use for ${imageFileName} in ${fileNameForCreditSearch} for layer ${jdx}`
+  if (!onlyIfTemplate)
+    debugLog(
+      `Searching for credits to use for ${imageFileName} in ${fileNameForCreditSearch} for layer ${jdx}`,
     );
 
   const creditToUse = searchCredit(
     fileNameForCreditSearch,
     credits,
-    fileNameForCreditSearch
+    fileNameForCreditSearch,
   );
-  if (DEBUG && !onlyIfTemplate)
-    console.log(
-      `file name set for ${sex} is ${imageFileName} for layer ${jdx}`
-    );
+  if (!onlyIfTemplate)
+    debugLog(`file name set for ${sex} is ${imageFileName} for layer ${jdx}`);
 
   if (creditToUse !== undefined) {
     // comparing via JSON.stringify is faster than node-deep-equal library
@@ -105,7 +111,7 @@ function parseCredits(fileName, credits, listCreditToUse, addedCreditsFor, sex, 
     const authors = '"' + creditToUse.authors.join(",") + '" ';
     const urls = '"' + creditToUse.urls.join(",") + '" ';
     const notes = '"' + creditToUse.notes.replaceAll('"', "**") + '" ';
-    let lineText = '';
+    let lineText = "";
     if (!addedCreditsFor.includes(imageFileName)) {
       const quotedShortName = '"' + fileName + '.png"';
       lineText = `${quotedShortName},${notes},${authors},${licenses},${urls}\n`;
@@ -120,29 +126,29 @@ function parseCredits(fileName, credits, listCreditToUse, addedCreditsFor, sex, 
 function parseTree(filePath, fileName) {
   // Get Full Path
   const fullPath = path.join(filePath, fileName);
-  if (DEBUG && !onlyIfTemplate)
-    console.log(`Parsing tree ${fullPath}`);
+  if (!onlyIfTemplate) debugLog(`Parsing tree ${fullPath}`);
 
   let meta = null;
   try {
     meta = JSON.parse(fs.readFileSync(fullPath));
   } catch (e) {
-    if (DEBUG)
-      console.error("Error parsing json from category file ", fullPath);
+    console.error("Error parsing json from category file ", fullPath);
     throw e;
   }
 
   const { label, priority, required, animations } = meta;
 
   let current = categoryTree;
-  const categoryPath = filePath.replace("sheet_definitions" + path.sep, "").split(path.sep);
+  const categoryPath = filePath
+    .replace("sheet_definitions" + path.sep, "")
+    .split(path.sep);
   const treeId = filePath.split(path.sep).pop();
 
   for (let segment of categoryPath) {
     if (!current.children[segment]) {
       current.children[segment] = {
         items: [],
-        children: {}
+        children: {},
       };
 
       // Only Set Metadata on Current Tree ID
@@ -163,15 +169,15 @@ function writeAliases(aliases, meta) {
   for (const [original, alias] of Object.entries(aliases)) {
     // Get Alias Details
     const [aliasVariant, aliasType] = alias.split("=").reverse();
-    let targetName = '';
-    let targetVariant = '';
+    let targetName = "";
+    let targetVariant = "";
 
     // If Variant is *, Match Variant by Same Name as Original (for use in type name changes)
     if (aliasVariant === "*" && aliasType) {
       targetName = aliasVariant;
       targetVariant = aliasVariant;
-    // If Variant Exists, mark aliasVariant as the variant while grabbing the name from itemMetadata
     } else if (meta.variants.indexOf(aliasVariant) !== -1) {
+      // If Variant Exists, mark aliasVariant as the variant while grabbing the name from itemMetadata
       targetName = meta.name.replaceAll(" ", "_");
       targetVariant = aliasVariant;
     } else {
@@ -182,7 +188,7 @@ function writeAliases(aliases, meta) {
       // If not, keep shifting parts from the left of the name to the variant until we find a match or run out of parts.
       while (parts.length > 1) {
         // Shift one part from the left of the array to build the targetName, and keep testing the remaining parts as the variant
-        targetName += (targetName !== '' ? '_' : '') + parts.shift();
+        targetName += (targetName !== "" ? "_" : "") + parts.shift();
         targetVariant = parts.join("_");
         if (meta.variants.indexOf(targetVariant) !== -1) {
           break;
@@ -195,8 +201,7 @@ function writeAliases(aliases, meta) {
 
     // Target Must Exist!
     if (!targetName || !targetVariant) {
-      if (DEBUG)
-        console.warn("Alias target does not exist for", alias);
+      debugWarn("Alias target does not exist for", alias);
       continue;
     }
 
@@ -204,7 +209,7 @@ function writeAliases(aliases, meta) {
     const forward = {
       typeName: aliasType ?? meta.type_name,
       name: targetName,
-      variant: targetVariant
+      variant: targetVariant,
     };
 
     // Get the origin variant from the original after the "=" sign
@@ -221,16 +226,14 @@ function writeAliases(aliases, meta) {
 function parseJson(filePath, fileName) {
   const fullPath = path.join(filePath, fileName);
   const searchFileName = fileName.replace(".json", "");
-  if (DEBUG && !onlyIfTemplate)
-    console.log(`Parsing ${fullPath}`);
+  if (!onlyIfTemplate) debugLog(`Parsing ${fullPath}`);
 
   // Read JSON Definition
   let definition = null;
   try {
     definition = JSON.parse(fs.readFileSync(fullPath));
   } catch (e) {
-    if (DEBUG)
-      console.error("Error parsing metadata JSON from file:", fullPath);
+    console.error("Error parsing metadata JSON from file:", fullPath);
     throw e;
   }
 
@@ -241,14 +244,13 @@ function parseJson(filePath, fileName) {
     replace_in_path,
     priority,
     ignore,
-    aliases
+    aliases,
   } = definition;
 
   // Skip Ignored Items
   if (ignore === true) {
     throw Error(`Skipping ignored item: ${searchFileName}`);
   }
-
 
   const { tags = [], required_tags = [], excluded_tags = [] } = definition;
   const typeName = definition.type_name;
@@ -259,7 +261,7 @@ function parseJson(filePath, fileName) {
     "slash",
     "shoot",
     "hurt",
-    "watering"
+    "watering",
   ];
 
   const requiredSexes = [];
@@ -280,7 +282,9 @@ function parseJson(filePath, fileName) {
   // Build unique itemId from filename (not from path or type_name)
   // This ensures each item has a unique ID even if they share the same type_name
   let itemId = searchFileName;
-  const treePath = filePath.replace("sheet_definitions" + path.sep, "").split(path.sep);
+  const treePath = filePath
+    .replace("sheet_definitions" + path.sep, "")
+    .split(path.sep);
   treePath.push(itemId);
 
   // Collect layer information (file paths and zPos)
@@ -296,7 +300,6 @@ function parseJson(filePath, fileName) {
 
   // Collect recolor information
   const recolors = [];
-  let hasRecolors = false;
   if (definition.recolors !== undefined) {
     for (let n = 1; n < 10; n++) {
       const colorDef = definition.recolors[`color_${n}`];
@@ -311,9 +314,6 @@ function parseJson(filePath, fileName) {
     if (recolors.length === 0) {
       recolors.push(definition.recolors);
     }
-    if (recolors.length > 0) {
-      hasRecolors = true;
-    }
 
     // Add All Palettes
     for (const recolor of recolors) {
@@ -322,13 +322,13 @@ function parseJson(filePath, fileName) {
       const colorVariants = new Set();
       const materialMeta = paletteMetadata.materials[recolor.material];
       if (!materialMeta) {
-        if (DEBUG)
-          console.warn(`Material metadata not found for ${recolor.material}`);
+        debugWarn(`Material metadata not found for ${recolor.material}`);
         continue;
       }
       recolor.default = materialMeta.default;
       recolor.type_name = recolor.type_name ?? null;
-      recolor.label = recolor.label ?? materialMeta.label ?? ucwords(recolor.material);
+      recolor.label =
+        recolor.label ?? materialMeta.label ?? ucwords(recolor.material);
       if (!recolor.base) {
         recolor.base = `${materialMeta.default}.${materialMeta.base}`;
       } else if (!recolor.base.includes(".")) {
@@ -342,7 +342,9 @@ function parseJson(filePath, fileName) {
         }
 
         // Append Palettes
-        const keys = Object.keys(paletteMetadata.materials[material].palettes[version]);
+        const keys = Object.keys(
+          paletteMetadata.materials[material].palettes[version],
+        );
         colorPalettes[`${material}.${version}`] = keys;
 
         // Determine if we need to prefix version
@@ -351,14 +353,12 @@ function parseJson(filePath, fileName) {
           const verPart = recolor.default !== version ? `${version}.` : "";
           return `${matPart}${verPart}${key}`;
         });
-        mappedKeys.forEach(key => colorVariants.add(key));
+        mappedKeys.forEach((key) => colorVariants.add(key));
       }
       recolor.palettes = colorPalettes;
       recolor.variants = Array.from(colorVariants);
     }
   }
-    
-
 
   // Collect metadata for this item
   itemMetadata[itemId] = {
@@ -380,7 +380,7 @@ function parseJson(filePath, fileName) {
     preview_x_offset: previewXOffset,
     preview_y_offset: previewYOffset,
     matchBodyColor: definition.match_body_color || false,
-    recolors: recolors || []
+    recolors: recolors || [],
   };
 
   // Use type_name for radio button grouping (ensures only one item per type can be selected)
@@ -406,11 +406,18 @@ function parseJson(filePath, fileName) {
         const file = layerDefinition[sex];
         if (file !== null && file !== "") {
           const searchFileName = file + snakeItemName;
-          const [newCreditToUse, lineText, creditsFor] = parseCredits(searchFileName, credits, listCreditToUse, addedCreditsFor, sex, jdx);
+          const [newCreditToUse, lineText, creditsFor] = parseCredits(
+            searchFileName,
+            credits,
+            listCreditToUse,
+            addedCreditsFor,
+            sex,
+            jdx,
+          );
           listCreditToUse = newCreditToUse;
           listItemsCSV.push({
             priority,
-            lineText
+            lineText,
           });
           addedCreditsFor.push(creditsFor);
         } // if file
@@ -446,13 +453,15 @@ function sortDirTree(a, b) {
 }
 
 // Walk Palettes Definitions and build Metadata
-const palettes = fs.readdirSync(PALETTES_DIR, { 
-  recursive: true,
-  withFileTypes: true 
-}).sort(sortDirTree);
+const palettes = fs
+  .readdirSync(PALETTES_DIR, {
+    recursive: true,
+    withFileTypes: true,
+  })
+  .sort(sortDirTree);
 
 // Read palette_definitions/*.json line by line
-palettes.forEach(file => {
+palettes.forEach((file) => {
   if (file.isDirectory()) {
     return;
   } else {
@@ -461,8 +470,7 @@ palettes.forEach(file => {
     try {
       json = JSON.parse(fs.readFileSync(fullPath));
     } catch (e) {
-      if (DEBUG)
-        console.error(`Error parsing palette file json data: ${fullPath}`, e);
+      console.error(`Error parsing palette file json data: ${fullPath}`, e);
       throw e;
     }
 
@@ -470,7 +478,7 @@ palettes.forEach(file => {
     if (file.name.startsWith("meta_")) {
       // Handle Palette Metadata
       const name = file.name.replace("meta_", "").replace(".json", "");
-      if (json.type === 'material') {
+      if (json.type === "material") {
         if (!paletteMetadata.materials[name]) {
           paletteMetadata.materials[name] = json;
           paletteMetadata.materials[name].palettes = {};
@@ -486,23 +494,24 @@ palettes.forEach(file => {
     } else {
       const [material, version] = file.name.replace(".json", "").split("_");
       if (!paletteMetadata.materials[material]) {
-        paletteMetadata.materials[material] = { "palettes": {} };
+        paletteMetadata.materials[material] = { palettes: {} };
       }
       paletteMetadata.materials[material].palettes[version] = json;
     }
   }
 });
 
-
 // Read sheet_definitions/*.json line by line
-const files = fs.readdirSync(SHEETS_DIR, { 
-  recursive: true,
-  withFileTypes: true 
-}).sort(sortDirTree);
+const files = fs
+  .readdirSync(SHEETS_DIR, {
+    recursive: true,
+    withFileTypes: true,
+  })
+  .sort(sortDirTree);
 
 // Initialize CSV
 const csvList = [];
-files.forEach(file => {
+files.forEach((file) => {
   if (file.isDirectory()) {
     return;
   } else if (file.name.startsWith("meta_")) {
@@ -514,11 +523,17 @@ files.forEach(file => {
     try {
       parsedResult = parseJson(file.parentPath, file.name);
     } catch (e) {
-      if (DEBUG && !onlyIfTemplate)
-        console.error(`Error parsing sheet file json data: ${file.parentPath}`, e);
+      if (!onlyIfTemplate)
+        console.error(
+          `Error parsing sheet file json data: ${file.parentPath}`,
+          e,
+        );
       return;
     }
-    csvList.push({path: file.parentPath.replace(SHEETS_DIR, ''), csv: parsedResult.csv});
+    csvList.push({
+      path: file.parentPath.replace(SHEETS_DIR, ""),
+      csv: parsedResult.csv,
+    });
   }
 });
 
@@ -552,7 +567,7 @@ function sortCategoryTree(node) {
       const labelA = valA.label ?? keyA;
       const labelB = valB.label ?? keyB;
       return labelA.localeCompare(labelB, ["en"]);
-    }
+    },
   );
 
   const reordered = {};
@@ -589,7 +604,7 @@ csvList.sort((a, b) => {
   const maxLen = Math.max(pathA.length, pathB.length);
   for (let i = 0; i < maxLen; i++) {
     if (i >= pathA.length) return -1; // a is shorter, comes first
-    if (i >= pathB.length) return 1;  // b is shorter, comes first
+    if (i >= pathB.length) return 1; // b is shorter, comes first
 
     const segA = pathA[i];
     const segB = pathB[i];
@@ -625,10 +640,11 @@ for (const result of csvList) {
     csvGenerated += item.lineText;
   }
 }
-fs.writeFile("CREDITS.csv", csvGenerated, function(err) {
+fs.writeFile("CREDITS.csv", csvGenerated, function (err) {
   if (err) {
     return console.error(err);
   } else {
+    // eslint-disable-next-line no-console
     console.log("CSV Updated!");
     printArray(licensesFound, "Found licenses");
   }
@@ -647,10 +663,11 @@ window.categoryTree = ${JSON.stringify(categoryTree, null, 2)};
 window.paletteMetadata = ${JSON.stringify(paletteMetadata, null, 2)};
 `;
 
-fs.writeFile("item-metadata.js", metadataJS, function(err) {
+fs.writeFile("item-metadata.js", metadataJS, function (err) {
   if (err) {
     return console.error(err);
   } else {
+    // eslint-disable-next-line no-console
     console.log("Item Metadata JS Updated!");
   }
 });
@@ -658,12 +675,12 @@ fs.writeFile("item-metadata.js", metadataJS, function(err) {
 function printArray(array, label) {
   const colors = {
     red: "\x1b[31m",
-    reset: "\x1b[0m"
+    reset: "\x1b[0m",
   };
-  console.log(`${label}: ${colors.red}[`);
+  debugLog(`${label}: ${colors.red}[`);
   array.sort();
   for (const item of array) {
-    console.log(`  "${item}",`);
+    debugLog(`  "${item}",`);
   }
-  console.log(`]${colors.reset}`);
+  debugLog(`]${colors.reset}`);
 }

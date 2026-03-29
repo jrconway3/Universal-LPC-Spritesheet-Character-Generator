@@ -80,14 +80,14 @@ describe("state/hash.js", () => {
     it("should create a hash string from an object", () => {
       const params = { key1: "value1", key2: "value2" };
       expect(createHashStringFromParams(params)).to.equal(
-        "key1=value1&key2=value2"
+        "key1=value1&key2=value2",
       );
     });
 
     it("should encode URI components", () => {
       const params = { "key 1": "value 1", "key 2": "value 2" };
       expect(createHashStringFromParams(params)).to.equal(
-        "key%201=value%201&key%202=value%202"
+        "key%201=value%201&key%202=value%202",
       );
     });
   });
@@ -127,7 +127,13 @@ describe("state/hash.js", () => {
         },
       });
       window.itemMetadata = {
-        1: { type_name: "body", name: "Body", recolors: [ { material: "body", palettes: [ "ulpc" ], variants: [ "light" ] } ] },
+        1: {
+          type_name: "body",
+          name: "Body",
+          recolors: [
+            { material: "body", palettes: ["ulpc"], variants: ["light"] },
+          ],
+        },
       };
 
       const params = getHashParamsforSelections(getState().selections);
@@ -146,7 +152,20 @@ describe("state/hash.js", () => {
         },
       });
       window.itemMetadata = {
-        1: { type_name: "body", name: "Body", recolors: [ { material: "body", palettes: [ "ulpc" ], variants: [ "light" ] }, { type_name: "eyes", label: "Eyes", material: "eyes", palettes: [ "ulpc" ], variants: [ "blue" ] } ] },
+        1: {
+          type_name: "body",
+          name: "Body",
+          recolors: [
+            { material: "body", palettes: ["ulpc"], variants: ["light"] },
+            {
+              type_name: "eyes",
+              label: "Eyes",
+              material: "eyes",
+              palettes: ["ulpc"],
+              variants: ["blue"],
+            },
+          ],
+        },
       };
 
       const params = getHashParamsforSelections(getState().selections);
@@ -189,7 +208,7 @@ describe("state/hash.js", () => {
           subId: null,
           variant: "light",
           name: "Body (light)",
-          recolor: ''
+          recolor: "",
         },
       });
     });
@@ -207,7 +226,7 @@ describe("state/hash.js", () => {
           subId: null,
           variant: "light",
           name: "Body_Color (light)",
-          recolor: ''
+          recolor: "",
         },
       });
     });
@@ -215,7 +234,13 @@ describe("state/hash.js", () => {
     it("should load recolor options", () => {
       setHash("#body=Body_light");
       window.itemMetadata = {
-        1: { type_name: "body", name: "Body", recolors: [ { material: "body", palettes: [ "ulpc" ], variants: [ "light" ] } ] },
+        1: {
+          type_name: "body",
+          name: "Body",
+          recolors: [
+            { material: "body", palettes: ["ulpc"], variants: ["light"] },
+          ],
+        },
       };
 
       loadSelectionsFromHash();
@@ -223,9 +248,9 @@ describe("state/hash.js", () => {
         body: {
           itemId: "1",
           subId: null,
-          variant: '',
+          variant: "",
           name: "Body (light)",
-          recolor: 'light'
+          recolor: "light",
         },
       });
     });
@@ -233,7 +258,20 @@ describe("state/hash.js", () => {
     it("should load multiple recolor options", () => {
       setHash("#body=Body_light&eyes=Eyes_blue");
       window.itemMetadata = {
-        1: { type_name: "body", name: "Body", recolors: [ { material: "body", palettes: [ "ulpc" ], variants: [ "light" ] }, { type_name: "eyes", label: "Eyes", material: "eyes", palettes: [ "ulpc" ], variants: [ "blue" ] } ] },
+        1: {
+          type_name: "body",
+          name: "Body",
+          recolors: [
+            { material: "body", palettes: ["ulpc"], variants: ["light"] },
+            {
+              type_name: "eyes",
+              label: "Eyes",
+              material: "eyes",
+              palettes: ["ulpc"],
+              variants: ["blue"],
+            },
+          ],
+        },
       };
 
       loadSelectionsFromHash();
@@ -241,16 +279,16 @@ describe("state/hash.js", () => {
         body: {
           itemId: "1",
           subId: null,
-          variant: '',
+          variant: "",
           name: "Body (light)",
-          recolor: 'light'
+          recolor: "light",
         },
         eyes: {
           itemId: "1",
           subId: 1,
-          variant: '',
+          variant: "",
           name: "Eyes (blue)",
-          recolor: 'blue'
+          recolor: "blue",
         },
       });
     });
@@ -258,7 +296,13 @@ describe("state/hash.js", () => {
     it("should remove subcolor if doesn't exist on item", () => {
       setHash("#body=Body_light&eyes=Eyes_blue");
       window.itemMetadata = {
-        1: { type_name: "body", name: "Body", recolors: [ { material: "body", palettes: [ "ulpc" ], variants: [ "light" ] } ] },
+        1: {
+          type_name: "body",
+          name: "Body",
+          recolors: [
+            { material: "body", palettes: ["ulpc"], variants: ["light"] },
+          ],
+        },
       };
 
       loadSelectionsFromHash();
@@ -266,27 +310,41 @@ describe("state/hash.js", () => {
         body: {
           itemId: "1",
           subId: null,
-          variant: '',
+          variant: "",
           name: "Body (light)",
-          recolor: 'light'
-        }
+          recolor: "light",
+        },
       });
     });
 
     it("should remove subcolor if type name does not match", () => {
       setHash("#body=Body_light&eyes=Eyes_blue");
       window.itemMetadata = {
-        1: { type_name: "body", name: "Body", recolors: [ { material: "body", palettes: [ "ulpc" ], variants: [ "light" ] }, { type_name: "eye", label: "Eyes", material: "eyes", palettes: [ "ulpc" ], variants: [ "blue" ] } ] },      };
+        1: {
+          type_name: "body",
+          name: "Body",
+          recolors: [
+            { material: "body", palettes: ["ulpc"], variants: ["light"] },
+            {
+              type_name: "eye",
+              label: "Eyes",
+              material: "eyes",
+              palettes: ["ulpc"],
+              variants: ["blue"],
+            },
+          ],
+        },
+      };
 
       loadSelectionsFromHash();
       expect(getState().selections).to.deep.equal({
         body: {
           itemId: "1",
           subId: null,
-          variant: '',
+          variant: "",
           name: "Body (light)",
-          recolor: 'light'
-        }
+          recolor: "light",
+        },
       });
     });
 
@@ -300,11 +358,11 @@ describe("state/hash.js", () => {
       window.aliasMetadata = {
         belt: {
           Other_belts_white: {
-            "typeName": "belt",
-            "name": "Robe_Belt",
-            "variant": "white"
-          }
-        }
+            typeName: "belt",
+            name: "Robe_Belt",
+            variant: "white",
+          },
+        },
       };
 
       loadSelectionsFromHash();
@@ -313,18 +371,20 @@ describe("state/hash.js", () => {
           itemId: "1",
           subId: null,
           variant: "light",
-          recolor: '',
+          recolor: "",
           name: "Body_Color (light)",
         },
         belt: {
           itemId: "3",
           subId: null,
           variant: "white",
-          recolor: '',
+          recolor: "",
           name: "Robe_Belt (white)",
         },
       });
-      expect(getHash()).to.equal("#sex=male&body=Body_Color_light&belt=Robe_Belt_white");
+      expect(getHash()).to.equal(
+        "#sex=male&body=Body_Color_light&belt=Robe_Belt_white",
+      );
     });
 
     it("should forward to waist = robe belt", () => {
@@ -339,9 +399,9 @@ describe("state/hash.js", () => {
           Other_belts_white: {
             typeName: "waist",
             name: "Robe_Belt",
-            variant: "white"
-          }
-        }
+            variant: "white",
+          },
+        },
       };
 
       loadSelectionsFromHash();
@@ -350,18 +410,20 @@ describe("state/hash.js", () => {
           itemId: "1",
           subId: null,
           variant: "light",
-          recolor: '',
+          recolor: "",
           name: "Body_Color (light)",
         },
         waist: {
           itemId: "3",
           subId: null,
           variant: "white",
-          recolor: '',
+          recolor: "",
           name: "Robe_Belt (white)",
         },
       });
-      expect(getHash()).to.equal("#sex=male&body=Body_Color_light&waist=Robe_Belt_white");
+      expect(getHash()).to.equal(
+        "#sex=male&body=Body_Color_light&waist=Robe_Belt_white",
+      );
     });
 
     it("should forward only type name, wrinkes > wrinkles", () => {
@@ -376,9 +438,9 @@ describe("state/hash.js", () => {
           "*": {
             typeName: "wrinkles",
             name: "*",
-            variant: "*"
-          }
-        }
+            variant: "*",
+          },
+        },
       };
 
       loadSelectionsFromHash();
@@ -387,18 +449,20 @@ describe("state/hash.js", () => {
           itemId: "1",
           subId: null,
           variant: "light",
-          recolor: '',
+          recolor: "",
           name: "Body_Color (light)",
         },
         wrinkles: {
           itemId: "4",
           subId: null,
           variant: "light",
-          recolor: '',
+          recolor: "",
           name: "Wrinkles (light)",
         },
       });
-      expect(getHash()).to.equal("#sex=male&body=Body_Color_light&wrinkles=Wrinkles_light");
+      expect(getHash()).to.equal(
+        "#sex=male&body=Body_Color_light&wrinkles=Wrinkles_light",
+      );
     });
   });
 
@@ -414,9 +478,7 @@ describe("state/hash.js", () => {
 
       // Simulate hash change
       setHash("#key=value");
-      window.addEventListener
-        .getCall(0)
-        .args[1](); // Call the event listener
+      window.addEventListener.getCall(0).args[1](); // Call the event listener
 
       expect(callback.calledOnce).to.be.true;
       expect(getHash()).to.equal("#key=value");
@@ -426,5 +488,4 @@ describe("state/hash.js", () => {
       expect(() => initHashChangeListener()).to.not.throw();
     });
   });
-
 });

@@ -12,7 +12,7 @@ export function getAllCredits(selections, bodyType) {
   const allCredits = [];
   const seenFiles = new Set();
 
-  for (const [categoryPath, selection] of Object.entries(selections)) {
+  for (const [, selection] of Object.entries(selections)) {
     const { itemId } = selection;
     const meta = window.itemMetadata[itemId];
 

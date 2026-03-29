@@ -1,6 +1,9 @@
 import { expect } from "chai";
 import sinon from "sinon";
-import { downloadFile, downloadAsPNG } from "../../../sources/canvas/download.js";
+import {
+  downloadFile,
+  downloadAsPNG,
+} from "../../../sources/canvas/download.js";
 
 describe("canvas/download.js", () => {
   describe("downloadFile", () => {
@@ -8,15 +11,19 @@ describe("canvas/download.js", () => {
 
     beforeEach(() => {
       // Stub browser-specific functions
-      createObjectURLStub = sinon.stub(URL, "createObjectURL").returns("blob:url");
+      createObjectURLStub = sinon
+        .stub(URL, "createObjectURL")
+        .returns("blob:url");
       revokeObjectURLStub = sinon.stub(URL, "revokeObjectURL");
       const createElement = document.createElement;
-      createElementStub = sinon.stub(document, "createElement").callsFake(() => {
-        const element = createElement.call(document, "a");
-        element.click = sinon.stub();
-        clickStub = element.click;
-        return element;
-      });
+      createElementStub = sinon
+        .stub(document, "createElement")
+        .callsFake(() => {
+          const element = createElement.call(document, "a");
+          element.click = sinon.stub();
+          clickStub = element.click;
+          return element;
+        });
     });
 
     afterEach(() => {
@@ -69,19 +76,23 @@ describe("canvas/download.js", () => {
     const content = "PNG content";
     const getCanvasBlobMock = () => {
       return new Blob([content], { type: "image/png" });
-    }
+    };
 
     beforeEach(() => {
       // Stub browser-specific functions
-      createObjectURLStub = sinon.stub(URL, "createObjectURL").returns("blob:url");
+      createObjectURLStub = sinon
+        .stub(URL, "createObjectURL")
+        .returns("blob:url");
       revokeObjectURLStub = sinon.stub(URL, "revokeObjectURL");
       const createElement = document.createElement;
-      createElementStub = sinon.stub(document, "createElement").callsFake(() => {
-        const element = createElement.call(document, "a");
-        element.click = sinon.stub();
-        clickStub = element.click;
-        return element;
-      });
+      createElementStub = sinon
+        .stub(document, "createElement")
+        .callsFake(() => {
+          const element = createElement.call(document, "a");
+          element.click = sinon.stub();
+          clickStub = element.click;
+          return element;
+        });
     });
 
     afterEach(() => {
@@ -128,5 +139,5 @@ describe("canvas/download.js", () => {
       expect(blobArg).to.be.instanceOf(Blob);
       expect(blobArg.type).to.equal("image/png");
     });
-  })
+  });
 });
