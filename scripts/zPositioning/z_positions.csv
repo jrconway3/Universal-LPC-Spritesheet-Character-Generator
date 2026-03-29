@@ -515,7 +515,6 @@ shield_crusader,layer_1,2,shield/crusader/bg/ shield/crusader/bg/ shield/crusade
 shield_crusader,layer_2,110,shield/crusader/fg/male/ shield/crusader/fg/female/ shield/crusader/fg/male/ shield/crusader/fg/female/
 shield_heater_paint,layer_1,3,shield/heater/original/paint/bg/ shield/heater/original/paint/bg/ shield/heater/original/paint/bg/ shield/heater/original/paint/bg/
 shield_heater_paint,layer_2,111,shield/heater/original/paint/fg/ shield/heater/original/paint/fg/ shield/heater/original/paint/fg/ shield/heater/original/paint/fg/
-shield_heater_pattern,layer_1,112,shield/heater/pattern/universal/ shield/heater/pattern/universal/ shield/heater/pattern/universal/ shield/heater/pattern/universal/
 shield_heater_pattern_barry,layer_1,4,shield/heater/original/pattern/barry/bg/ shield/heater/original/pattern/barry/bg/ shield/heater/original/pattern/barry/bg/ shield/heater/original/pattern/barry/bg/
 shield_heater_pattern_barry,layer_2,112,shield/heater/original/pattern/barry/fg/ shield/heater/original/pattern/barry/fg/ shield/heater/original/pattern/barry/fg/ shield/heater/original/pattern/barry/fg/
 shield_heater_pattern_bend,layer_1,4,shield/heater/original/pattern/bend/bg/ shield/heater/original/pattern/bend/bg/ shield/heater/original/pattern/bend/bg/ shield/heater/original/pattern/bend/bg/
