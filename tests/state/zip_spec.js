@@ -117,6 +117,28 @@ const ZIP_SPEC_ITEM_METADATA = {
   },
 };
 
+/**
+ * Item whose layers are exclusively custom_animation (no standard sheet rows).
+ * LiberatedPixelCup#364 / PR "Fixed Item Split and Animation Split Exports":
+ * export must fall back when getSortedLayers(id, true) is empty.
+ */
+const CUSTOM_ANIMATION_ONLY_ITEM_METADATA = {
+  custom_only_whip: {
+    name: "Custom Whip",
+    type_name: "weapon",
+    required: ["male", "female", "teen", "child", "muscular", "pregnant"],
+    animations: ["walk"],
+    recolors: [],
+    layers: {
+      layer_1: {
+        zPos: 100,
+        custom_animation: "wheelchair",
+        male: "misc/body/wheelchair/",
+      },
+    },
+  },
+};
+
 describe("state/zip.js", () => {
   describe("exportSplitAnimations", () => {
     let sandbox;
@@ -398,6 +420,51 @@ describe("state/zip.js", () => {
       expect(issueAlert, "partial failure alert").to.exist;
       expect(String(issueAlert.args[0])).to.include(secondFileName);
     });
+
+    describe("issue #364 (custom-animation-only items)", () => {
+      beforeEach(() => {
+        window.itemMetadata = {
+          ...(window.itemMetadata || {}),
+          ...CUSTOM_ANIMATION_ONLY_ITEM_METADATA,
+        };
+        state.selections = {
+          only: {
+            itemId: "custom_only_whip",
+            variant: "light",
+            name: "Custom Whip",
+          },
+        };
+      });
+
+      it("exportSplitItemSheets calls renderSingleItem and writes items/ when every layer is custom_animation (standard-only layer list empty)", async () => {
+        expect(
+          getSortedLayers("custom_only_whip", true),
+          "precondition: standard-only layers must be empty for this fixture",
+        ).to.have.length(0);
+        expect(getSortedLayers("custom_only_whip", false)).to.have.length(1);
+
+        const renderStub = sandbox.stub().resolves(nonEmptyItemCanvas());
+        const addSpy = sinon.spy(addAnimationToZipFolder);
+
+        await exportSplitItemSheets({
+          renderSingleItem: renderStub,
+          addAnimationToZipFolder: addSpy,
+        });
+
+        const allLayers = getSortedLayers("custom_only_whip", false);
+        const expectedFileName = getItemFileName(
+          "custom_only_whip",
+          "light",
+          "Custom Whip",
+          allLayers[0].layerNum,
+        );
+
+        expect(renderStub.callCount).to.equal(allLayers.length);
+        expect(addSpy.callCount).to.equal(allLayers.length);
+        expect(fakeZip.files.get(`items/${expectedFileName}.png`)).to.exist;
+        expect(alertStub.calledWith("Export complete!")).to.be.true;
+      });
+    });
   });
 
   describe("exportSplitItemAnimations", () => {
@@ -597,6 +664,44 @@ describe("state/zip.js", () => {
         );
       expect(issueAlert, "partial failure alert").to.exist;
       expect(String(issueAlert.args[0])).to.include(headFileName);
+    });
+
+    describe("issue #364 (custom-animation-only items)", () => {
+      beforeEach(() => {
+        window.itemMetadata = {
+          ...(window.itemMetadata || {}),
+          ...CUSTOM_ANIMATION_ONLY_ITEM_METADATA,
+        };
+        state.selections = {
+          only: {
+            itemId: "custom_only_whip",
+            variant: "light",
+            name: "Custom Whip",
+          },
+        };
+      });
+
+      it("exportSplitItemAnimations calls renderSingleItemAnimation under standard/<anim>/ when every layer is custom_animation (standard-only layer list empty)", async () => {
+        expect(
+          getSortedLayers("custom_only_whip", true),
+          "precondition: standard-only layers must be empty for this fixture",
+        ).to.have.length(0);
+
+        const renderStub = sandbox.stub().resolves(nonEmptyAnimCanvas());
+        const addSpy = sinon.spy(addAnimationToZipFolder);
+
+        await exportSplitItemAnimations({
+          renderSingleItemAnimation: renderStub,
+          addAnimationToZipFolder: addSpy,
+        });
+
+        const allLayers = getSortedLayers("custom_only_whip", false);
+        const walkCalls = addSpy
+          .getCalls()
+          .filter((c) => c.args[0]?.root === "standard/walk/");
+        expect(walkCalls.length).to.equal(allLayers.length);
+        expect(renderStub.callCount).to.equal(allLayers.length);
+      });
     });
   });
 

@@ -3,6 +3,14 @@ import { debugWarn } from "../utils/debug.js";
 let loadedImages = {};
 
 /**
+ * Clears the in-memory image cache. Browser tests call this so a stubbed
+ * `Image` constructor cannot poison later specs that share the same module.
+ */
+export function resetImageLoadCache() {
+  loadedImages = {};
+}
+
+/**
  * Load an image
  */
 export function loadImage(src) {
