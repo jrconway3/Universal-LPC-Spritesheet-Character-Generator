@@ -30,9 +30,6 @@ export function getSortedLayers(itemId, standardOnly = false) {
   }
 
   // Sort by animation first, then by zPos
-  layersList.sort((a, b) => {
-    return a.zPos - b.zPos;
-  });
   return layersList;
 }
 
