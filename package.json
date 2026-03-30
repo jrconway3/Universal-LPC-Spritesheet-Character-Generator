@@ -7,7 +7,8 @@
     "validate-site-sources": "node scripts/generate_sources.js",
     "z-positions": "node scripts/zPositioning/parse_zpos.js",
     "z-positions:update": "node scripts/zPositioning/update_zpos.js",
-    "test": "testem ci"
+    "test": "testem ci",
+    "test:server": "testem"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.28.5",

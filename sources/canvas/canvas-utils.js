@@ -1,5 +1,28 @@
 // Canvas utility functions
 
+import { debugWarn } from "../utils/debug.js";
+
+/**
+ * Encode a canvas as a PNG Blob (rejects if toBlob yields null or throws).
+ * @param {HTMLCanvasElement} canvas
+ * @returns {Promise<Blob>}
+ */
+export function canvasToBlob(canvas) {
+  return new Promise((resolve, reject) => {
+    try {
+      canvas.toBlob((blob) => {
+        if (blob) {
+          resolve(blob);
+        } else {
+          reject(new Error("Failed to create blob from canvas"));
+        }
+      }, "image/png");
+    } catch (err) {
+      reject(new Error(`Canvas to Blob conversion failed: ${err.message}`));
+    }
+  });
+}
+
 /**
  * Get 2D context with image smoothing disabled for crisp pixel rendering
  * @param {HTMLCanvasElement} canvas - Canvas element
@@ -10,6 +33,37 @@ export function get2DContext(canvas, willReadFrequently = false) {
   const ctx = canvas.getContext("2d", { willReadFrequently });
   ctx.imageSmoothingEnabled = false;
   return ctx;
+}
+
+/**
+ * Draw a loaded image onto a new canvas (same dimensions as the image).
+ * @param {CanvasImageSource} img
+ * @returns {HTMLCanvasElement}
+ */
+export function image2canvas(img) {
+  const imgCanvas = document.createElement("canvas");
+  imgCanvas.width = img.width;
+  imgCanvas.height = img.height;
+  const imgCtx = get2DContext(imgCanvas);
+  if (!imgCtx) {
+    throw new Error("Failed to get canvas context");
+  }
+  imgCtx.drawImage(img, 0, 0);
+  return imgCanvas;
+}
+
+/**
+ * Whether a rectangular region has any non-zero channel (including alpha) in its ImageData.
+ * @param {CanvasRenderingContext2D} ctx
+ */
+export function hasContentInRegion(ctx, x, y, width, height) {
+  try {
+    const imageData = ctx.getImageData(x, y, width, height);
+    return imageData.data.some((pixel) => pixel !== 0);
+  } catch (e) {
+    debugWarn("Error checking region content:", e);
+    return false;
+  }
 }
 
 /**

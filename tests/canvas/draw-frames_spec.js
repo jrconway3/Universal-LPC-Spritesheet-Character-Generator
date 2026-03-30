@@ -1,5 +1,6 @@
 import { drawFrameToFrame } from "../../../sources/canvas/draw-frames.js";
 import { expect } from "chai";
+import { describe, it, beforeEach } from "mocha-globals";
 import sinon from "sinon";
 
 describe("drawFrameToFrame", () => {

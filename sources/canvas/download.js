@@ -1,7 +1,8 @@
+import { canvasToBlob } from "./canvas-utils.js";
 import { getCanvas } from "./renderer.js";
 
 /**
- * Get canvas as blob for ZIP export
+ * Get the main renderer canvas as a PNG blob (for download / export).
  */
 export function getCanvasBlob() {
   const canvas = getCanvas();
@@ -10,9 +11,7 @@ export function getCanvasBlob() {
     return Promise.reject(new Error("Canvas not initialized"));
   }
 
-  return new Promise((resolve) => {
-    canvas.toBlob((blob) => resolve(blob), "image/png");
-  });
+  return canvasToBlob(canvas);
 }
 
 /**

@@ -1,8 +1,12 @@
 import { expect } from "chai";
+import { describe, it, before, after } from "mocha-globals";
 import { getItemFileName } from "../../sources/utils/fileName.js";
 
 describe("getItemFileName", () => {
+  let previousItemMetadata;
+
   before(() => {
+    previousItemMetadata = window.itemMetadata;
     window.itemMetadata = {
       1: {
         layers: {
@@ -19,7 +23,7 @@ describe("getItemFileName", () => {
   });
 
   after(() => {
-    delete window.itemMetadata;
+    window.itemMetadata = previousItemMetadata;
   });
 
   it("should return the correct filename with zPos prefix", () => {
