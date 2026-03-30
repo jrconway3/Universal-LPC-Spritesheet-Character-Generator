@@ -91,7 +91,6 @@ export async function renderCharacter(
     // Build list of items to draw
     const itemsToDraw = [];
     const customAnimationItems = []; // Track items with custom animations
-    const addedCustomAnimations = new Set(); // Track which custom animations we've added
 
     for (const [, selection] of Object.entries(selections)) {
       const { itemId, subId, variant } = selection;

@@ -206,14 +206,17 @@ export const exportSplitItemSheets = async (deps = {}) => {
     // Render each item individually
     for (const [, selection] of Object.entries(state.selections)) {
       const { itemId, variant, name } = selection;
-      const layers = getSortedLayers(itemId, true);
+      let layers = getSortedLayers(itemId, true);
+      if (!layers || layers.length === 0) {
+        // If no layers found when skipping custom animations, grab ONLY custom animations
+        layers = getSortedLayers(itemId);
+      }
 
       // Get Multiple Recolors If Available
       const recolors = getMultiRecolors(itemId, state.selections);
 
       // Render each layer of the item separately
       for (const layer of layers) {
-        if (layer.custom_animation) continue;
         const fileName = getItemFileName(itemId, variant, name, layer.layerNum);
         try {
           // Render just this one item
