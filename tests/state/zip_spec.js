@@ -115,6 +115,19 @@ const ZIP_SPEC_ITEM_METADATA = {
       },
     },
   },
+  longsword: {
+    name: "Longsword",
+    type_name: "weapon",
+    required: ["male", "female", "teen", "muscular", "pregnant"],
+    animations: ["walk"],
+    layers: {
+      layer_1: {
+        custom_animation: "walk_128",
+        zPos: 140,
+        male: "weapon/sword/longsword_alt/walk/",
+      },
+    },
+  },
 };
 
 /**
@@ -419,6 +432,63 @@ describe("state/zip.js", () => {
         );
       expect(issueAlert, "partial failure alert").to.exist;
       expect(String(issueAlert.args[0])).to.include(secondFileName);
+    });
+
+    it("verify custom only animations also export correctly", async () => {
+      state.selections = {
+        body: {
+          itemId: "body",
+          variant: "light",
+          name: "Body color (light)",
+        },
+        head: {
+          itemId: "heads_human_male",
+          variant: "light",
+          name: "Human male (light)",
+        },
+        weapon: {
+          itemId: "longsword",
+          variant: "longsword",
+          name: "Longsword (longsword)",
+        },
+      };
+
+      window.JSZip = function FakeJSZip() {
+        fakeZip = createFakeJSZip();
+        return fakeZip;
+      };
+
+      const renderStub = sandbox.stub().resolves(nonEmptyItemCanvas());
+
+      await exportSplitItemSheets({ renderSingleItem: renderStub });
+
+      const bodyLayers = getSortedLayers("body", true);
+      const headLayers = getSortedLayers("heads_human_male", true);
+      const weaponLayers = getSortedLayers("longsword", true);
+      const realWeaponLayers = getSortedLayers("longsword");
+      const firstFileName = getItemFileName(
+        "body",
+        "light",
+        "Body color (light)",
+        bodyLayers[0].layerNum,
+      );
+      const secondFileName = getItemFileName(
+        "heads_human_male",
+        "light",
+        "Human male (light)",
+        headLayers[0].layerNum,
+      );
+      const thirdFileName = getItemFileName(
+        "longsword",
+        "longsword",
+        "Longsword (longsword)",
+        realWeaponLayers[0].layerNum,
+      );
+
+      expect(fakeZip.files.get(`items/${firstFileName}.png`)).to.exist;
+      expect(fakeZip.files.get(`items/${secondFileName}.png`)).to.exist;
+      expect(weaponLayers.length).to.equal(0);
+      expect(fakeZip.files.get(`items/${thirdFileName}.png`)).to.exist;
     });
 
     describe("issue #364 (custom-animation-only items)", () => {
