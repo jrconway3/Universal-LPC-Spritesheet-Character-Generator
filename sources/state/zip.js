@@ -355,7 +355,12 @@ export const exportSplitItemAnimations = async (deps = {}) => {
         const recolors = getMultiRecolors(itemId, state.selections);
 
         // Render each layer of the item separately
-        const layers = getSortedLayers(itemId, true);
+        let layers = getSortedLayers(itemId, true);
+        if (!layers || layers.length === 0) {
+          // If no layers found when skipping custom animations, use all layers
+          // (custom-animation-only items have no "standard" sheet rows).
+          layers = getSortedLayers(itemId);
+        }
         for (const layer of layers) {
           const fileName = getItemFileName(
             itemId,
