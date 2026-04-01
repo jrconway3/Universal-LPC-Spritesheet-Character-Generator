@@ -7,8 +7,18 @@
     "female": "torso/chainmail/female/",
     "teen": "torso/chainmail/female/"
   },
-  "variants": [
-    "gray"
+  "animations": [
+    "spellcast",
+    "thrust",
+    "walk",
+    "slash",
+    "shoot",
+    "hurt",
+    "watering",
+    "idle",
+    "sit",
+    "emote",
+    "climb"
   ],
   "credits": [
     {
@@ -27,9 +37,13 @@
       ]
     }
   ],
-  "path": [
-    "torso",
-    "torso_chainmail"
-  ],
+  "recolors": {
+    "material": "metal",
+    "palettes": [
+      "ulpc",
+      "lpcr",
+      "all.lpcr"
+    ]
+  },
   "type_name": "chainmail"
 }
