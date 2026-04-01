@@ -2577,9 +2577,11 @@ window.itemMetadata = {
     "credits": [
       {
         "file": "torso/chainmail",
-        "notes": "minor edits by bluecarrot16",
+        "notes": "minor edits by bluecarrot16, reduced colors by Napsio, adjusted Male colors and Idle/Sit/Emote/Climb by JaidynReiman",
         "authors": [
-          "Johannes Sjölund (wulax)"
+          "Johannes Sjölund (wulax)",
+          "Napsio",
+          "JaidynReiman"
         ],
         "licenses": [
           "OGA-BY 3.0",
