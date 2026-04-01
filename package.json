@@ -8,7 +8,8 @@
     "z-positions": "node scripts/zPositioning/parse_zpos.js",
     "z-positions:update": "node scripts/zPositioning/update_zpos.js",
     "test": "testem ci",
-    "test:server": "testem"
+    "test:server": "testem",
+    "test:visual": "playwright test"
   },
   "devDependencies": {
     "@argos-ci/playwright": "^6.6.1",
@@ -23,6 +24,7 @@
     "mithril": "^2.3.8",
     "mocha": "^11.7.5",
     "prettier": "^3.8.1",
+    "serve": "^14.2.6",
     "testem": "^3.19.1"
   },
   "overrides": {
