@@ -9,7 +9,8 @@
     "z-positions:update": "node scripts/zPositioning/update_zpos.js",
     "test": "testem ci",
     "test:server": "testem",
-    "test:visual": "playwright test"
+    "test:visual": "playwright test",
+    "test:visual:headed": "playwright test --headed"
   },
   "devDependencies": {
     "@argos-ci/playwright": "^6.6.1",
