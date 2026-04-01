@@ -525,10 +525,7 @@ files.forEach((file) => {
     } catch (e) {
       const fullPath = path.join(file.parentPath, file.name);
       if (!onlyIfTemplate)
-        console.error(
-          `Error parsing sheet file json data: ${fullPath}`,
-          e,
-        );
+        console.error(`Error parsing sheet file json data: ${fullPath}`, e);
       return;
     }
     csvList.push({
