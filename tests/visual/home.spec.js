@@ -1,4 +1,5 @@
 import { test } from "@playwright/test";
+import { argosScreenshot } from "@argos-ci/playwright";
 
 /** Base URL for the static site (see `webServer` in playwright.config.mjs). */
 const BASE_URL =
@@ -16,14 +17,15 @@ const VIEWPORTS = {
 };
 
 /**
- * Full-page Argos screenshot. In Argos docs this is `argosScreenshot` from
- * `@argos-ci/playwright`; we use the name `argosDesktop` here for full-page captures.
- *
- * Stub: uncomment the import and body when you are ready to upload to Argos.
+ * Full-page Argos screenshot. Wraps `argosScreenshot` from `@argos-ci/playwright`.
+ * When `ARGOS_TOKEN` is unset, skips capture so `npm run test:visual` can verify
+ * navigation and layout without talking to Argos (see CONTRIBUTING.md).
  */
-async function argosDesktop(_page, _name) {
-  // import { argosScreenshot } from "@argos-ci/playwright";
-  // await argosScreenshot(_page, _name);
+async function argosDesktop(page, name) {
+  if (!process.env.ARGOS_TOKEN?.trim()) {
+    return;
+  }
+  await argosScreenshot(page, name);
 }
 
 test.describe("Homepage — full page", () => {
