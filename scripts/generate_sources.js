@@ -523,9 +523,10 @@ files.forEach((file) => {
     try {
       parsedResult = parseJson(file.parentPath, file.name);
     } catch (e) {
+      const fullPath = path.join(file.parentPath, file.name);
       if (!onlyIfTemplate)
         console.error(
-          `Error parsing sheet file json data: ${file.parentPath}\\${file.name}`,
+          `Error parsing sheet file json data: ${fullPath}`,
           e,
         );
       return;
