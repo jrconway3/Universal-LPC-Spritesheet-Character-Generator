@@ -20,5 +20,6 @@ import "./state/filters_spec.js";
 import "./state/hash_spec.js";
 import "./utils/fileName_spec.js";
 import "./utils/helpers_spec.js";
+import "./utils/credits_spec.js";
 import "./utils/zip-helpers_spec.js";
 import "./state/zip_spec.js";
