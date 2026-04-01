@@ -5,6 +5,7 @@ import {
   setPathDeps,
   resetPathDeps,
 } from "../../sources/state/path.js";
+import { es6DynamicTemplate } from "../../sources/utils/helpers.js";
 import { expect } from "chai";
 import sinon from "sinon";
 import { describe, it, beforeEach, afterEach } from "mocha-globals";
@@ -91,6 +92,101 @@ describe("state/path.js", () => {
       replaceInPath("base/${head}/tail", {}, meta);
       expect(debugLog.calledOnce).to.be.true;
       expect(debugLog.firstCall.args[0]).to.include("head");
+    });
+
+    it("resolves multiple placeholders in one path", () => {
+      setPathDeps({
+        getHashParamsforSelections: () => ({
+          head: "human_head",
+          body: "shirt_red",
+        }),
+      });
+      const meta = {
+        replace_in_path: {
+          head: { human: "h1" },
+          body: { shirt: "s1" },
+        },
+      };
+      expect(replaceInPath("pre/${head}/mid/${body}/tail", {}, meta)).to.equal(
+        "pre/h1/mid/s1/tail",
+      );
+    });
+
+    it("ignores extra hash keys that do not appear in the path", () => {
+      setPathDeps({
+        getHashParamsforSelections: () => ({
+          head: "human_head",
+          body: "shirt_red",
+        }),
+      });
+      const meta = {
+        replace_in_path: {
+          head: { human: "humanoid" },
+        },
+      };
+      expect(replaceInPath("base/${head}/tail", {}, meta)).to.equal(
+        "base/humanoid/tail",
+      );
+    });
+
+    it("passes an empty object to getHashParamsforSelections when selections is null or undefined", () => {
+      const getHashParamsforSelections = sinon.stub().returns({
+        head: "human_head",
+      });
+      setPathDeps({ getHashParamsforSelections });
+      const meta = {
+        replace_in_path: {
+          head: { human: "x" },
+        },
+      };
+      replaceInPath("p/${head}/q", null, meta);
+      expect(getHashParamsforSelections.firstCall.args[0]).to.deep.equal({});
+      getHashParamsforSelections.resetHistory();
+      replaceInPath("p/${head}/q", undefined, meta);
+      expect(getHashParamsforSelections.firstCall.args[0]).to.deep.equal({});
+    });
+
+    it("leaves placeholders unchanged when the hash omits that key", () => {
+      setPathDeps({
+        getHashParamsforSelections: () => ({}),
+      });
+      const meta = {
+        replace_in_path: {
+          head: { human: "humanoid" },
+        },
+      };
+      expect(replaceInPath("base/${head}/tail", {}, meta)).to.equal(
+        "base/${head}/tail",
+      );
+    });
+
+    it("throws when meta.replace_in_path is missing", () => {
+      setPathDeps({
+        getHashParamsforSelections: () => ({ head: "human_head" }),
+      });
+      expect(() => replaceInPath("base/${head}/tail", {}, {})).to.throw();
+    });
+
+    it("invokes es6DynamicTemplate with the path and replacement map", () => {
+      const es6Spy = sinon
+        .stub()
+        .callsFake((path, replacements) =>
+          es6DynamicTemplate(path, replacements),
+        );
+      setPathDeps({
+        getHashParamsforSelections: () => ({ head: "human_head" }),
+        es6DynamicTemplate: es6Spy,
+      });
+      const meta = {
+        replace_in_path: {
+          head: { human: "humanoid" },
+        },
+      };
+      const path = "base/${head}/tail";
+      expect(replaceInPath(path, {}, meta)).to.equal("base/humanoid/tail");
+      expect(es6Spy.calledOnce).to.be.true;
+      expect(es6Spy.firstCall.args[0]).to.equal(path);
+      expect(es6Spy.firstCall.args[1]).to.deep.equal({ head: "humanoid" });
     });
   });
 
