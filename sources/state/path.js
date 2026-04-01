@@ -30,6 +30,45 @@ export function getPathDeps() {
 }
 
 /**
+ * Extract base asset name from a nameAndVariant string (e.g. selection id suffix).
+ * Both names and variants may contain underscores; this uses catalog variants/recolors
+ * to find the longest matching suffix.
+ *
+ * @param {string} nameAndVariant
+ * @param {Array<object>} itemsForType Item metadata entries for this type_name
+ * @returns {string}
+ */
+// This is way too complex because both names and variants can have underscores in them
+// Perhaps we should change the naming convention to avoid this ambiguity
+// e.g. use double underscore to separate name and variant in item ids
+export function getNameWithoutVariant(nameAndVariant, itemsForType) {
+  let variant = "";
+  const nameAndVariantPath = nameAndVariant.split("_");
+  const l = nameAndVariantPath.length;
+  const names = itemsForType || [];
+  const variants = names
+    .flatMap((n) => n.variants || [])
+    .map((v) => v.toLowerCase());
+  const recolors = names
+    .flatMap((n) => n.recolors?.[0]?.variants || [])
+    .map((v) => v.toLowerCase());
+  let j = l;
+  let v = 0;
+  while (--j > 0) {
+    const part = nameAndVariantPath.slice(j, l).join("_");
+    const hasPart = (flatMap, part) => flatMap?.includes(part.toLowerCase());
+    if (hasPart(variants, part) || hasPart(recolors, part)) {
+      variant = part;
+      v = j;
+    }
+  }
+  const name = variant
+    ? nameAndVariantPath.slice(0, v).join("_")
+    : nameAndVariantPath.slice(0, l - 1).join("_");
+  return name;
+}
+
+/**
  * Build sprite path from item metadata for a specific animation
  */
 export function getSpritePath(
@@ -87,7 +126,7 @@ export function replaceInPath(path, selections, meta) {
     const hashParams = pathDeps.getHashParamsforSelections(selections || {});
     const replacements = Object.fromEntries(
       Object.entries(hashParams).map(([typeName, nameAndVariant]) => {
-        const name = getNameWithoutVariant(typeName, nameAndVariant);
+        const name = _getNameWithoutVariant(typeName, nameAndVariant);
         const replacement = meta.replace_in_path[typeName]?.[name];
         if (path.includes(`\${${typeName}}`) && !replacement) {
           pathDeps.debugLog(
@@ -117,33 +156,7 @@ for (const key of Object.keys(window.itemMetadata || {})) {
   }
 }
 
-// Helper to extract name without variant from a nameAndVariant string
-// This is way too complex because both names and variants can have underscores in them
-// Perhaps we should change the naming convention to avoid this ambiguity
-// e.g. use double underscore to separate name and variant in item ids
-function getNameWithoutVariant(typeName, nameAndVariant) {
-  let variant = "";
-  const nameAndVariantPath = nameAndVariant.split("_");
-  const l = nameAndVariantPath.length;
-  const names = indexedMetadataCache.get(typeName) || [];
-  const variants = names
-    .flatMap((n) => n.variants || [])
-    .map((v) => v.toLowerCase());
-  const recolors = names
-    .flatMap((n) => n.recolors?.[0]?.variants || [])
-    .map((v) => v.toLowerCase());
-  let j = l;
-  let v = 0;
-  while (--j > 0) {
-    const part = nameAndVariantPath.slice(j, l).join("_");
-    const hasPart = (flatMap, part) => flatMap?.includes(part.toLowerCase());
-    if (hasPart(variants, part) || hasPart(recolors, part)) {
-      variant = part;
-      v = j;
-    }
-  }
-  const name = variant
-    ? nameAndVariantPath.slice(0, v).join("_")
-    : nameAndVariantPath.slice(0, l - 1).join("_");
-  return name;
+function _getNameWithoutVariant(typeName, nameAndVariant) {
+  const itemsForType = indexedMetadataCache.get(typeName) || [];
+  return getNameWithoutVariant(nameAndVariant, itemsForType);
 }

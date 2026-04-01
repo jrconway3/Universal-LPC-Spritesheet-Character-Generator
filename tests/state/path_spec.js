@@ -1,4 +1,5 @@
 import {
+  getNameWithoutVariant,
   getSpritePath,
   replaceInPath,
   setPathDeps,
@@ -15,6 +16,43 @@ describe("state/path.js", () => {
 
   afterEach(() => {
     resetPathDeps();
+  });
+
+  describe("getNameWithoutVariant", () => {
+    it("returns empty string for a single segment with no underscore", () => {
+      expect(getNameWithoutVariant("only", [])).to.equal("");
+    });
+
+    it("drops the last segment when no catalog variants match", () => {
+      expect(getNameWithoutVariant("human_head", [])).to.equal("human");
+    });
+
+    it("returns the name before a known single-segment variant", () => {
+      const items = [{ variants: ["head", "red"] }];
+      expect(getNameWithoutVariant("human_red", items)).to.equal("human");
+    });
+
+    it("matches multi-segment variant suffixes", () => {
+      const items = [{ variants: ["light_brown"] }];
+      expect(getNameWithoutVariant("human_light_brown", items)).to.equal(
+        "human",
+      );
+    });
+
+    it("matches variants from recolors", () => {
+      const items = [{ recolors: [{ variants: ["ash"] }] }];
+      expect(getNameWithoutVariant("human_ash", items)).to.equal("human");
+    });
+
+    it("matches case-insensitively against catalog variants", () => {
+      const items = [{ variants: ["Red"] }];
+      expect(getNameWithoutVariant("human_RED", items)).to.equal("human");
+    });
+
+    it("collects variants from multiple items of the same type", () => {
+      const items = [{ variants: ["a"] }, { variants: ["b"] }];
+      expect(getNameWithoutVariant("x_b", items)).to.equal("x");
+    });
   });
 
   describe("replaceInPath", () => {
