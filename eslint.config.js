@@ -28,11 +28,7 @@ const commonRules = {
 
 module.exports = [
   {
-    ignores: [
-      "sources/jszip.min.js",
-      "sources/jhash-2.2.min.js",
-      "item-metadata.js",
-    ],
+    ignores: ["item-metadata.js"],
   },
   js.configs.recommended,
   {
