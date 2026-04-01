@@ -6,32 +6,6 @@
     "female": "torso/clothes/shortsleeve/shortsleeves/female/",
     "teen": "torso/clothes/shortsleeve/shortsleeves/teen/"
   },
-  "variants": [
-    "black",
-    "blue",
-    "bluegray",
-    "brown",
-    "charcoal",
-    "forest",
-    "gray",
-    "green",
-    "lavender",
-    "leather",
-    "maroon",
-    "navy",
-    "orange",
-    "pink",
-    "purple",
-    "red",
-    "rose",
-    "sky",
-    "slate",
-    "tan",
-    "teal",
-    "walnut",
-    "white",
-    "yellow"
-  ],
   "animations": [
     "spellcast",
     "thrust",
@@ -122,11 +96,12 @@
       ]
     }
   ],
-  "path": [
-    "torso",
-    "shirts",
-    "sleeves",
-    "torso_clothes_shortsleeves"
-  ],
+  "recolors": {
+    "material": "cloth",
+    "palettes": [
+      "ulpc",
+      "all.lpcr"
+    ]
+  },
   "type_name": "sleeves"
 }

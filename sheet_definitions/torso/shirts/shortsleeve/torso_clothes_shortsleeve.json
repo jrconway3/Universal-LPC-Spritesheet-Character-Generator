@@ -7,32 +7,6 @@
     "pregnant": "torso/clothes/shortsleeve/shortsleeve/pregnant/",
     "teen": "torso/clothes/shortsleeve/shortsleeve/teen/"
   },
-  "variants": [
-    "black",
-    "blue",
-    "bluegray",
-    "brown",
-    "charcoal",
-    "forest",
-    "gray",
-    "green",
-    "lavender",
-    "leather",
-    "maroon",
-    "navy",
-    "orange",
-    "pink",
-    "purple",
-    "red",
-    "rose",
-    "sky",
-    "slate",
-    "tan",
-    "teal",
-    "walnut",
-    "white",
-    "yellow"
-  ],
   "animations": [
     "spellcast",
     "thrust",
@@ -147,11 +121,12 @@
       ]
     }
   ],
-  "path": [
-    "torso",
-    "shirts",
-    "shortsleeve",
-    "torso_clothes_shortsleeve"
-  ],
+  "recolors": {
+    "material": "cloth",
+    "palettes": [
+      "ulpc",
+      "all.lpcr"
+    ]
+  },
   "type_name": "clothes"
 }

@@ -8,33 +8,6 @@
     "teen": "legs/formal_striped/thin/",
     "pregnant": "legs/formal_striped/thin/"
   },
-  "variants": [
-    "base",
-    "black",
-    "blue",
-    "bluegray",
-    "brown",
-    "charcoal",
-    "forest",
-    "gray",
-    "green",
-    "lavender",
-    "leather",
-    "maroon",
-    "navy",
-    "orange",
-    "pink",
-    "purple",
-    "red",
-    "rose",
-    "sky",
-    "slate",
-    "tan",
-    "teal",
-    "walnut",
-    "white",
-    "yellow"
-  ],
   "animations": [
     "spellcast",
     "thrust",
@@ -102,10 +75,14 @@
       ]
     }
   ],
-  "path": [
-    "legs",
-    "pants",
-    "legs_formal_striped"
-  ],
+  "recolors": {
+    "material": "cloth",
+    "base": null,
+    "source": ["#101820", "#182611", "#1b2f15", "#203416", "#314f22", "#446d29"],
+    "palettes": [
+      "ulpc",
+      "all.lpcr"
+    ]
+  },
   "type_name": "legs"
 }

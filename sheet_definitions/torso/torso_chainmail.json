@@ -7,15 +7,27 @@
     "female": "torso/chainmail/female/",
     "teen": "torso/chainmail/female/"
   },
-  "variants": [
-    "gray"
+  "animations": [
+    "spellcast",
+    "thrust",
+    "walk",
+    "slash",
+    "shoot",
+    "hurt",
+    "watering",
+    "idle",
+    "sit",
+    "emote",
+    "climb"
   ],
   "credits": [
     {
       "file": "torso/chainmail",
-      "notes": "minor edits by bluecarrot16",
+      "notes": "minor edits by bluecarrot16, reduced colors by Napsio, adjusted Male colors and Idle/Sit/Emote/Climb by JaidynReiman",
       "authors": [
-        "Johannes Sjölund (wulax)"
+        "Johannes Sjölund (wulax)",
+        "Napsio",
+        "JaidynReiman"
       ],
       "licenses": [
         "OGA-BY 3.0",
@@ -27,9 +39,13 @@
       ]
     }
   ],
-  "path": [
-    "torso",
-    "torso_chainmail"
-  ],
+  "recolors": {
+    "material": "metal",
+    "palettes": [
+      "ulpc",
+      "lpcr",
+      "all.lpcr"
+    ]
+  },
   "type_name": "chainmail"
 }

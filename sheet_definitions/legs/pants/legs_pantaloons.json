@@ -8,32 +8,6 @@
     "pregnant": "legs/pantaloons/thin/",
     "teen": "legs/pantaloons/thin/"
   },
-  "variants": [
-    "black",
-    "blue",
-    "bluegray",
-    "brown",
-    "charcoal",
-    "forest",
-    "gray",
-    "green",
-    "lavender",
-    "leather",
-    "maroon",
-    "navy",
-    "orange",
-    "pink",
-    "purple",
-    "red",
-    "rose",
-    "sky",
-    "slate",
-    "tan",
-    "teal",
-    "walnut",
-    "white",
-    "yellow"
-  ],
   "animations": [
     "spellcast",
     "thrust",
@@ -114,10 +88,12 @@
       ]
     }
   ],
-  "path": [
-    "legs",
-    "pants",
-    "legs_pantaloons"
-  ],
+  "recolors": {
+    "material": "cloth",
+    "palettes": [
+      "ulpc",
+      "all.lpcr"
+    ]
+  },
   "type_name": "legs"
 }

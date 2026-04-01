@@ -6,32 +6,6 @@
     "female": "torso/clothes/longsleeve/longsleeve2/female/",
     "teen": "torso/clothes/longsleeve/longsleeve2/teen/"
   },
-  "variants": [
-    "black",
-    "blue",
-    "bluegray",
-    "brown",
-    "charcoal",
-    "forest",
-    "gray",
-    "green",
-    "lavender",
-    "leather",
-    "maroon",
-    "navy",
-    "orange",
-    "pink",
-    "purple",
-    "red",
-    "rose",
-    "sky",
-    "slate",
-    "tan",
-    "teal",
-    "walnut",
-    "white",
-    "yellow"
-  ],
   "animations": [
     "spellcast",
     "thrust",
@@ -72,11 +46,12 @@
       ]
     }
   ],
-  "path": [
-    "torso",
-    "shirts",
-    "longsleeve",
-    "torso_clothes_longsleeve2"
-  ],
+  "recolors": {
+    "material": "cloth",
+    "palettes": [
+      "ulpc",
+      "all.lpcr"
+    ]
+  },
   "type_name": "clothes"
 }

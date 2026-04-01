@@ -8,40 +8,6 @@
     "teen": "legs/fur/thin/",
     "pregnant": "legs/fur/thin/"
   },
-  "variants": [
-    "base",
-    "fur_black",
-    "fur_brown",
-    "fur_tan",
-    "fur_copper",
-    "fur_gold",
-    "fur_grey",
-    "fur_white",
-    "black",
-    "blue",
-    "bluegray",
-    "brown",
-    "charcoal",
-    "forest",
-    "gray",
-    "green",
-    "lavender",
-    "leather",
-    "maroon",
-    "navy",
-    "orange",
-    "pink",
-    "purple",
-    "red",
-    "rose",
-    "sky",
-    "slate",
-    "tan",
-    "teal",
-    "walnut",
-    "white",
-    "yellow"
-  ],
   "animations": [
     "spellcast",
     "thrust",
@@ -107,10 +73,14 @@
       ]
     }
   ],
-  "path": [
-    "legs",
-    "pants",
-    "legs_fur"
-  ],
+  "recolors": {
+    "material": "cloth",
+    "base": null,
+    "source": ["#1d131e", "#3a200e", "#4B2B13", "#663a1a", "#975f43", "#996B4A"],
+    "palettes": [
+      "ulpc",
+      "all.lpcr"
+    ]
+  },
   "type_name": "legs"
 }
