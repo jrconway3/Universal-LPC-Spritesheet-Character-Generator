@@ -3,6 +3,33 @@ import { LICENSE_CONFIG, ANIMATIONS } from "./constants.js";
 import { syncSelectionsToHash, loadSelectionsFromHash } from "./hash.js";
 import { renderCharacter } from "../canvas/renderer.js";
 
+// Dependency injection for testability (see setStateDeps / resetStateDeps)
+function createDefaultStateDeps() {
+  return {
+    getItemMetadata: (itemId) => window.itemMetadata?.[itemId],
+    selectDefaults,
+    redraw: () => m.redraw(),
+    syncSelectionsToHash,
+    renderCharacter,
+    loadSelectionsFromHash,
+    getCanvasRenderer: () => window.canvasRenderer,
+  };
+}
+
+let stateDeps = createDefaultStateDeps();
+
+export function setStateDeps(overrides) {
+  Object.assign(stateDeps, overrides);
+}
+
+export function resetStateDeps() {
+  stateDeps = createDefaultStateDeps();
+}
+
+export function getStateDeps() {
+  return stateDeps;
+}
+
 // Global state
 export const state = {
   // state that is saved in url hash
@@ -53,7 +80,7 @@ export const state = {
 // Selection group = type_name (e.g., "body", "heads", "ears")
 // This ensures only one item per type can be selected (mimics old radio button behavior)
 export function getSelectionGroup(itemId) {
-  const meta = window.itemMetadata?.[itemId];
+  const meta = stateDeps.getItemMetadata(itemId);
   if (!meta || !meta.type_name) return itemId;
   return meta.type_name;
 }
@@ -62,7 +89,7 @@ export function getSelectionGroup(itemId) {
 // Selection group = type_name (e.g., "body", "heads", "ears")
 // This ensures only one item per type can be selected (mimics old radio button behavior)
 export function getSubSelectionGroup(itemId, idx) {
-  const meta = window.itemMetadata?.[itemId];
+  const meta = stateDeps.getItemMetadata(itemId);
   const recolor = meta?.recolors?.[idx];
   if (!meta || !meta.type_name) return itemId;
   return recolor?.type_name ?? meta.type_name;
@@ -103,12 +130,12 @@ export async function selectDefaults() {
   };
 
   // Update URL hash
-  syncSelectionsToHash();
+  stateDeps.syncSelectionsToHash();
 
-  await renderCharacter(state.selections, state.bodyType);
+  await stateDeps.renderCharacter(state.selections, state.bodyType);
 
   // Trigger redraw to update preview canvas after offscreen render completes
-  m.redraw();
+  stateDeps.redraw();
 }
 
 // Reset all selections and restore defaults
@@ -116,8 +143,8 @@ export async function resetAll() {
   state.selections = {};
   state.customUploadedImage = null;
   state.customImageZPos = 0;
-  await selectDefaults();
-  m.redraw();
+  await stateDeps.selectDefaults();
+  stateDeps.redraw();
 }
 
 // Apply match body color - when any body-colored part changes, update all items with matchBodyColor: true
@@ -131,7 +158,7 @@ export function applyMatchBodyColor(variantToMatch, recolorToMatch) {
   // Update all selected items that have matchBodyColor: true
   for (const selection of Object.values(state.selections)) {
     const itemId = selection.itemId;
-    const meta = window.itemMetadata?.[itemId];
+    const meta = stateDeps.getItemMetadata(itemId);
 
     // Skip if no metadata or matchBodyColor is not enabled for this item
     if (!meta || !meta.matchBodyColor) continue;
@@ -163,18 +190,18 @@ export function applyMatchBodyColor(variantToMatch, recolorToMatch) {
 // Initialize state with defaults or from URL
 export async function initState() {
   // First, try to load from URL hash
-  loadSelectionsFromHash();
+  stateDeps.loadSelectionsFromHash();
 
   // If nothing in hash, set defaults
   if (Object.keys(state.selections).length === 0) {
-    await selectDefaults();
+    await stateDeps.selectDefaults();
   } else {
     // Render with loaded selections
-    if (window.canvasRenderer) {
-      await renderCharacter(state.selections, state.bodyType);
+    if (stateDeps.getCanvasRenderer()) {
+      await stateDeps.renderCharacter(state.selections, state.bodyType);
 
       // Trigger redraw to update preview canvas after offscreen render completes
-      m.redraw();
+      stateDeps.redraw();
     }
   }
 }
@@ -189,7 +216,7 @@ export function selectItem(itemId, variant, isSelected = false, subId = null) {
     delete state.selections[subSelect];
   } else {
     // Get Meta Data
-    const meta = window.itemMetadata[itemId];
+    const meta = stateDeps.getItemMetadata(itemId);
     const useVariants = meta.variants?.length > 0;
     const variantDisplayName = variant.replaceAll("_", " ");
 
