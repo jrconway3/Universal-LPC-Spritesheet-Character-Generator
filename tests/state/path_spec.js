@@ -1,0 +1,184 @@
+import {
+  getSpritePath,
+  replaceInPath,
+  setPathDeps,
+  resetPathDeps,
+} from "../../sources/state/path.js";
+import { expect } from "chai";
+import sinon from "sinon";
+import { describe, it, beforeEach, afterEach } from "mocha-globals";
+
+describe("state/path.js", () => {
+  beforeEach(() => {
+    resetPathDeps();
+  });
+
+  afterEach(() => {
+    resetPathDeps();
+  });
+
+  describe("replaceInPath", () => {
+    it("returns the path unchanged when it has no template placeholders", () => {
+      const meta = { replace_in_path: {} };
+      expect(replaceInPath("sprites/foo/bar", {}, meta)).to.equal(
+        "sprites/foo/bar",
+      );
+    });
+
+    it("resolves ${} segments using stubbed hash params and meta.replace_in_path", () => {
+      setPathDeps({
+        getHashParamsforSelections: () => ({ head: "human_head" }),
+      });
+      const meta = {
+        replace_in_path: {
+          head: { human: "humanoid" },
+        },
+      };
+      expect(replaceInPath("base/${head}/tail", {}, meta)).to.equal(
+        "base/humanoid/tail",
+      );
+    });
+
+    it("calls debugLog when a placeholder has no replacement", () => {
+      const debugLog = sinon.stub();
+      setPathDeps({
+        getHashParamsforSelections: () => ({ head: "human_head" }),
+        debugLog,
+      });
+      const meta = {
+        replace_in_path: {
+          head: {},
+        },
+      };
+      replaceInPath("base/${head}/tail", {}, meta);
+      expect(debugLog.calledOnce).to.be.true;
+      expect(debugLog.firstCall.args[0]).to.include("head");
+    });
+  });
+
+  describe("getSpritePath", () => {
+    it("returns null when item metadata is missing", () => {
+      setPathDeps({
+        getItemMetadata: () => undefined,
+      });
+      expect(
+        getSpritePath("missing_id", "v", null, "male", "walk", 1, {}, null),
+      ).to.be.null;
+    });
+
+    it("returns null when the requested layer is missing", () => {
+      const meta = { layers: {} };
+      expect(getSpritePath("id", "v", null, "male", "walk", 2, {}, meta)).to.be
+        .null;
+    });
+
+    it("returns null when the body type has no path on the layer", () => {
+      const meta = {
+        layers: {
+          layer_1: { female: "path/" },
+        },
+      };
+      expect(getSpritePath("id", "v", null, "male", "walk", 1, {}, meta)).to.be
+        .null;
+    });
+
+    it("builds a spritesheet path from layer body type, animation, and variant", () => {
+      const meta = {
+        layers: {
+          layer_1: {
+            male: "armor/male/",
+          },
+        },
+      };
+      setPathDeps({
+        variantToFilename: (v) => v.replaceAll(" ", "_"),
+        animations: [{ value: "walk", label: "Walk" }],
+      });
+      expect(
+        getSpritePath("item", "light brown", null, "male", "walk", 1, {}, meta),
+      ).to.equal("spritesheets/armor/male/walk/light_brown.png");
+    });
+
+    it("uses folderName from animations when present", () => {
+      const meta = {
+        layers: {
+          layer_1: {
+            male: "combat/",
+          },
+        },
+      };
+      setPathDeps({
+        variantToFilename: (v) => v,
+        animations: [
+          { value: "combat", label: "Combat Idle", folderName: "combat_idle" },
+        ],
+      });
+      expect(
+        getSpritePath("item", "v", null, "male", "combat", 1, {}, meta),
+      ).to.equal("spritesheets/combat/combat_idle/v.png");
+    });
+
+    it("derives variant from the last segment of itemId when variant is omitted", () => {
+      const meta = {
+        layers: {
+          layer_1: {
+            male: "x/",
+          },
+        },
+      };
+      setPathDeps({
+        variantToFilename: (v) => v,
+        animations: [{ value: "idle", label: "Idle" }],
+      });
+      expect(
+        getSpritePath(
+          "shirt_blue_red",
+          null,
+          null,
+          "male",
+          "idle",
+          1,
+          {},
+          meta,
+        ),
+      ).to.equal("spritesheets/x/idle/red.png");
+    });
+
+    it("omits the variant filename segment when recolors is set", () => {
+      const meta = {
+        layers: {
+          layer_1: {
+            male: "y/",
+          },
+        },
+      };
+      setPathDeps({
+        animations: [{ value: "walk", label: "Walk" }],
+      });
+      expect(
+        getSpritePath("id", "v", true, "male", "walk", 1, {}, meta),
+      ).to.equal("spritesheets/y/walk.png");
+    });
+
+    it("runs replaceInPath when the layer path contains ${}", () => {
+      const meta = {
+        layers: {
+          layer_1: {
+            male: "prefix/${head}/",
+          },
+        },
+        replace_in_path: {
+          head: { human: "humanoid" },
+        },
+      };
+      setPathDeps({
+        getHashParamsforSelections: () => ({ head: "human_head" }),
+        variantToFilename: (v) => v,
+        animations: [{ value: "idle", label: "Idle" }],
+      });
+      expect(
+        getSpritePath("item", "v", null, "male", "idle", 1, {}, meta),
+      ).to.equal("spritesheets/prefix/humanoid/idle/v.png");
+    });
+  });
+});
