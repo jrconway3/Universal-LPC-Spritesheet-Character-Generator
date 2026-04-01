@@ -3,6 +3,71 @@ import { getHashParamsforSelections } from "./hash.js";
 import { variantToFilename, es6DynamicTemplate } from "../utils/helpers.js";
 import { debugLog } from "../utils/debug.js";
 
+// Dependency injection for testability (see setPathDeps / resetPathDeps)
+function createDefaultPathDeps() {
+  return {
+    getHashParamsforSelections,
+    variantToFilename,
+    es6DynamicTemplate,
+    debugLog,
+    animations: ANIMATIONS,
+    getItemMetadata: (itemId) => window.itemMetadata?.[itemId],
+  };
+}
+
+let pathDeps = createDefaultPathDeps();
+
+export function setPathDeps(overrides) {
+  Object.assign(pathDeps, overrides);
+}
+
+export function resetPathDeps() {
+  pathDeps = createDefaultPathDeps();
+}
+
+export function getPathDeps() {
+  return pathDeps;
+}
+
+/**
+ * Extract base asset name from a nameAndVariant string (e.g. selection id suffix).
+ * Both names and variants may contain underscores; this uses catalog variants/recolors
+ * to find the longest matching suffix.
+ *
+ * @param {string} nameAndVariant
+ * @param {Array<object>} itemsForType Item metadata entries for this type_name
+ * @returns {string}
+ */
+// This is way too complex because both names and variants can have underscores in them
+// Perhaps we should change the naming convention to avoid this ambiguity
+// e.g. use double underscore to separate name and variant in item ids
+export function getNameWithoutVariant(nameAndVariant, itemsForType) {
+  let variant = "";
+  const nameAndVariantPath = nameAndVariant.split("_");
+  const l = nameAndVariantPath.length;
+  const names = itemsForType || [];
+  const variants = names
+    .flatMap((n) => n.variants || [])
+    .map((v) => v.toLowerCase());
+  const recolors = names
+    .flatMap((n) => n.recolors?.[0]?.variants || [])
+    .map((v) => v.toLowerCase());
+  let j = l;
+  let v = 0;
+  while (--j > 0) {
+    const part = nameAndVariantPath.slice(j, l).join("_");
+    const hasPart = (flatMap, part) => flatMap?.includes(part.toLowerCase());
+    if (hasPart(variants, part) || hasPart(recolors, part)) {
+      variant = part;
+      v = j;
+    }
+  }
+  const name = variant
+    ? nameAndVariantPath.slice(0, v).join("_")
+    : nameAndVariantPath.slice(0, l - 1).join("_");
+  return name;
+}
+
 /**
  * Build sprite path from item metadata for a specific animation
  */
@@ -17,7 +82,7 @@ export function getSpritePath(
   meta = null,
 ) {
   if (!meta) {
-    meta = window.itemMetadata[itemId];
+    meta = pathDeps.getItemMetadata(itemId);
   }
   if (!meta) return null;
 
@@ -41,13 +106,13 @@ export function getSpritePath(
   }
 
   // Determine animation name to use in path
-  const animation = ANIMATIONS.find((a) => a.value === animName);
+  const animation = pathDeps.animations.find((a) => a.value === animName);
   if (animation?.folderName) {
     animName = animation.folderName;
   }
 
   // Build full path: spritesheets/ + basePath + animation/ + variant.png
-  const fileName = !recolors ? `/${variantToFilename(variant)}` : "";
+  const fileName = !recolors ? `/${pathDeps.variantToFilename(variant)}` : "";
   return `spritesheets/${basePath}${animName}${fileName}.png`;
 }
 
@@ -58,13 +123,13 @@ export function replaceInPath(path, selections, meta) {
     // TODO: this could be optimized to avoid recomputing every time
     // or to only do it when relevant selections change
     // or just use the selections directly instead of recomputing the hash params
-    const hashParams = getHashParamsforSelections(selections || {});
+    const hashParams = pathDeps.getHashParamsforSelections(selections || {});
     const replacements = Object.fromEntries(
       Object.entries(hashParams).map(([typeName, nameAndVariant]) => {
-        const name = getNameWithoutVariant(typeName, nameAndVariant);
+        const name = _getNameWithoutVariant(typeName, nameAndVariant);
         const replacement = meta.replace_in_path[typeName]?.[name];
         if (path.includes(`\${${typeName}}`) && !replacement) {
-          debugLog(
+          pathDeps.debugLog(
             `Warning: No replacement found for ${typeName}="${name}" in path template.`,
           );
         }
@@ -72,7 +137,7 @@ export function replaceInPath(path, selections, meta) {
       }),
     );
 
-    return es6DynamicTemplate(path, replacements);
+    return pathDeps.es6DynamicTemplate(path, replacements);
   }
 
   return path;
@@ -91,33 +156,7 @@ for (const key of Object.keys(window.itemMetadata || {})) {
   }
 }
 
-// Helper to extract name without variant from a nameAndVariant string
-// This is way too complex because both names and variants can have underscores in them
-// Perhaps we should change the naming convention to avoid this ambiguity
-// e.g. use double underscore to separate name and variant in item ids
-function getNameWithoutVariant(typeName, nameAndVariant) {
-  let variant = "";
-  const nameAndVariantPath = nameAndVariant.split("_");
-  const l = nameAndVariantPath.length;
-  const names = indexedMetadataCache.get(typeName) || [];
-  const variants = names
-    .flatMap((n) => n.variants || [])
-    .map((v) => v.toLowerCase());
-  const recolors = names
-    .flatMap((n) => n.recolors?.[0]?.variants || [])
-    .map((v) => v.toLowerCase());
-  let j = l;
-  let v = 0;
-  while (--j > 0) {
-    const part = nameAndVariantPath.slice(j, l).join("_");
-    const hasPart = (flatMap, part) => flatMap?.includes(part.toLowerCase());
-    if (hasPart(variants, part) || hasPart(recolors, part)) {
-      variant = part;
-      v = j;
-    }
-  }
-  const name = variant
-    ? nameAndVariantPath.slice(0, v).join("_")
-    : nameAndVariantPath.slice(0, l - 1).join("_");
-  return name;
+function _getNameWithoutVariant(typeName, nameAndVariant) {
+  const itemsForType = indexedMetadataCache.get(typeName) || [];
+  return getNameWithoutVariant(nameAndVariant, itemsForType);
 }

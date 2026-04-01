@@ -2,6 +2,30 @@ import { getZPos } from "../canvas/canvas-utils.js";
 import { variantToFilename } from "../utils/helpers.js";
 import { replaceInPath } from "./path.js";
 
+// Dependency injection for testability (see setMetaDeps / resetMetaDeps)
+function createDefaultMetaDeps() {
+  return {
+    getZPos,
+    variantToFilename,
+    replaceInPath,
+    getItemMetadata: (itemId) => window.itemMetadata?.[itemId],
+  };
+}
+
+let metaDeps = createDefaultMetaDeps();
+
+export function setMetaDeps(overrides) {
+  Object.assign(metaDeps, overrides);
+}
+
+export function resetMetaDeps() {
+  metaDeps = createDefaultMetaDeps();
+}
+
+export function getMetaDeps() {
+  return metaDeps;
+}
+
 /**
  * Sort Layers by zPos
  *
@@ -10,7 +34,7 @@ import { replaceInPath } from "./path.js";
  * @returns {Array} Sorted array of layers with layerNum and zPos
  */
 export function getSortedLayers(itemId, standardOnly = false) {
-  const meta = window.itemMetadata[itemId];
+  const meta = metaDeps.getItemMetadata(itemId);
   if (!meta) {
     console.error("Item metadata not found:", itemId);
     return null;
@@ -24,7 +48,7 @@ export function getSortedLayers(itemId, standardOnly = false) {
     if (!layer) break;
     if (standardOnly && layer.custom_animation) continue;
 
-    const zPos = getZPos(itemId, layerNum);
+    const zPos = metaDeps.getZPos(itemId, layerNum);
 
     layersList.push({ layerNum, zPos });
   }
@@ -41,7 +65,7 @@ export function getSortedLayers(itemId, standardOnly = false) {
  * @returns {Object} Object with animation names as keys and sorted arrays of layers
  */
 export function getSortedLayersByAnim(itemId, customOnly = false) {
-  const meta = window.itemMetadata[itemId];
+  const meta = metaDeps.getItemMetadata(itemId);
   if (!meta) {
     console.error("Item metadata not found:", itemId);
     return null;
@@ -60,7 +84,7 @@ export function getSortedLayersByAnim(itemId, customOnly = false) {
       animsList[animName] = [];
     }
 
-    const zPos = getZPos(itemId, layerNum);
+    const zPos = metaDeps.getZPos(itemId, layerNum);
 
     animsList[animName].push({ layerNum, zPos });
   }
@@ -88,7 +112,8 @@ export function getSortedLayersByAnim(itemId, customOnly = false) {
  * @param {Object} meta - Metadata for the asset
  * @param {string} bodyType - The body type that is currently selected
  * @param {Object} selections - Currently selected assets
- * @param {string|null} variant - Variant name for the asset (optional)
+ * @param {string|null} variant - Variant name for the asset (optional). Required for
+ *   layers with custom_animation (those entries are omitted if missing).
  * @return {Array} Array of layers to load
  */
 export function getLayersToLoad(meta, bodyType, selections, variant = null) {
@@ -118,14 +143,17 @@ export function getLayersToLoad(meta, bodyType, selections, variant = null) {
 
     // Replace template variables like ${head}
     if (layerPath.includes("${")) {
-      layerPath = replaceInPath(layerPath, selections, meta);
+      layerPath = metaDeps.replaceInPath(layerPath, selections, meta);
     }
 
     const hasCustomAnim = layer.custom_animation;
     let imagePath;
     const variantFileName =
-      variant !== null ? `${variantToFilename(variant)}` : "";
+      variant !== null ? `${metaDeps.variantToFilename(variant)}` : "";
     if (hasCustomAnim) {
+      if (!variantFileName) {
+        continue;
+      }
       imagePath = `spritesheets/${layerPath}${variantFileName}.png`;
     } else {
       const defaultAnim = meta.animations.includes("walk")

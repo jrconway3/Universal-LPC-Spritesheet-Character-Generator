@@ -27,10 +27,13 @@ export function canvasToBlob(canvas) {
  * Get 2D context with image smoothing disabled for crisp pixel rendering
  * @param {HTMLCanvasElement} canvas - Canvas element
  * @param {boolean} willReadFrequently - Whether the context will be used for frequent getImageData calls
- * @returns {CanvasRenderingContext2D} Context with smoothing disabled
+ * @returns {CanvasRenderingContext2D | null} Context with smoothing disabled
  */
 export function get2DContext(canvas, willReadFrequently = false) {
   const ctx = canvas.getContext("2d", { willReadFrequently });
+  if (!ctx) {
+    return null;
+  }
   ctx.imageSmoothingEnabled = false;
   return ctx;
 }

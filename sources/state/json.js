@@ -4,16 +4,42 @@ import {
   loadSelectionsFromHash,
 } from "./hash.js";
 import { getAllCredits } from "../utils/credits.js";
-import { state } from "../state/state.js";
+import { state } from "./state.js";
+
+// Dependency injection for testability (see setJsonDeps / resetJsonDeps)
+function createDefaultJsonDeps() {
+  return {
+    createHashStringFromParams,
+    getHashParamsforSelections,
+    loadSelectionsFromHash,
+    getAllCredits,
+    getLocationOrigin: () => window.location.origin,
+    getLocationPathname: () => window.location.pathname,
+  };
+}
+
+let jsonDeps = createDefaultJsonDeps();
+
+export function setJsonDeps(overrides) {
+  Object.assign(jsonDeps, overrides);
+}
+
+export function resetJsonDeps() {
+  jsonDeps = createDefaultJsonDeps();
+}
+
+export function getJsonDeps() {
+  return jsonDeps;
+}
 
 /**
  * Export current state as JSON string
  */
 export function exportStateAsJSON(state, layers) {
-  const hash = createHashStringFromParams(
-    getHashParamsforSelections(state.selections),
+  const hash = jsonDeps.createHashStringFromParams(
+    jsonDeps.getHashParamsforSelections(state.selections),
   );
-  const url = `${window.location.origin}${window.location.pathname}#${hash}`;
+  const url = `${jsonDeps.getLocationOrigin()}${jsonDeps.getLocationPathname()}#${hash}`;
   const exportedState = {
     version: 2,
     bodyType: state.bodyType,
@@ -27,7 +53,7 @@ export function exportStateAsJSON(state, layers) {
     enabledAnimations: state.enabledAnimations,
     url,
     layers,
-    credits: getAllCredits(state.selections, state.bodyType),
+    credits: jsonDeps.getAllCredits(state.selections, state.bodyType),
   };
   return JSON.stringify(exportedState, null, 2);
 }
@@ -67,7 +93,7 @@ export function importStateFromJSON(jsonString) {
     } else if (importedState.version === 1) {
       const url = new URL(importedState.url);
       const hash = url.hash.toString().substring(1);
-      loadSelectionsFromHash(hash);
+      jsonDeps.loadSelectionsFromHash(hash);
     } else {
       throw new Error("Unsupported version");
     }
