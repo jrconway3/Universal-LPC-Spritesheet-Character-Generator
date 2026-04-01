@@ -7,32 +7,6 @@
     "teen": "legs/shorts/short_shorts/thin/",
     "pregnant": "legs/shorts/short_shorts/thin/"
   },
-  "variants": [
-    "leather",
-    "black",
-    "blue",
-    "bluegray",
-    "brown",
-    "charcoal",
-    "forest",
-    "gray",
-    "green",
-    "lavender",
-    "maroon",
-    "navy",
-    "orange",
-    "pink",
-    "purple",
-    "red",
-    "rose",
-    "sky",
-    "slate",
-    "tan",
-    "teal",
-    "walnut",
-    "white",
-    "yellow"
-  ],
   "animations": [
     "spellcast",
     "thrust",
@@ -91,10 +65,12 @@
       ]
     }
   ],
-  "path": [
-    "legs",
-    "shorts",
-    "legs_shorts_short"
-  ],
+  "recolors": {
+    "material": "cloth",
+    "palettes": [
+      "ulpc",
+      "all.lpcr"
+    ]
+  },
   "type_name": "legs"
 }

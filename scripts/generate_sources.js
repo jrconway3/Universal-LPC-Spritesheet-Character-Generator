@@ -525,7 +525,7 @@ files.forEach((file) => {
     } catch (e) {
       if (!onlyIfTemplate)
         console.error(
-          `Error parsing sheet file json data: ${file.parentPath}`,
+          `Error parsing sheet file json data: ${file.parentPath}\\${file.name}`,
           e,
         );
       return;
