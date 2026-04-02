@@ -14,11 +14,7 @@ import { getAllCredits, creditsToTxt, creditsToCsv } from "../utils/credits.js";
 import { getItemFileName } from "../utils/fileName.js";
 import { loadImage } from "../canvas/load-image.js";
 import { exportStateAsJSON } from "./json.js";
-import {
-  customAnimations,
-  customAnimationSize,
-  isCustomAnimationBasedOnStandardAnimation,
-} from "../custom-animations.js";
+import { customAnimations, customAnimationSize } from "../custom-animations.js";
 import { getSortedLayers } from "./meta.js";
 import { canvasToBlob, image2canvas } from "../canvas/canvas-utils.js";
 import {
@@ -389,38 +385,6 @@ export const exportSplitItemAnimations = async (deps = {}) => {
               );
               exportedStandard[anim.value].push(fileName);
             }
-
-            for (const custAnimName of addedCustomAnimations) {
-              const custAnim = customAnimations[custAnimName];
-              if (!isCustomAnimationBasedOnStandardAnimation(custAnim, name))
-                continue;
-
-              const custExportedItems = exportedCustom[custAnimName] ?? [];
-              exportedCustom[custAnimName] = custExportedItems;
-              const custFailedItems = failedCustom[custAnimName] ?? [];
-              const itemFileName = fileName;
-              try {
-                const custAnimFolder = customFolder.folder(custAnimName);
-                const spritePath = layer.spritePath;
-                const img = await loadImageFn(spritePath, false);
-                if (
-                  await addStandardAnimationToZipCustomFolderFn(
-                    custAnimFolder,
-                    itemFileName,
-                    img,
-                    custAnim,
-                  )
-                )
-                  custExportedItems.push(itemFileName);
-              } catch (err) {
-                console.error(
-                  `Failed to export item ${itemFileName} in custom animation ${custAnimName}:`,
-                  err,
-                );
-                custFailedItems.push(itemFileName);
-                failedCustom[custAnimName] = custFailedItems;
-              }
-            }
           } catch (err) {
             console.error(
               `Failed to export ${fileName} for ${anim.value}:`,
@@ -437,8 +401,6 @@ export const exportSplitItemAnimations = async (deps = {}) => {
     for (const customAnimName of Object.keys(customAreaItems)) {
       // Export items exclusive to custom animations
       for (const layer of customAreaItems[customAnimName]) {
-        const custName = layer.animation;
-
         debugLog("Processing layer for custom animation only export:", layer);
 
         const spritePath = layer.spritePath;
@@ -449,42 +411,49 @@ export const exportSplitItemAnimations = async (deps = {}) => {
           1,
           layer.zPos,
         );
-        const custExportedItems = exportedCustom[custName] ?? [];
-        exportedCustom[custName] = custExportedItems;
-        const custFailedItems = failedCustom[custName] ?? [];
+        const custExportedItems = exportedCustom[customAnimName] ?? [];
+        exportedCustom[customAnimName] = custExportedItems;
+        const custFailedItems = failedCustom[customAnimName] ?? [];
 
         try {
           debugLog(
-            `Exporting item ${itemFileName} for custom animation ${custName}`,
+            `Exporting item ${itemFileName} for custom animation ${customAnimName}`,
           );
           const img = await loadImageFn(spritePath, false);
           if (!img) continue;
 
           const imgCanvas = image2canvas(img);
-          const custAnim = customAnimations[custName];
+          const custAnim = customAnimations[customAnimName];
           if (!custAnim)
             throw new Error(
               "Custom animation not found for item: " + layer.itemId,
             );
           const custSize = customAnimationSize(custAnim);
           const srcRect = { x: 0, y: 0, ...custSize };
-          const animFolder = customFolder.folder(custName);
-          if (
-            await addAnimationToZipFolderFn(
+          const animFolder = customFolder.folder(customAnimName);
+          const animCanvas =
+            (layer.type === "extracted_frames" &&
+              (await addStandardAnimationToZipCustomFolderFn(
+                animFolder,
+                itemFileName,
+                imgCanvas,
+                custAnim,
+              ))) ||
+            (await addAnimationToZipFolderFn(
               animFolder,
               itemFileName,
               imgCanvas,
               srcRect,
-            )
-          )
-            custExportedItems.push(itemFileName);
+            ));
+
+          if (animCanvas) custExportedItems.push(itemFileName);
         } catch (err) {
           console.error(
-            `Failed to export item ${itemFileName} in custom animation ${custName}:`,
+            `Failed to export item ${itemFileName} in custom animation ${customAnimName}:`,
             err,
           );
           custFailedItems.push(itemFileName);
-          failedCustom[custName] = custFailedItems;
+          failedCustom[customAnimName] = custFailedItems;
         }
       }
     }
