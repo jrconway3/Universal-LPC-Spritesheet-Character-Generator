@@ -15,10 +15,11 @@
     "shoot",
     "hurt",
     "watering",
+    "climb",
     "idle",
+    "jump",
     "sit",
-    "emote",
-    "climb"
+    "emote"
   ],
   "credits": [
     {
