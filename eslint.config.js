@@ -91,7 +91,7 @@ module.exports = [
     },
   },
   {
-    files: ["playwright.config.mjs"],
+    files: ["playwright.config.js"],
     languageOptions: {
       parserOptions: {
         ...sharedParserOptions,

@@ -1,7 +1,7 @@
 import { test } from "@playwright/test";
 import { argosScreenshot } from "@argos-ci/playwright";
 
-/** Base URL for the static site (see `webServer` in playwright.config.mjs). */
+/** Base URL for the static site (see `webServer` in playwright.config.js). */
 const BASE_URL =
   process.env.PLAYWRIGHT_TEST_BASE_URL ?? "http://127.0.0.1:4173";
 
