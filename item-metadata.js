@@ -2552,10 +2552,11 @@ window.itemMetadata = {
       "shoot",
       "hurt",
       "watering",
+      "climb",
       "idle",
+      "jump",
       "sit",
-      "emote",
-      "climb"
+      "emote"
     ],
     "tags": [],
     "required_tags": [],
