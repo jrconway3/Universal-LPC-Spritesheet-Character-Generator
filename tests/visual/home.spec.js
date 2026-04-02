@@ -64,6 +64,17 @@ async function gotoHomepageReady(page) {
         });
       }),
   );
+  /* Deterministic scroll: Bulma/layout changes can alter intrinsic heights; reset so
+   * canvas/scroll regions (e.g. spritesheet preview) align with baseline captures. */
+  await page.evaluate(() => {
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    document.querySelectorAll(".scrollable-container").forEach((el) => {
+      el.scrollTop = 0;
+      el.scrollLeft = 0;
+    });
+  });
 }
 
 /**
