@@ -1,0 +1,80 @@
+# - Same-repo PRs: `pull_request` runs the workflow from the PR branch (so CI works
+#   before merge). Secrets are available for same-repo PRs.
+# - Fork PRs: `pull_request_target` runs in base-repo context so ARGOS_TOKEN works;
+#   the workflow file is read from master — merge workflow changes there first.
+# - Fork runs use `visual-fork` environment (Settings → Environments → required reviewers).
+
+name: Visual regression (Argos)
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  pull_request_target:
+    branches:
+      - master
+
+jobs:
+  visual:
+    name: Visual tests (Playwright + Argos)
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run visual tests
+        run: npm run test:visual
+        env:
+          ARGOS_TOKEN: ${{ secrets.ARGOS_TOKEN }}
+          CI: true
+
+  visual-fork:
+    name: Visual tests (Playwright + Argos) — fork
+    if: github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.fork
+    runs-on: ubuntu-latest
+    environment: visual-fork
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run visual tests
+        run: npm run test:visual
+        env:
+          ARGOS_TOKEN: ${{ secrets.ARGOS_TOKEN }}
+          CI: true

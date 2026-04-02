@@ -8,11 +8,15 @@
     "z-positions": "node scripts/zPositioning/parse_zpos.js",
     "z-positions:update": "node scripts/zPositioning/update_zpos.js",
     "test": "testem ci",
-    "test:server": "testem"
+    "test:server": "testem",
+    "test:visual": "playwright test",
+    "test:visual:headed": "playwright test --headed"
   },
   "devDependencies": {
+    "@argos-ci/playwright": "^6.6.1",
     "@babel/eslint-parser": "^7.28.5",
     "@eslint/js": "^9.39.4",
+    "@playwright/test": "^1.59.0",
     "chai": "^6.2.2",
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^10.1.8",
@@ -21,6 +25,7 @@
     "mithril": "^2.3.8",
     "mocha": "^11.7.5",
     "prettier": "^3.8.1",
+    "serve": "^14.2.6",
     "testem": "^3.19.1"
   },
   "overrides": {
