@@ -62,6 +62,7 @@ module.exports = [
   },
   {
     files: ["tests/**/*.js"],
+    ignores: ["tests/visual/**"],
     languageOptions: {
       parserOptions: {
         ...sharedParserOptions,
@@ -72,6 +73,33 @@ module.exports = [
         ...globals.es2021,
         ...globals.mocha,
         m: "readonly",
+      },
+    },
+  },
+  {
+    files: ["tests/visual/**/*.js"],
+    languageOptions: {
+      parserOptions: {
+        ...sharedParserOptions,
+        sourceType: "module",
+      },
+      globals: {
+        ...globals.node,
+        ...globals.browser,
+        ...globals.es2021,
+      },
+    },
+  },
+  {
+    files: ["playwright.config.js"],
+    languageOptions: {
+      parserOptions: {
+        ...sharedParserOptions,
+        sourceType: "module",
+      },
+      globals: {
+        ...globals.node,
+        ...globals.es2021,
       },
     },
   },

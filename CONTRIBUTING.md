@@ -170,44 +170,73 @@ The tests will display with visual pass/fail indicators, error details, and a su
 
 **CI Integration**: Tests run automatically in GitHub Actions on every push and pull request using Chrome headless. All tests must pass before a PR can be merged.
 
-**Test Framework**: The project uses [ospec](https://github.com/MithrilJS/mithril.js/tree/master/ospec) (Mithril's official test framework) running directly in the browser with real DOM.
+#### Visual regression tests (Playwright + Argos)
 
-**Test Autodiscovery**: Test files are automatically discovered - just drop any `*.test.js` file in the `tests/` directory and it will be found and executed automatically. No configuration needed!
+Full-page screenshots at several viewports live under `tests/visual/` and run with [Playwright](https://playwright.dev/). Captures are sent to [Argos](https://argos-ci.com/) only when `ARGOS_TOKEN` is set (CI uses a repository secret; locally you export the token from your Argos project if you want uploads).
 
-**Adding New Tests**: When adding new Mithril components, please add corresponding test files in the `tests/` directory. Test files should:
-- Be named `ComponentName.test.js`
-- Use `window.o` and `window.m` (globally available in the test runner)
-- Use `o.spec()` to group related tests
-- Create and cleanup DOM containers in `beforeEach`/`afterEach`
-- Use `m.render()` to render components to the real DOM
-- Use native DOM queries (`querySelector`, etc.) for assertions
+**Run locally**
 
-Example test structure:
+1. Install dependencies and the Chromium browser for Playwright (once per machine or after upgrading Playwright):
+
+   ```bash
+   npm ci
+   npx playwright install chromium
+   ```
+
+2. Run the visual suite (starts a static server on port **4173** automatically via `webServer` in `playwright.config.mjs`):
+
+   ```bash
+   npm run test:visual
+   ```
+
+   By default Playwright uses **headless** Chromium: **no browser window opens**, so you only see results in the terminal—but the page is still loaded and **your site’s JavaScript runs** in that invisible browser (including the `type="module"` app in `index.html`). To **watch** the tests in a real window, run `npm run test:visual:headed` (same tests, `--headed`).
+
+   Visual tests wait for `networkidle` (best-effort), a visible preview `canvas`, preview panels to finish showing their `.loading` state, and a paint frame before Argos screenshots—so captures happen after the main async render, not immediately on `load`.
+
+   Without `ARGOS_TOKEN`, tests still load the homepage at each viewport but **do not** take Argos screenshots or upload builds. With `ARGOS_TOKEN` set to a non-empty value, `argosScreenshot` runs and the Argos reporter uploads to Argos.
+
+   To use a different base URL than `http://127.0.0.1:4173`, set `PLAYWRIGHT_TEST_BASE_URL` and change `webServer` in `playwright.config.mjs` (or use a local override) so you only run one static server.
+
+**Test framework**: Browser tests use [Mocha](https://mochajs.org/) in BDD style with [Chai](https://www.chaijs.com/) assertions. Mocha’s BDD helpers (`describe`, `it`, `beforeEach`, and so on) are installed on `globalThis` by the runner, but **ES modules do not see them as free globals**, so each spec imports them from the `mocha-globals` alias (see `tests/bdd-globals.js` and `tests_run.html`):
+
+```javascript
+import { describe, it, beforeEach, afterEach } from "mocha-globals";
+```
+
+**Registering test files**: The runner loads `tests/tests.js`, which **imports every spec file** in order. When you add a new spec, add a line such as `import "./path/to/MyComponent_spec.js";` there so Mocha picks it up.
+
+**Adding new tests**: Put specs under `tests/` using a `*_spec.js` name (for example `tests/components/MyComponent_spec.js`). Typical patterns:
+
+- Import the component from `sources/…`, `assert` (or `expect`) from `chai`, and the Mocha hooks you need from `mocha-globals`.
+- Use `describe` / `it` for structure; use `beforeEach` / `afterEach` to create and remove DOM containers.
+- Render with `m.render(…)`; **`m` is provided globally** by the test page (same as the app).
+- Assert with Chai and query the DOM with `querySelector`, etc.
+
+Example:
 ```javascript
 import { MyComponent } from "../sources/components/MyComponent.js";
+import { assert } from "chai";
+import { describe, it, beforeEach, afterEach } from "mocha-globals";
 
-const o = window.o;
-const m = window.m;
-
-o.spec("MyComponent", function() {
+describe("MyComponent", function () {
   let container;
 
-  o.beforeEach(function() {
-    container = document.createElement('div');
+  beforeEach(function () {
+    container = document.createElement("div");
     document.body.appendChild(container);
   });
 
-  o.afterEach(function() {
+  afterEach(function () {
     if (container && container.parentNode) {
       container.parentNode.removeChild(container);
     }
   });
 
-  o("renders correctly", function() {
+  it("renders correctly", function () {
     m.render(container, m(MyComponent, { prop: "value" }));
     const element = container.querySelector(".expected-class");
-    o(element).notEquals(null);
-    o(element.textContent).equals("expected content");
+    assert.notEqual(element, null);
+    assert.strictEqual(element.textContent, "expected content");
   });
 });
 ```

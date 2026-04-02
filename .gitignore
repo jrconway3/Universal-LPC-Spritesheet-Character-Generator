@@ -1,5 +1,8 @@
 _universal/
 node_modules/
 test-results-*.html
+test-results/
+playwright-report/
+blob-report/
 .idea/
 .eslintcache
