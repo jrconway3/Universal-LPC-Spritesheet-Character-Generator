@@ -46,8 +46,14 @@
     "material": "cloth",
     "palettes": [
       "ulpc",
+      "metal.ulpc",
       "all.lpcr"
     ]
+  },
+  "aliases": {
+    "bronze": "metal.bronze",
+    "gold": "metal.gold",
+    "silver": "metal.silver"
   },
   "type_name": "shoulders"
 }

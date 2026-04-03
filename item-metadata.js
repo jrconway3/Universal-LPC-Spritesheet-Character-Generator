@@ -2916,6 +2916,16 @@ window.itemMetadata = {
             "black",
             "charcoal"
           ],
+          "metal.ulpc": [
+            "ceramic",
+            "brass",
+            "copper",
+            "bronze",
+            "iron",
+            "steel",
+            "silver",
+            "gold"
+          ],
           "all.lpcr": [
             "ivory",
             "porcelain",
@@ -3023,6 +3033,14 @@ window.itemMetadata = {
           "gray",
           "black",
           "charcoal",
+          "metal.ceramic",
+          "metal.brass",
+          "metal.copper",
+          "metal.bronze",
+          "metal.iron",
+          "metal.steel",
+          "metal.silver",
+          "metal.gold",
           "all.lpcr.ivory",
           "all.lpcr.porcelain",
           "all.lpcr.peach",
