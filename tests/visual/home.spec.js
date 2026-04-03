@@ -1,5 +1,6 @@
 import { test } from "@playwright/test";
 import { argosScreenshot } from "@argos-ci/playwright";
+import { gotoHomepageReady } from "./home-helpers.js";
 
 /** Base URL for the static site (see `webServer` in playwright.config.js). */
 const BASE_URL =
@@ -32,58 +33,6 @@ test.beforeEach(async ({ page }) => {
 });
 
 /**
- * Load the homepage and wait until async work has settled: network, character
- * render (preview `.loading` overlays), then one paint frame.
- */
-async function gotoHomepageReady(page) {
-  const url = `${BASE_URL.replace(/\/$/, "")}/`;
-  await page.goto(url, { waitUntil: "load" });
-  try {
-    await page.waitForLoadState("networkidle", { timeout: 45_000 });
-  } catch {
-    // Some environments never reach idle (long-polling, etc.); continue.
-  }
-  await page.waitForSelector("#mithril-preview canvas", {
-    state: "visible",
-    timeout: 120_000,
-  });
-  await page.waitForFunction(
-    () => {
-      const preview = document.getElementById("mithril-preview");
-      const sheet = document.getElementById("mithril-spritesheet-preview");
-      if (!preview || !sheet) {
-        return false;
-      }
-      return (
-        !preview.querySelector(".loading") && !sheet.querySelector(".loading")
-      );
-    },
-    { timeout: 120_000 },
-  );
-  await page.evaluate(
-    () =>
-      new Promise((resolve) => {
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            resolve(undefined);
-          });
-        });
-      }),
-  );
-  /* Deterministic scroll: Bulma/layout changes can alter intrinsic heights; reset so
-   * canvas/scroll regions (e.g. spritesheet preview) align with baseline captures. */
-  await page.evaluate(() => {
-    window.scrollTo(0, 0);
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
-    document.querySelectorAll(".scrollable-container").forEach((el) => {
-      el.scrollTop = 0;
-      el.scrollLeft = 0;
-    });
-  });
-}
-
-/**
  * Full-page Argos screenshot. Wraps `argosScreenshot` from `@argos-ci/playwright`.
  * When `ARGOS_TOKEN` is unset, skips capture so `npm run test:visual` can verify
  * navigation and layout without talking to Argos (see CONTRIBUTING.md).
@@ -98,25 +47,25 @@ async function argosDesktop(page, name) {
 test.describe("Homepage — full page", () => {
   test("mobile viewport", async ({ page }) => {
     await page.setViewportSize(VIEWPORTS.mobile);
-    await gotoHomepageReady(page);
+    await gotoHomepageReady(page, BASE_URL);
     await argosDesktop(page, "index-mobile");
   });
 
   test("tablet viewport", async ({ page }) => {
     await page.setViewportSize(VIEWPORTS.tablet);
-    await gotoHomepageReady(page);
+    await gotoHomepageReady(page, BASE_URL);
     await argosDesktop(page, "index-tablet");
   });
 
   test("medium desktop viewport", async ({ page }) => {
     await page.setViewportSize(VIEWPORTS.mediumDesktop);
-    await gotoHomepageReady(page);
+    await gotoHomepageReady(page, BASE_URL);
     await argosDesktop(page, "index-medium-desktop");
   });
 
   test("huge desktop viewport", async ({ page }) => {
     await page.setViewportSize(VIEWPORTS.hugeDesktop);
-    await gotoHomepageReady(page);
+    await gotoHomepageReady(page, BASE_URL);
     await argosDesktop(page, "index-huge-desktop");
   });
 });

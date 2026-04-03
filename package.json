@@ -17,7 +17,8 @@
     "profile:zip:quick": "node scripts/zip/zip-export-profile.mjs --quick",
     "profile:zip:baseline": "node scripts/zip/zip-export-profile.mjs --out tmp/baseline-zip-export-profile.json",
     "profile:zip:baseline:quick": "node scripts/zip/zip-export-profile.mjs --quick --out tmp/baseline-zip-export-profile-quick.json",
-    "diff:zip-profile": "node scripts/zip/diff-zip-profile.mjs"
+    "diff:zip-profile": "node scripts/zip/diff-zip-profile.mjs",
+    "compute-style-dump": "node scripts/dump-computed-styles.mjs"
   },
   "devDependencies": {
     "@argos-ci/playwright": "^6.6.1",
