@@ -42,11 +42,6 @@
       ]
     }
   ],
-  "path": [
-    "arms",
-    "shoulders",
-    "shoulders_epaulets"
-  ],
   "recolors": {
     "material": "cloth",
     "palettes": [
