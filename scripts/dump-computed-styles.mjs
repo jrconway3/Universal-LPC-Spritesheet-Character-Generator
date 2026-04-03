@@ -13,9 +13,15 @@
  *   node scripts/dump-computed-styles.mjs --out-dir /tmp/cmp --label branch http://127.0.0.1:4174
  *
  * Options:
- *   --viewport 1440x900   Match medium-desktop Argos viewport (default)
+ *   --viewport WxH        Explicit size (default 1440x900 = Argos medium desktop)
+ *   --preset NAME         Shorthand: mobile | tablet | mediumDesktop | hugeDesktop (same as tests/visual/home.spec.js)
  *   --out <file>          Write to file instead of stdout
  *   --out-dir <dir>       Implies --label required; writes <dir>/<label>.txt
+ *
+ * Mobile / responsive debugging (e.g. full-width Download buttons):
+ *   node scripts/dump-computed-styles.mjs --preset mobile http://127.0.0.1:4173 > /tmp/master-mobile.txt
+ *   node scripts/dump-computed-styles.mjs --preset mobile http://127.0.0.1:4174 > /tmp/branch-mobile.txt
+ *   diff -u /tmp/master-mobile.txt /tmp/branch-mobile.txt
  */
 
 import { chromium } from "playwright";
@@ -42,6 +48,10 @@ const PROPS = [
   "column-gap",
   "display",
   "flex-direction",
+  "flex-basis",
+  "flex-grow",
+  "flex-shrink",
+  "flex-wrap",
   "font-family",
   "font-size",
   "font-weight",
@@ -71,7 +81,12 @@ const TARGETS = [
   { label: "body", selector: "body" },
   { label: "h1.title", selector: "h1.title" },
   { label: "header subtitle", selector: "#header-left span.subtitle" },
+  { label: "download buttons container", selector: "#download-buttons" },
   { label: "download primary button", selector: "#download-buttons .button.is-primary" },
+  {
+    label: "download first is-info button",
+    selector: "#download-buttons .button.is-info",
+  },
   { label: "filters search input", selector: "#mithril-filters input.input" },
   { label: "filters select control", selector: "#mithril-filters .select select" },
   { label: "filters tag example", selector: "#mithril-filters .tag" },
@@ -83,6 +98,14 @@ const TARGETS = [
 ];
 
 const DEFAULT_VIEWPORT = { width: 1440, height: 900 };
+
+/** Same dimensions as tests/visual/home.spec.js (Argos viewports). */
+const VIEWPORT_PRESETS = {
+  mobile: { width: 390, height: 844 },
+  tablet: { width: 834, height: 1112 },
+  mediumDesktop: { width: 1440, height: 900 },
+  hugeDesktop: { width: 2560, height: 1440 },
+};
 
 function parseArgs(argv) {
   const out = {
@@ -103,6 +126,15 @@ function parseArgs(argv) {
       out.outDir = argv[++i];
     } else if (a === "--label" && argv[i + 1]) {
       out.label = argv[++i];
+    } else if (a === "--preset" && argv[i + 1]) {
+      const name = argv[++i];
+      const preset = VIEWPORT_PRESETS[name];
+      if (!preset) {
+        throw new Error(
+          `--preset must be one of: ${Object.keys(VIEWPORT_PRESETS).join(", ")}`,
+        );
+      }
+      out.viewport = { ...preset };
     } else if (a === "--viewport" && argv[i + 1]) {
       const m = /^(\d+)x(\d+)$/.exec(argv[++i]);
       if (!m) {
@@ -125,13 +157,19 @@ Options:
   --out-dir <dir>        Write <dir>/<label>.txt (requires --label)
   --label <name>         Filename stem when using --out-dir
   --viewport WxH         Default ${DEFAULT_VIEWPORT.width}x${DEFAULT_VIEWPORT.height}
+  --preset NAME          mobile | tablet | mediumDesktop | hugeDesktop (Argos / home.spec.js)
   --help, -h
 
 Examples:
   node scripts/dump-computed-styles.mjs http://127.0.0.1:4173 > /tmp/master.txt
+  node scripts/dump-computed-styles.mjs --preset mobile http://127.0.0.1:4173 > /tmp/master-mobile.txt
   node scripts/dump-computed-styles.mjs --out /tmp/branch.txt http://127.0.0.1:4174
   diff -u /tmp/master.txt /tmp/branch.txt
 `);
+}
+
+function dumpHeader(viewport, url) {
+  return `# computed-style-dump viewport=${viewport.width}x${viewport.height} url=${url}\n\n`;
 }
 
 async function collectDump(page) {
@@ -189,7 +227,8 @@ async function main() {
     process.exit(1);
   }
 
-  const text = await run(args.url, args.viewport);
+  const body = await run(args.url, args.viewport);
+  const text = dumpHeader(args.viewport, args.url) + body;
 
   if (args.outDir) {
     fs.mkdirSync(args.outDir, { recursive: true });
