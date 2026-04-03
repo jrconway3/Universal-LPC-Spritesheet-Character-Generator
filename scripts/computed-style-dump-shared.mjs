@@ -84,7 +84,90 @@ export const COMPUTED_STYLE_TARGETS = [
     label: "download first is-info button",
     selector: "#download-buttons .button.is-info",
   },
-  { label: "filters first box", selector: "#mithril-filters .box" },
+  {
+    label: "chooser download collapsible box",
+    selector: "#mithril-filters > div > .box:nth-child(1)",
+  },
+  {
+    label: "chooser filters collapsible box",
+    selector: "#mithril-filters > div > .box:nth-child(2)",
+  },
+  {
+    label: "filters collapsible inner (.collapsible-content)",
+    selector: "#mithril-filters > div > .box:nth-child(2) .collapsible-content",
+  },
+  {
+    label: "filters Search wrapper (first .mb-4)",
+    selector:
+      "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .mb-4:nth-child(1)",
+  },
+  {
+    label: "filters license+animation columns row",
+    selector:
+      "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .columns.is-multiline",
+  },
+  {
+    label: "filters license column (.filters-column first)",
+    selector:
+      "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .columns.is-multiline > .column:nth-child(1)",
+  },
+  {
+    label: "filters animation column (.filters-column second)",
+    selector:
+      "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .columns.is-multiline > .column:nth-child(2)",
+  },
+  {
+    label: "filters LicenseFilters nested box",
+    selector:
+      "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .columns.is-multiline > .column:nth-child(1) > .box.mb-4.has-background-light",
+  },
+  {
+    label: "filters AnimationFilters nested box",
+    selector:
+      "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .columns.is-multiline > .column:nth-child(2) > .box.mb-4.has-background-light",
+  },
+  {
+    label: "filters CurrentSelections wrapper (.mb-4 after columns)",
+    selector:
+      "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .mb-4:nth-child(3)",
+  },
+  {
+    label: "filters CategoryTree outer box",
+    selector:
+      "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .box.has-background-light",
+  },
+  {
+    label: "chooser credits collapsible box",
+    selector: "#credits-section",
+  },
+  {
+    label: "credits collapsible inner (.collapsible-content)",
+    selector: "#credits-section .collapsible-content",
+  },
+  {
+    label: "credits intro paragraph mb-3",
+    selector: "#credits-section p.is-size-7.mb-3",
+  },
+  {
+    label: "credits intro paragraph mb-2 (first)",
+    selector: "#credits-section p.is-size-7.mb-2",
+  },
+  {
+    label: "credits download buttons row",
+    selector: "#credits-section .buttons.mt-3",
+  },
+  {
+    label: "credits file list .content block",
+    selector: "#credits-section .content.has-background-light",
+  },
+  {
+    label: "chooser advanced tools box",
+    selector: "#mithril-filters > div > .box:nth-child(4)",
+  },
+  {
+    label: "filters panel inner box (first nested .box in filters)",
+    selector: "#mithril-filters .filters-column .box",
+  },
   { label: "filters search input", selector: "#mithril-filters input.input" },
   { label: "filters select control", selector: "#mithril-filters .select select" },
   { label: "filters tag example", selector: "#mithril-filters .tag" },
@@ -95,6 +178,29 @@ export const COMPUTED_STYLE_TARGETS = [
   { label: "collapsible header (first)", selector: ".collapsible-header" },
   { label: "animation preview box", selector: "#mithril-preview .box" },
   { label: "spritesheet preview box", selector: "#mithril-spritesheet-preview .box" },
+  {
+    label: "spritesheet inner columns row",
+    selector: "#mithril-spritesheet-preview .columns.is-mobile",
+  },
+  {
+    label: "spritesheet horizontal field",
+    selector: "#mithril-spritesheet-preview .field.is-horizontal",
+  },
+  {
+    label: "spritesheet inner row first column (checkboxes)",
+    selector:
+      "#mithril-spritesheet-preview .columns.is-mobile > .column:nth-child(1)",
+  },
+  {
+    label: "spritesheet inner row second column (zoom)",
+    selector:
+      "#mithril-spritesheet-preview .columns.is-mobile > .column:nth-child(2)",
+  },
+  {
+    label: "spritesheet zoom field-body",
+    selector:
+      "#mithril-spritesheet-preview .field.is-horizontal .field-body",
+  },
   { label: "scrollable container (first)", selector: ".scrollable-container" },
   { label: "animation canvas", selector: "#previewAnimations" },
   { label: "spritesheet canvas", selector: "#spritesheet-preview" },
