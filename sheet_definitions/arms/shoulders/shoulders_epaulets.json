@@ -3,7 +3,9 @@
   "layer_1": {
     "zPos": 60,
     "male": "shoulders/epaulets/male/",
+    "muscular": "shoulders/epaulets/male/",
     "female": "shoulders/epaulets/thin/",
+    "pregnant": "shoulders/epaulets/thin/",
     "teen": "shoulders/epaulets/thin/"
   },
   "animations": [

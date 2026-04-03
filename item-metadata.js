@@ -2823,7 +2823,9 @@ window.itemMetadata = {
     "required": [
       "male",
       "female",
-      "teen"
+      "teen",
+      "muscular",
+      "pregnant"
     ],
     "animations": [
       "spellcast",
@@ -2856,7 +2858,9 @@ window.itemMetadata = {
       "layer_1": {
         "zPos": 60,
         "male": "shoulders/epaulets/male/",
+        "muscular": "shoulders/epaulets/male/",
         "female": "shoulders/epaulets/thin/",
+        "pregnant": "shoulders/epaulets/thin/",
         "teen": "shoulders/epaulets/thin/"
       }
     },
@@ -3107,6 +3111,14 @@ window.itemMetadata = {
         "CC-BY-SA 3.0"
       ],
       "teen": [
+        "OGA-BY 3.0",
+        "CC-BY-SA 3.0"
+      ],
+      "muscular": [
+        "OGA-BY 3.0",
+        "CC-BY-SA 3.0"
+      ],
+      "pregnant": [
         "OGA-BY 3.0",
         "CC-BY-SA 3.0"
       ]
