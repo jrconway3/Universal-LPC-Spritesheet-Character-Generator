@@ -22,90 +22,18 @@
  *   node scripts/dump-computed-styles.mjs --preset mobile http://127.0.0.1:4173 > /tmp/master-mobile.txt
  *   node scripts/dump-computed-styles.mjs --preset mobile http://127.0.0.1:4174 > /tmp/branch-mobile.txt
  *   diff -u /tmp/master-mobile.txt /tmp/branch-mobile.txt
+ *
+ * All presets + diffs at once:
+ *   node scripts/computed-style-diff-all.mjs
  */
 
-import { chromium } from "playwright";
 import fs from "node:fs";
 import path from "node:path";
-import { gotoHomepageReady } from "../tests/visual/home-helpers.js";
-
-/** Properties that tend to matter for Bulma / layout parity (hyphenated). */
-const PROPS = [
-  "align-items",
-  "background-color",
-  "border-bottom-left-radius",
-  "border-bottom-right-radius",
-  "border-bottom-width",
-  "border-left-width",
-  "border-radius",
-  "border-right-width",
-  "border-top-left-radius",
-  "border-top-right-radius",
-  "border-top-width",
-  "box-shadow",
-  "box-sizing",
-  "color",
-  "column-gap",
-  "display",
-  "flex-direction",
-  "flex-basis",
-  "flex-grow",
-  "flex-shrink",
-  "flex-wrap",
-  "font-family",
-  "font-size",
-  "font-weight",
-  "gap",
-  "height",
-  "justify-content",
-  "letter-spacing",
-  "line-height",
-  "margin-bottom",
-  "margin-left",
-  "margin-right",
-  "margin-top",
-  "min-height",
-  "padding-bottom",
-  "padding-left",
-  "padding-right",
-  "padding-top",
-  "row-gap",
-  "width",
-];
-
-/**
- * Label (for section header) + selector (first match).
- * Extend this list as you discover hotspots during migration.
- */
-const TARGETS = [
-  { label: "body", selector: "body" },
-  { label: "h1.title", selector: "h1.title" },
-  { label: "header subtitle", selector: "#header-left span.subtitle" },
-  { label: "download buttons container", selector: "#download-buttons" },
-  { label: "download primary button", selector: "#download-buttons .button.is-primary" },
-  {
-    label: "download first is-info button",
-    selector: "#download-buttons .button.is-info",
-  },
-  { label: "filters search input", selector: "#mithril-filters input.input" },
-  { label: "filters select control", selector: "#mithril-filters .select select" },
-  { label: "filters tag example", selector: "#mithril-filters .tag" },
-  { label: "filters label", selector: "#mithril-filters .label" },
-  { label: "body type button group", selector: "#mithril-filters .buttons .button" },
-  { label: "tree label (first)", selector: ".tree-label" },
-  { label: "variant display name (first)", selector: ".variant-display-name" },
-  { label: "preview box", selector: "#mithril-preview .box" },
-];
-
-const DEFAULT_VIEWPORT = { width: 1440, height: 900 };
-
-/** Same dimensions as tests/visual/home.spec.js (Argos viewports). */
-const VIEWPORT_PRESETS = {
-  mobile: { width: 390, height: 844 },
-  tablet: { width: 834, height: 1112 },
-  mediumDesktop: { width: 1440, height: 900 },
-  hugeDesktop: { width: 2560, height: 1440 },
-};
+import {
+  DEFAULT_VIEWPORT,
+  VIEWPORT_PRESETS,
+  dumpComputedStylesForUrl,
+} from "./computed-style-dump-shared.mjs";
 
 function parseArgs(argv) {
   const out = {
@@ -165,55 +93,9 @@ Examples:
   node scripts/dump-computed-styles.mjs --preset mobile http://127.0.0.1:4173 > /tmp/master-mobile.txt
   node scripts/dump-computed-styles.mjs --out /tmp/branch.txt http://127.0.0.1:4174
   diff -u /tmp/master.txt /tmp/branch.txt
+
+  node scripts/computed-style-diff-all.mjs   # all presets vs default ports
 `);
-}
-
-function dumpHeader(viewport, url) {
-  return `# computed-style-dump viewport=${viewport.width}x${viewport.height} url=${url}\n\n`;
-}
-
-async function collectDump(page) {
-  return await page.evaluate(
-    ({ props, targets }) => {
-      /* eslint-disable no-undef -- runs in the page (browser) context */
-      const lines = [];
-      for (const { label, selector } of targets) {
-        lines.push(`=== ${label} <${selector}> ===`);
-        const el = document.querySelector(selector);
-        if (!el) {
-          lines.push("  <no match>");
-          lines.push("");
-          continue;
-        }
-        const cs = getComputedStyle(el);
-        const rect = el.getBoundingClientRect();
-        lines.push(`  __box: ${rect.width.toFixed(2)}x${rect.height.toFixed(2)}`);
-        lines.push(`  __offset: ${el.offsetWidth}x${el.offsetHeight}`);
-        for (const p of props) {
-          const v = cs.getPropertyValue(p);
-          if (v !== "") {
-            lines.push(`  ${p}: ${v.trim()}`);
-          }
-        }
-        lines.push("");
-      }
-      /* eslint-enable no-undef */
-      return lines.join("\n");
-    },
-    { props: PROPS, targets: TARGETS },
-  );
-}
-
-async function run(url, viewport) {
-  const browser = await chromium.launch({ headless: true });
-  try {
-    const page = await browser.newPage();
-    await page.setViewportSize(viewport);
-    await gotoHomepageReady(page, url);
-    return await collectDump(page);
-  } finally {
-      await browser.close();
-    }
 }
 
 async function main() {
@@ -227,8 +109,7 @@ async function main() {
     process.exit(1);
   }
 
-  const body = await run(args.url, args.viewport);
-  const text = dumpHeader(args.viewport, args.url) + body;
+  const text = await dumpComputedStylesForUrl(args.url, args.viewport);
 
   if (args.outDir) {
     fs.mkdirSync(args.outDir, { recursive: true });

@@ -7,3 +7,4 @@ blob-report/
 .idea/
 .eslintcache
 tmp/
+computed-style-diff-output/
