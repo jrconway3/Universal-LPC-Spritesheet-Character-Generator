@@ -635,7 +635,7 @@ shield_two_engrailed,layer_1,2,shield/two_engrailed/paint/bg/ shield/two_engrail
 shield_two_engrailed,layer_2,110,shield/two_engrailed/paint/fg/male/ shield/two_engrailed/paint/fg/female/ shield/two_engrailed/paint/fg/male/ shield/two_engrailed/paint/fg/female/
 shield_two_engrailed_trim,layer_1,3,shield/two_engrailed/trim/bg/ shield/two_engrailed/trim/bg/ shield/two_engrailed/trim/bg/ shield/two_engrailed/trim/bg/
 shield_two_engrailed_trim,layer_2,115,shield/two_engrailed/trim/fg/male/ shield/two_engrailed/trim/fg/female/ shield/two_engrailed/trim/fg/male/ shield/two_engrailed/trim/fg/female/
-shoulders_epaulets,layer_1,60,shoulders/epaulets/male/
+shoulders_epaulets,layer_1,60,shoulders/epaulets/male/ shoulders/epaulets/thin/
 shoulders_leather,layer_1,60,shoulders/leather/male/ shoulders/leather/female/ shoulders/leather/male/ shoulders/leather/female/
 shoulders_legion,layer_1,60,shoulders/legion/male/ shoulders/legion/female/ shoulders/legion/male/ shoulders/legion/female/
 shoulders_mantal,layer_1,75,shoulders/mantal/male/
