@@ -51,9 +51,9 @@
     ]
   },
   "aliases": {
-    "bronze": "metal.bronze",
-    "gold": "metal.gold",
-    "silver": "metal.silver"
+    "Epaulets_bronze": "metal.bronze",
+    "Epaulets_gold": "metal.gold",
+    "Epaulets_silver": "metal.silver"
   },
   "type_name": "shoulders"
 }

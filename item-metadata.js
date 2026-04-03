@@ -104423,6 +104423,23 @@ window.aliasMetadata = {
       "variant": "*"
     }
   },
+  "shoulders": {
+    "Epaulets_bronze": {
+      "typeName": "shoulders",
+      "name": "Epaulets",
+      "variant": "metal.bronze"
+    },
+    "Epaulets_gold": {
+      "typeName": "shoulders",
+      "name": "Epaulets",
+      "variant": "metal.gold"
+    },
+    "Epaulets_silver": {
+      "typeName": "shoulders",
+      "name": "Epaulets",
+      "variant": "metal.silver"
+    }
+  },
   "belt": {
     "Other_belts_formal": {
       "typeName": "belt",

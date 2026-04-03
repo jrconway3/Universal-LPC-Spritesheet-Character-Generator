@@ -165,6 +165,13 @@ function parseTree(filePath, fileName) {
 
 // Parse alias definitions and populate the aliasMetadata mapping for backward compatibility with old bookmark URLs.
 function writeAliases(aliases, meta) {
+  // Get Standard Variants
+  let variants = meta.variants;
+  if (!variants || !meta.variants.length) {
+    // Get Recolor Variants
+    variants = meta.recolors[0].variants;
+  }
+
   // Loop Aliases
   for (const [original, alias] of Object.entries(aliases)) {
     // Get Alias Details
@@ -176,7 +183,7 @@ function writeAliases(aliases, meta) {
     if (aliasVariant === "*" && aliasType) {
       targetName = aliasVariant;
       targetVariant = aliasVariant;
-    } else if (meta.variants.indexOf(aliasVariant) !== -1) {
+    } else if (variants.indexOf(aliasVariant) !== -1) {
       // If Variant Exists, mark aliasVariant as the variant while grabbing the name from itemMetadata
       targetName = meta.name.replaceAll(" ", "_");
       targetVariant = aliasVariant;
@@ -190,7 +197,7 @@ function writeAliases(aliases, meta) {
         // Shift one part from the left of the array to build the targetName, and keep testing the remaining parts as the variant
         targetName += (targetName !== "" ? "_" : "") + parts.shift();
         targetVariant = parts.join("_");
-        if (meta.variants.indexOf(targetVariant) !== -1) {
+        if (variants.indexOf(targetVariant) !== -1) {
           break;
         }
       }

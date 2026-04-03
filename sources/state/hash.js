@@ -138,6 +138,7 @@ export function getHashParamsforSelections(selections) {
         name.replaceAll(" ", "_") +
         (selection.variant ? `_${selection.variant}` : "");
       const aliasType = window.aliasMetadata?.[typeName];
+      console.log('get hash params: ', aliasType);
       if (!aliasType) continue;
 
       // Check Name and Variant
@@ -207,6 +208,7 @@ export function loadSelectionsFromHash(hashString = null) {
 
     // Check Name and Variant
     const aliasType = window.aliasMetadata?.[typeName];
+    console.log('loadSelectionsFromHash: ', typeName, aliasType);
     const aliasMeta = aliasType?.[nameAndVariant];
     if (aliasMeta) {
       typeName = aliasMeta.typeName;
