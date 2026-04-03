@@ -83,18 +83,20 @@ Also, each animation has a frame cycle documented which you can see next to the 
 
 ### Run This Project Locally for Development
 
-Traditionally, you could run this project, by opening `index.html` in your browser of choice.
+Traditionally, you could run this project by opening `index.html` in your browser of choice.
 However, today's browsers have some security restrictions that do make this somewhat impractical.
 You will likely have to change your browser's settings to enable it to open a file url this way.
 You may instead wish to use a web server locally for development. Some free recommendations:
 - IIS (Windows only) (NOT open source)
-- Python (py -m http.server <port>)
+- Python (`py -m http.server <port>`)
 - Rust (Simple Http Server)
 - Node.js (require('http'))
 - nginx
 - npx serve
 - brew serve (Mac only)
 - Lighttpd
+
+This repository also includes **`npm run serve:open`**, which starts the static file server ([`serve`](https://github.com/vercel/serve), listed in `devDependencies`) and opens the site in your default browser. Run **`npm install`** once, then **`npm run serve:open`**. The default port is **8765**; set **`PORT`** to use another (for example `PORT=3000 npm run serve:open`). If that port is already in use, `serve` automatically binds to a free port, matching the default `serve` CLI behavior.
 
 ### Plugins and Development Tools for Use in Game Engines
 
