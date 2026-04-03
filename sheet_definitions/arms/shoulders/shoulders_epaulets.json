@@ -15,15 +15,17 @@
     "slash",
     "shoot",
     "hurt",
+    "watering",
     "idle",
-    "climb",
     "jump",
+    "run",
     "sit",
     "emote",
-    "run",
-    "combat_idle",
-    "backslash",
-    "halfslash"
+    "climb",
+    "combat",
+    "1h_slash",
+    "1h_backslash",
+    "1h_halfslash"
   ],
   "credits": [
     {
