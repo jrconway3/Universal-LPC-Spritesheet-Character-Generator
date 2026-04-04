@@ -7,8 +7,12 @@ import {
   layers,
   SHEET_WIDTH,
   SHEET_HEIGHT,
+  renderCharacter,
 } from "../../sources/canvas/renderer.js";
-import { addAnimationToZipFolder } from "../../sources/utils/zip-helpers.js";
+import {
+  addAnimationToZipFolder,
+  addStandardAnimationToZipCustomFolder,
+} from "../../sources/utils/zip-helpers.js";
 import { getItemFileName } from "../../sources/utils/fileName.js";
 import { getSortedLayers } from "../../sources/state/meta.js";
 import {
@@ -734,6 +738,105 @@ describe("state/zip.js", () => {
         );
       expect(issueAlert, "partial failure alert").to.exist;
       expect(String(issueAlert.args[0])).to.include(headFileName);
+    });
+
+    it("includes all items in custom animations including items copied from base animations", async () => {
+      state.selections = {
+        body: {
+          itemId: "body",
+          variant: "light",
+          recolor: "light",
+          name: "Body color (light)",
+        },
+        head: {
+          itemId: "heads_human_male",
+          variant: "light",
+          recolor: "light",
+          name: "Human male (light)",
+        },
+        weapon: {
+          itemId: "longsword",
+          variant: "longsword",
+          name: "Longsword (longsword)",
+        },
+      };
+
+      const loadImageStub = sandbox.stub().resolves(nonEmptyAnimCanvas());
+      const addAnimationToZipFolderSpy = sinon.spy(addAnimationToZipFolder);
+      const addStandardAnimationToZipCustomFolderSpy = sinon.spy(
+        addStandardAnimationToZipCustomFolder,
+      );
+
+      await renderCharacter(state.selections, "male");
+      await exportSplitItemAnimations({
+        loadImage: loadImageStub,
+        addAnimationToZipFolder: addAnimationToZipFolderSpy,
+        addStandardAnimationToZipCustomFolder:
+          addStandardAnimationToZipCustomFolderSpy,
+      });
+
+      const bodyLayers = getSortedLayers("body");
+      expect(bodyLayers, "body item should have layers in itemMetadata").to.be
+        .ok;
+      expect(bodyLayers.length).to.be.at.least(1);
+
+      const headLayers = getSortedLayers("heads_human_male");
+      expect(headLayers, "head item should have layers in itemMetadata").to.be
+        .ok;
+      expect(headLayers.length).to.be.at.least(1);
+
+      const swordLayers = getSortedLayers("longsword");
+      expect(swordLayers, "longsword item should have layers in itemMetadata")
+        .to.be.ok;
+      expect(swordLayers.length).to.be.at.least(1);
+
+      const stdToCustCalls = addStandardAnimationToZipCustomFolderSpy
+        .getCalls()
+        .filter((c) => c.args[0]?.root === "custom/walk_128/");
+      expect(stdToCustCalls.length).to.equal(
+        bodyLayers.length + headLayers.length,
+      );
+
+      const addCalls = addAnimationToZipFolderSpy
+        .getCalls()
+        .filter((c) => c.args[0]?.root === "custom/walk_128/");
+      expect(addCalls.length).to.equal(swordLayers.length);
+
+      const expectedFileNames = {
+        body: getItemFileName(
+          "body",
+          "light",
+          "Body Color (light)",
+          bodyLayers[0].layerNum,
+        ),
+        head: getItemFileName(
+          "heads_human_male",
+          "light",
+          "Human Male (light)",
+          headLayers[0].layerNum,
+        ),
+        weapon: getItemFileName(
+          "longsword",
+          "longsword",
+          "Longsword (longsword)",
+          swordLayers[0].layerNum,
+        ),
+      };
+
+      const [bodyFolder, bodyFile, bodyCanvas] = stdToCustCalls[0].args;
+      expect(bodyFolder.root).to.equal("custom/walk_128/");
+      expect(bodyFile).to.equal(expectedFileNames["body"]);
+      expect(bodyCanvas).to.be.instanceOf(HTMLCanvasElement);
+
+      const [headFolder, headFile, headCanvas] = stdToCustCalls[1].args;
+      expect(headFolder.root).to.equal("custom/walk_128/");
+      expect(headFile).to.equal(expectedFileNames["head"]);
+      expect(headCanvas).to.be.instanceOf(HTMLCanvasElement);
+
+      const [swordFolder, swordFile, swordCanvas] = addCalls[0].args;
+      expect(swordFolder.root).to.equal("custom/walk_128/");
+      expect(swordFile).to.equal(expectedFileNames["weapon"]);
+      expect(swordCanvas).to.be.instanceOf(HTMLCanvasElement);
     });
 
     describe("issue #364 (custom-animation-only items)", () => {
