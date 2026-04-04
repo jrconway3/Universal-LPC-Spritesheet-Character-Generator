@@ -73,7 +73,7 @@ export function getMultiRecolors(itemId, selections) {
     const verifiedRecolor = fixMissingRecolor(
       itemId,
       selection.recolor,
-      !selection.subId ? null : subMeta.type_name,
+      !selection.subId ? null : typeName,
     );
     if (verifiedRecolor) {
       if (selection.subId) {

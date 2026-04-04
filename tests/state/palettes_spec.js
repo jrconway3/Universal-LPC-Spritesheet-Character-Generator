@@ -48,6 +48,19 @@ describe("state/palettes.js", () => {
             },
           },
         },
+        eye: {
+          default: "ulpc",
+          base: "blue",
+          palettes: {
+            ulpc: {
+              blue: ["#2a3c49", "#5686ae", "#57cee4"],
+              green: ["#2b4b29", "#53b351", "#84ec50"],
+            },
+            lpcr: {
+              black: ["#18506f", "#52414b", "#818e97"],
+            },
+          },
+        },
         all: {
           default: "lpcr",
           base: "white",
@@ -89,6 +102,44 @@ describe("state/palettes.js", () => {
         recolors: [
           {
             label: "Head",
+            type_name: null,
+            material: "body",
+            default: "ulpc",
+            base: "ulpc.base",
+            palettes: {
+              ulpc: {
+                light: ["#271920", "#99423c", "#cc8665", "#E4A47C"],
+                bronze: ["#1A1213", "#442725", "#644133", "#7F4C31"],
+              },
+            },
+            variants: ["light", "bronze"],
+          },
+          {
+            type_name: "eyes",
+            label: "Eye Color",
+            material: "eye",
+            palettes: {
+              ulpc: {
+                blue: ["#2a3c49", "#5686ae", "#57cee4"],
+                green: ["#2b4b29", "#53b351", "#84ec50"],
+              },
+              lpcr: {
+                black: ["#18506f", "#52414b", "#818e97"],
+              },
+            },
+            default: "ulpc",
+            base: "ulpc.blue",
+            variants: ["blue", "green", "lpcr.black"],
+          },
+        ],
+      },
+      head_ears_elven: {
+        name: "Elven ears",
+        type_name: "ears",
+        matchBodyColor: true,
+        recolors: [
+          {
+            label: "Body",
             type_name: null,
             material: "body",
             default: "ulpc",
@@ -223,11 +274,11 @@ describe("state/palettes.js", () => {
     };
 
     const [paletteOptions, selectedColors] = getPaletteOptions(
-      "heads_human_male",
-      window.itemMetadata.heads_human_male,
+      "head_ears_elven",
+      window.itemMetadata.head_ears_elven,
     );
 
-    expect(selectedColors).to.deep.equal({ head: "bronze" });
+    expect(selectedColors).to.deep.equal({ ears: "bronze" });
     expect(paletteOptions).to.have.lengthOf(1);
     expect(paletteOptions[0].selectionColor).to.equal("bronze");
     expect(paletteOptions[0].colors).to.deep.equal([
@@ -236,6 +287,64 @@ describe("state/palettes.js", () => {
       "#644133",
       "#7F4C31",
     ]);
+  });
+
+  it("returns head and eye recolors for the same head asset", () => {
+    state.selections = {
+      head: {
+        itemId: "heads_human_male",
+        recolor: "light",
+      },
+      eyes: {
+        itemId: "heads_human_male",
+        subId: 1,
+        recolor: "green",
+      },
+    };
+
+    const recolors = getMultiRecolors("heads_human_male", state.selections);
+
+    expect(recolors).to.deep.equal({ head: "light", eyes: "green" });
+  });
+
+  it("keeps eye recolor while matchBodyColor overrides head recolor", () => {
+    state.selections = {
+      body: {
+        itemId: "body",
+        recolor: "bronze",
+      },
+      head: {
+        itemId: "heads_human_male",
+        recolor: "light",
+      },
+      eyes: {
+        itemId: "heads_human_male",
+        subId: 1,
+        recolor: "lpcr.black",
+      },
+    };
+
+    const recolors = getMultiRecolors("heads_human_male", state.selections);
+
+    expect(recolors).to.deep.equal({ head: "bronze", eyes: "lpcr.black" });
+  });
+
+  it("removes one color if a color doesn't exist", () => {
+    state.selections = {
+      head: {
+        itemId: "heads_human_male",
+        recolor: "bronze",
+      },
+      eyes: {
+        itemId: "heads_human_male",
+        subId: 1,
+        recolor: "purple",
+      },
+    };
+
+    const recolors = getMultiRecolors("heads_human_male", state.selections);
+
+    expect(recolors).to.deep.equal({ head: "bronze" });
   });
 
   it("falls back across same-type assets when querying the other itemId", () => {
