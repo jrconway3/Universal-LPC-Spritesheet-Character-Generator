@@ -226,11 +226,7 @@ export const exportSplitItemSheets = async (deps = {}) => {
           );
 
           if (itemCanvas) {
-            await addAnimationToZipFolderFn(
-              itemsFolder,
-              `${fileName}.png`,
-              itemCanvas,
-            );
+            await addAnimationToZipFolderFn(itemsFolder, fileName, itemCanvas);
             exportedItems.push(fileName);
           }
         } catch (err) {
@@ -378,11 +374,7 @@ export const exportSplitItemAnimations = async (deps = {}) => {
             );
 
             if (animCanvas) {
-              await addAnimationToZipFolderFn(
-                animFolder,
-                `${fileName}.png`,
-                animCanvas,
-              );
+              await addAnimationToZipFolderFn(animFolder, fileName, animCanvas);
               exportedStandard[anim.value].push(fileName);
             }
           } catch (err) {
