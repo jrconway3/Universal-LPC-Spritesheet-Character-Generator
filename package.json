@@ -1,5 +1,6 @@
 {
   "scripts": {
+    "serve:open": "node scripts/serve-open.mjs",
     "lint": "eslint . --cache",
     "lint:fix": "eslint . --cache --fix",
     "format": "prettier --write .",
@@ -21,9 +22,11 @@
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
+    "execa": "^9.6.1",
     "globals": "^16.5.0",
     "mithril": "^2.3.8",
     "mocha": "^11.7.5",
+    "open": "^10.2.0",
     "prettier": "^3.8.1",
     "serve": "^14.2.6",
     "testem": "^3.19.1"
