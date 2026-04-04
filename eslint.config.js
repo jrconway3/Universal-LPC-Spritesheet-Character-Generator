@@ -104,6 +104,22 @@ module.exports = [
     },
   },
   {
+    files: ["scripts/**/*.mjs"],
+    languageOptions: {
+      parserOptions: {
+        ...sharedParserOptions,
+        sourceType: "module",
+      },
+      globals: {
+        ...globals.node,
+        ...globals.es2021,
+      },
+    },
+    rules: {
+      ...commonRules,
+    },
+  },
+  {
     ...eslintPluginPrettierRecommended,
     files: ["**/*.js"],
   },
