@@ -353,7 +353,7 @@ describe("state/zip.js", () => {
 
       const [folder, zipName, canvas] = itemsCalls[0].args;
       expect(folder.root).to.equal("items/");
-      expect(zipName).to.equal(`${expectedFileName}.png`);
+      expect(zipName).to.equal(expectedFileName);
       expect(canvas).to.be.instanceOf(HTMLCanvasElement);
       expect(itemsCalls[0].args[3]).to.equal(undefined);
 
@@ -382,7 +382,7 @@ describe("state/zip.js", () => {
         bodyLayers[0].layerNum,
       );
 
-      expect(fakeZip.files.get(`items/${expectedFileName}.png`)).to.exist;
+      expect(fakeZip.files.get(`items/${expectedFileName}`)).to.exist;
       expect(alertStub.calledWith("Export complete!")).to.be.true;
     });
 
@@ -424,10 +424,8 @@ describe("state/zip.js", () => {
         headLayers[0].layerNum,
       );
 
-      expect(fakeZip.files.get(`items/${firstFileName}.png`)).to.exist;
-      expect(fakeZip.files.get(`items/${secondFileName}.png`)).to.equal(
-        undefined,
-      );
+      expect(fakeZip.files.get(`items/${firstFileName}`)).to.exist;
+      expect(fakeZip.files.get(`items/${secondFileName}`)).to.equal(undefined);
       expect(alertStub.called).to.be.true;
       const issueAlert = alertStub
         .getCalls()
@@ -489,10 +487,10 @@ describe("state/zip.js", () => {
         realWeaponLayers[0].layerNum,
       );
 
-      expect(fakeZip.files.get(`items/${firstFileName}.png`)).to.exist;
-      expect(fakeZip.files.get(`items/${secondFileName}.png`)).to.exist;
+      expect(fakeZip.files.get(`items/${firstFileName}`)).to.exist;
+      expect(fakeZip.files.get(`items/${secondFileName}`)).to.exist;
       expect(weaponLayers.length).to.equal(0);
-      expect(fakeZip.files.get(`items/${thirdFileName}.png`)).to.exist;
+      expect(fakeZip.files.get(`items/${thirdFileName}`)).to.exist;
     });
 
     describe("issue #364 (custom-animation-only items)", () => {
@@ -535,7 +533,7 @@ describe("state/zip.js", () => {
 
         expect(renderStub.callCount).to.equal(allLayers.length);
         expect(addSpy.callCount).to.equal(allLayers.length);
-        expect(fakeZip.files.get(`items/${expectedFileName}.png`)).to.exist;
+        expect(fakeZip.files.get(`items/${expectedFileName}`)).to.exist;
         expect(alertStub.calledWith("Export complete!")).to.be.true;
       });
     });
@@ -635,7 +633,7 @@ describe("state/zip.js", () => {
 
       const [folder, zipName, canvas] = walkCalls[0].args;
       expect(folder.root).to.equal("standard/walk/");
-      expect(zipName).to.equal(`${expectedFileName}.png`);
+      expect(zipName).to.equal(expectedFileName);
       expect(canvas).to.be.instanceOf(HTMLCanvasElement);
       expect(walkCalls[0].args[3]).to.equal(undefined);
 
@@ -716,8 +714,8 @@ describe("state/zip.js", () => {
         headLayers[0].layerNum,
       );
 
-      expect(fakeZip.files.get(`standard/walk/${bodyFileName}.png`)).to.exist;
-      expect(fakeZip.files.get(`standard/walk/${headFileName}.png`)).to.equal(
+      expect(fakeZip.files.get(`standard/walk/${bodyFileName}`)).to.exist;
+      expect(fakeZip.files.get(`standard/walk/${headFileName}`)).to.equal(
         undefined,
       );
 
