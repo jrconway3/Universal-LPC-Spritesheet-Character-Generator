@@ -395,7 +395,7 @@ export async function renderCharacter(
                 renderCtx,
                 customAnimDef,
                 offsetY,
-                imageToUse
+                imageToUse,
               );
             }
           }
