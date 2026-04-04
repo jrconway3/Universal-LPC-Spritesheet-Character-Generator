@@ -107,12 +107,7 @@ describe("drawFramesToCustomAnimation", () => {
   it("uses single-animation directional rows when source height is 256 or less", () => {
     const customAnimationDefinition = {
       frameSize: 64,
-      frames: [
-        ["sit-n,2"],
-        ["sit-w,2"],
-        ["sit-s,2"],
-        ["sit-e,2"],
-      ],
+      frames: [["sit-n,2"], ["sit-w,2"], ["sit-s,2"], ["sit-e,2"]],
     };
     const src = { width: 832, height: 256 };
 
