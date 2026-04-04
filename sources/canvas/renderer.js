@@ -323,6 +323,8 @@ export async function renderCharacter(
       }
     }
 
+    customAreaItems = {};
+
     // Now handle custom animations (wheelchair, etc.)
     if (addedCustomAnimations.size > 0 && customAnimations) {
       // For each custom animation area, we need to draw layers in zPos order
