@@ -357,7 +357,7 @@ describe("state/zip.js", () => {
       const renderCall = renderStub.firstCall;
       expect(renderCall.args[0]).to.equal("body");
       expect(renderCall.args[1]).to.equal("light");
-      expect(renderCall.args[2]).to.deep.equal({});
+      expect(renderCall.args[2]).to.equal(null);
       expect(renderCall.args[3]).to.equal(state.bodyType);
       expect(renderCall.args[4]).to.equal(state.selections);
       expect(renderCall.args[5]).to.equal(bodyLayers[0].layerNum);
@@ -639,7 +639,7 @@ describe("state/zip.js", () => {
       const rc = renderStub.firstCall;
       expect(rc.args[0]).to.equal("body");
       expect(rc.args[1]).to.equal("light");
-      expect(rc.args[2]).to.deep.equal({});
+      expect(rc.args[2]).to.equal(null);
       expect(rc.args[3]).to.equal(state.bodyType);
       expect(rc.args[4]).to.equal("walk");
       expect(rc.args[5]).to.equal(state.selections);

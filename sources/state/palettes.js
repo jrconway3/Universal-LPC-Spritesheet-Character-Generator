@@ -34,7 +34,7 @@ export function fixMissingRecolor(itemId, recolor, typeName = null) {
  * Function to get multiple recolor options from selections.
  * @param {string} itemId - The ID of the item to get recolors for
  * @param {Array} selections - The array of selections to filter
- * @returns {Object} An object mapping type_name to recolor
+ * @returns {Object|null} An object mapping type_name to recolor
  */
 export function getMultiRecolors(itemId, selections) {
   // Implementation for getting multiple recolor options from selections
@@ -84,7 +84,7 @@ export function getMultiRecolors(itemId, selections) {
   }
 
   // Return Recolors Object (key > value)
-  return recolors;
+  return Object.keys(recolors).length > 0 ? recolors : null;
 }
 
 /**
@@ -218,7 +218,7 @@ export function getPaletteOptions(itemId, meta) {
     meta.recolors.forEach((color, idx) => {
       const subGroup = idx !== 0 ? color.type_name : selectionGroup;
       const versions = Object.keys(color.palettes);
-      let selectedColor = selectedColors[subGroup];
+      let selectedColor = selectedColors?.[subGroup] ?? null;
 
       // Get Recolors from Selection
       const [material, version, recolor] = parseRecolorKey(
