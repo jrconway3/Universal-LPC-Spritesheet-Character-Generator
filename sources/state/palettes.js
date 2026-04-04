@@ -24,8 +24,7 @@ export function fixMissingRecolor(itemId, recolor, typeName = null) {
   for (const variant of palette?.variants ?? []) {
     const parts = variant.split('.');
     if (parts.length > 1 && parts.includes(recolor)) {
-      const index = parts.indexOf(recolor);
-      newRecolor = parts[index];
+      newRecolor = variant;
       break;
     }
   }
@@ -65,7 +64,7 @@ export function getMultiRecolors(itemId, selections) {
       continue;
 
     // Process Each Item
-    const verifiedRecolor = fixMissingRecolor(itemId, selection.recolor, typeName);
+    const verifiedRecolor = fixMissingRecolor(itemId, selection.recolor, !selection.subId ? null : subMeta.type_name);
     if (selection.subId) {
       recolors[typeName] = verifiedRecolor;
     } else if (selection.recolor) {
@@ -214,16 +213,8 @@ export function getPaletteOptions(itemId, meta) {
   if (meta.recolors && meta.recolors.length > 0) {
     meta.recolors.forEach((color, idx) => {
       const subGroup = idx !== 0 ? color.type_name : selectionGroup;
-      const selection = state.selections[subGroup];
       const versions = Object.keys(color.palettes);
-      let selectedColor = selection?.recolor;
-      if (!selectedColor) {
-        if (idx !== 0) {
-          selectedColor = color.matchBodyColor ? bodyColor : null;
-        } else {
-          selectedColor = bodyColor ?? null;
-        }
-      }
+      let selectedColor = selectedColors[subGroup];
 
       // Get Recolors from Selection
       const [material, version, recolor] = parseRecolorKey(
