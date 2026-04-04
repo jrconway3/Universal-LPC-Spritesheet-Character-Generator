@@ -18,11 +18,18 @@ export function fixMissingRecolor(itemId, recolor, typeName = null) {
     return recolor;
   }
 
+  // Get Material From Palette
+  const materialMeta = window.paletteMetadata?.materials[palette.material];
+  const [, , parsedRecolor] = parseRecolorKey(recolor, materialMeta);
+
   // See if Recolor is Non-Standard for the Current Asset
   let newRecolor = null;
   for (const variant of palette?.variants ?? []) {
     const parts = variant.split(".");
-    if (parts.length > 1 && parts.includes(recolor)) {
+    if (parts.length > 1 && parts.includes(parsedRecolor ?? recolor)) {
+      newRecolor = variant;
+      break;
+    } else if (parsedRecolor === variant) {
       newRecolor = variant;
       break;
     }

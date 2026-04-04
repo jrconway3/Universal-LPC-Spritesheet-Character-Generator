@@ -18,15 +18,42 @@ describe("state/palettes.js", () => {
 
     window.paletteMetadata = {
       materials: {
+        body: {
+          default: "ulpc",
+          base: "light",
+          palettes: {
+            ulpc: {
+              light: ["#271920", "#99423c", "#cc8665", "#E4A47C"],
+              bronze: ["#1A1213", "#442725", "#644133", "#7F4C31"],
+            },
+          },
+        },
         cloth: {
           default: "ulpc",
           base: "base",
           palettes: {
             ulpc: {
-              base: ["#111111", "#222222"],
-              alt: ["#333333", "#444444"],
-              red: ["#770000", "#aa0000"],
-              "blue.dark": ["#000077", "#0000aa"],
+              red: ["#1d131e", "#400B1F", "#651117", "#82171C"],
+              bluegray: ["#11150b", "#0B2B28", "#2E403A", "#315B49"],
+            },
+          },
+        },
+        metal: {
+          default: "ulpc",
+          base: "base",
+          palettes: {
+            ulpc: {
+              brass: ["#1A1213", "#61482C", "#836332", "#AF8A35"],
+              steel: ["#1D131E", "#4D4A5D", "#726B7E", "#867E7F"],
+            },
+          },
+        },
+        all: {
+          default: "lpcr",
+          base: "white",
+          palettes: {
+            lpcr: {
+              red: ["#1a1213", "#3e111a", "#591515", "#7b2008"],
             },
           },
         },
@@ -34,10 +61,52 @@ describe("state/palettes.js", () => {
     };
 
     window.itemMetadata = {
-      target_item: {
-        name: "Target",
-        type_name: "cloth",
+      body: {
+        name: "Body",
+        type_name: "body",
         matchBodyColor: true,
+        recolors: [
+          {
+            label: "Body",
+            type_name: null,
+            material: "body",
+            default: "ulpc",
+            base: "ulpc.base",
+            palettes: {
+              ulpc: {
+                light: ["#271920", "#99423c", "#cc8665", "#E4A47C"],
+                bronze: ["#1A1213", "#442725", "#644133", "#7F4C31"],
+              },
+            },
+            variants: ["light", "bronze"],
+          },
+        ],
+      },
+      heads_human_male: {
+        name: "Human Male",
+        type_name: "head",
+        matchBodyColor: true,
+        recolors: [
+          {
+            label: "Head",
+            type_name: null,
+            material: "body",
+            default: "ulpc",
+            base: "ulpc.base",
+            palettes: {
+              ulpc: {
+                light: ["#271920", "#99423c", "#cc8665", "#E4A47C"],
+                bronze: ["#1A1213", "#442725", "#644133", "#7F4C31"],
+              },
+            },
+            variants: ["light", "bronze"],
+          },
+        ],
+      },
+      torso_clothes_longsleeve2_polo: {
+        name: "Longsleeve Polo",
+        type_name: "clothes",
+        matchBodyColor: false,
         recolors: [
           {
             label: "Cloth",
@@ -47,46 +116,58 @@ describe("state/palettes.js", () => {
             base: "ulpc.base",
             palettes: {
               ulpc: {
-                base: ["#111111", "#222222"],
-                alt: ["#333333", "#444444"],
-                red: ["#770000", "#aa0000"],
-                "blue.dark": ["#000077", "#0000aa"],
+                red: ["#1d131e", "#400B1F", "#651117", "#82171C"],
+                bluegray: ["#11150b", "#0B2B28", "#2E403A", "#315B49"],
               },
             },
-            variants: ["ulpc.red", "ulpc.blue.dark"],
+            variants: ["red", "bluegray", "metal.brass"],
           },
         ],
       },
-      source_item: {
-        name: "Source",
-        type_name: "cloth",
-        recolors: [{ label: "Source", type_name: null }],
-      },
-      body_skin: {
-        name: "Body",
-        type_name: "body",
-        matchBodyColor: true,
-        recolors: [],
-      },
-      shoulders_epaulettes: {
-        name: "Shoulders Epaulettes",
-        type_name: "shoulders",
+      torso_clothes_shortsleeve: {
+        name: "Shortsleeve",
+        type_name: "clothes",
+        matchBodyColor: false,
         recolors: [
           {
-            label: "Shoulders",
+            label: "Cloth",
             type_name: null,
-            variants: ["ulpc.red", "ulpc.blue"],
+            material: "cloth",
+            default: "ulpc",
+            base: "ulpc.base",
+            palettes: {
+              ulpc: {
+                red: ["#1d131e", "#400B1F", "#651117", "#82171C"],
+                bluegray: ["#11150b", "#0B2B28", "#2E403A", "#315B49"],
+              },
+            },
+            variants: ["red", "bluegray"],
+          },
+        ],
+      },
+      shoulders_epaulets: {
+        name: "Epaulets",
+        type_name: "shoulders",
+        matchBodyColor: false,
+        recolors: [
+          {
+            label: "Cloth",
+            type_name: null,
+            material: "cloth",
+            variants: ["red", "bluegray", "metal.brass"],
           },
         ],
       },
       shoulders_legion: {
-        name: "Shoulders Legion",
+        name: "Legion",
         type_name: "shoulders",
+        matchBodyColor: false,
         recolors: [
           {
-            label: "Shoulders",
+            label: "Metal",
             type_name: null,
-            variants: ["ulpc.metal.red", "ulpc.metal.gray"],
+            material: "metal",
+            variants: ["brass", "steel", "all.lpcr.red"],
           },
         ],
       },
@@ -103,63 +184,104 @@ describe("state/palettes.js", () => {
 
   it("falls back to a matching dotted recolor when the exact recolor is missing", () => {
     state.selections = {
-      cloth: {
-        itemId: "source_item",
-        recolor: "dark",
+      clothes: {
+        itemId: "torso_clothes_shortsleeve",
+        recolor: "red",
       },
     };
 
-    const recolors = getMultiRecolors("target_item", state.selections);
+    const recolors = getMultiRecolors(
+      "torso_clothes_shortsleeve",
+      state.selections,
+    );
 
-    expect(recolors).to.deep.equal({ cloth: "ulpc.blue.dark" });
+    expect(recolors).to.deep.equal({ clothes: "red" });
   });
 
   it("omits recolor keys when no matching fallback exists", () => {
     state.selections = {
-      cloth: {
-        itemId: "source_item",
-        recolor: "missing_color",
+      clothes: {
+        itemId: "torso_clothes_shortsleeve",
+        recolor: "green",
       },
     };
 
-    const recolors = getMultiRecolors("target_item", state.selections);
+    const recolors = getMultiRecolors(
+      "torso_clothes_shortsleeve",
+      state.selections,
+    );
 
     expect(recolors).to.equal(null);
   });
 
-  it("uses matchBodyColor fallback in getPaletteOptions when body color is present", () => {
+  it("uses matchBodyColor in getPaletteOptions for head assets", () => {
     state.selections = {
       body: {
-        itemId: "body_skin",
-        recolor: "alt",
-      },
-      cloth: {
-        itemId: "target_item",
-        recolor: "base",
+        itemId: "body",
+        recolor: "bronze",
       },
     };
 
     const [paletteOptions, selectedColors] = getPaletteOptions(
-      "target_item",
-      window.itemMetadata.target_item,
+      "heads_human_male",
+      window.itemMetadata.heads_human_male,
     );
 
-    expect(selectedColors).to.deep.equal({ cloth: "alt" });
+    expect(selectedColors).to.deep.equal({ head: "bronze" });
     expect(paletteOptions).to.have.lengthOf(1);
-    expect(paletteOptions[0].selectionColor).to.equal("alt");
-    expect(paletteOptions[0].colors).to.deep.equal(["#333333", "#444444"]);
+    expect(paletteOptions[0].selectionColor).to.equal("bronze");
+    expect(paletteOptions[0].colors).to.deep.equal([
+      "#1A1213",
+      "#442725",
+      "#644133",
+      "#7F4C31",
+    ]);
   });
 
   it("falls back across same-type assets when querying the other itemId", () => {
     state.selections = {
       shoulders: {
-        itemId: "shoulders_epaulettes",
+        itemId: "shoulders_epaulets",
         recolor: "red",
       },
     };
 
     const recolors = getMultiRecolors("shoulders_legion", state.selections);
 
-    expect(recolors).to.deep.equal({ shoulders: "ulpc.metal.red" });
+    expect(recolors).to.deep.equal({ shoulders: "all.lpcr.red" });
+  });
+
+  it("if on deeper asset, but secondary asset uses that as main set of colors, fall back to main set of colors", () => {
+    state.selections = {
+      shoulders: {
+        itemId: "shoulders_epaulets",
+        recolor: "metal.brass",
+      },
+    };
+
+    const recolors = getMultiRecolors("shoulders_legion", state.selections);
+
+    expect(recolors).to.deep.equal({ shoulders: "brass" });
+  });
+
+  it("removes missing same-type recolor when no valid fallback exists", () => {
+    state.selections = {
+      body: {
+        itemId: "body",
+        recolor: "bronze",
+      },
+      head: {
+        itemId: "heads_human_male",
+        recolor: "bronze",
+      },
+      shoulders: {
+        itemId: "shoulders_legion",
+        recolor: "steel",
+      },
+    };
+
+    const recolors = getMultiRecolors("shoulders_epaulets", state.selections);
+
+    expect(recolors).to.equal(null);
   });
 });
