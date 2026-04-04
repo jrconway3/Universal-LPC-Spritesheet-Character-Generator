@@ -2,17 +2,12 @@
   "name": "Epaulets",
   "layer_1": {
     "zPos": 60,
-    "male": "shoulders/epaulets/male/"
+    "male": "shoulders/epaulets/male/",
+    "muscular": "shoulders/epaulets/male/",
+    "female": "shoulders/epaulets/thin/",
+    "pregnant": "shoulders/epaulets/thin/",
+    "teen": "shoulders/epaulets/thin/"
   },
-  "variants": [
-    "bronze",
-    "gold",
-    "silver",
-    "red",
-    "blue",
-    "teal",
-    "yellow"
-  ],
   "animations": [
     "spellcast",
     "thrust",
@@ -20,16 +15,28 @@
     "slash",
     "shoot",
     "hurt",
-    "idle"
+    "watering",
+    "idle",
+    "jump",
+    "run",
+    "sit",
+    "emote",
+    "climb",
+    "combat",
+    "1h_slash",
+    "1h_backslash",
+    "1h_halfslash"
   ],
   "credits": [
     {
       "file": "shoulders/epaulets",
-      "notes": "",
+      "notes": "Original by bluecarrot16, jump/run/sit/emote/revised combat frames and female by JaidynReiman",
       "authors": [
-        "bluecarrot16"
+        "bluecarrot16",
+        "JaidynReiman"
       ],
       "licenses": [
+        "OGA-BY 3.0",
         "CC-BY-SA 3.0"
       ],
       "urls": [
@@ -37,10 +44,18 @@
       ]
     }
   ],
-  "path": [
-    "arms",
-    "shoulders",
-    "shoulders_epaulets"
-  ],
+  "recolors": {
+    "material": "cloth",
+    "palettes": [
+      "ulpc",
+      "metal.ulpc",
+      "all.lpcr"
+    ]
+  },
+  "aliases": {
+    "Epaulets_bronze": "metal.bronze",
+    "Epaulets_gold": "metal.gold",
+    "Epaulets_silver": "metal.silver"
+  },
   "type_name": "shoulders"
 }

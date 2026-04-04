@@ -212,16 +212,26 @@ export function getPaletteOptions(itemId, meta) {
 
 /**
  * Parse the Recolor Key to Extract Material, Version, and Recolor
- * @param {string} recolorKey Recolor Key to parse (either "material.version.recolor" or "version.recolor" or "recolor")
+ * @param {string} recolorKey Recolor Key to parse (either "material.version.recolor" or "material.recolor" or "version.recolor" or "recolor")
  * @param {Object} palette - Palette metadata object
  * @returns {Array} [material, version, recolor]
  */
 export function parseRecolorKey(recolorKey, palette) {
   if (!recolorKey) recolorKey = palette?.base;
   let [recolor, version, material] = recolorKey.split(".").reverse();
+
+  // Get Material (e.g. body, metal, cloth)
   if (!material) {
-    material = palette?.material;
+    // Check if Version is Actually Material
+    if (window.paletteMetadata.materials[version]) {
+      material = version;
+      version = null;
+    } else {
+      material = palette?.material;
+    }
   }
+
+  // Get Version (e.g. ulpc, lpcr)
   if (!version) {
     version = palette?.default;
   }
