@@ -4,9 +4,9 @@ import { state, getSelectionGroup } from "./state.js";
 /**
  * Ensure Recolor Exists in Metadata, if Not, Find a Replacement or Delete It
  * @param {string} itemId - The ID of the item to check metadata for
- * @param {string} typeName - The type name of the recolor
  * @param {string} recolor - The recolor to check
- * @returns {string} The fixed recolor
+ * @param {string|null} typeName - The type name of the recolor
+ * @returns {string|null} The fixed recolor
  */
 export function fixMissingRecolor(itemId, recolor, typeName = null) {
   // Implementation for fixing missing recolor
@@ -84,7 +84,7 @@ export function getMultiRecolors(itemId, selections) {
   }
 
   // Return Recolors Object (key > value)
-  return Object.keys(recolors).length > 0 ? recolors : null;
+  return recolors;
 }
 
 /**
@@ -206,7 +206,7 @@ export function getPalettesForItem(itemId, meta) {
  * Get palette options for item ID, its meta data, and the selection group it belongs to
  * @param {string} itemId
  * @param {Object} meta
- * @returns {Array} Array of palette options for the item
+ * @returns {Array[Array, Object]} Returns palette options and selected colors for the item
  */
 export function getPaletteOptions(itemId, meta) {
   // Initialize Palette Options
