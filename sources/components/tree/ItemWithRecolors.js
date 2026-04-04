@@ -24,10 +24,9 @@ export const ItemWithRecolors = {
     const isExpanded = state.expandedNodes[nodePath] || false;
     const selection = state.selections[selectionGroup];
     const isSelected = selection?.itemId === itemId;
-    const selectedColors = getMultiRecolors(itemId, state.selections);
 
     // Build palette/color options for all recolor fields
-    const paletteOptions = getPaletteOptions(itemId, meta);
+    const [paletteOptions, selectedColors] = getPaletteOptions(itemId, meta);
 
     // Check Selection Status
     let paletteModal = null;
