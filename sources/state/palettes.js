@@ -3,7 +3,6 @@ import { state, getSelectionGroup } from "./state.js";
 
 /**
  * Ensure Recolor Exists in Metadata, if Not, Find a Replacement or Delete It
- * 
  * @param {string} itemId - The ID of the item to check metadata for
  * @param {string} typeName - The type name of the recolor
  * @param {string} recolor - The recolor to check
@@ -12,7 +11,7 @@ import { state, getSelectionGroup } from "./state.js";
 export function fixMissingRecolor(itemId, recolor, typeName = null) {
   // Implementation for fixing missing recolor
   const meta = window.itemMetadata[itemId];
-  const palette = meta.recolors.find(r => r.type_name === typeName);
+  const palette = meta.recolors.find((r) => r.type_name === typeName);
 
   // Recolor Exists on Current Asset?
   if (palette?.variants.includes(recolor)) {
@@ -22,7 +21,7 @@ export function fixMissingRecolor(itemId, recolor, typeName = null) {
   // See if Recolor is Non-Standard for the Current Asset
   let newRecolor = null;
   for (const variant of palette?.variants ?? []) {
-    const parts = variant.split('.');
+    const parts = variant.split(".");
     if (parts.length > 1 && parts.includes(recolor)) {
       newRecolor = variant;
       break;
@@ -64,11 +63,17 @@ export function getMultiRecolors(itemId, selections) {
       continue;
 
     // Process Each Item
-    const verifiedRecolor = fixMissingRecolor(itemId, selection.recolor, !selection.subId ? null : subMeta.type_name);
-    if (selection.subId) {
-      recolors[typeName] = verifiedRecolor;
-    } else if (selection.recolor) {
-      recolors[subMeta.type_name] = verifiedRecolor;
+    const verifiedRecolor = fixMissingRecolor(
+      itemId,
+      selection.recolor,
+      !selection.subId ? null : subMeta.type_name,
+    );
+    if (verifiedRecolor) {
+      if (selection.subId) {
+        recolors[typeName] = verifiedRecolor;
+      } else if (selection.recolor) {
+        recolors[subMeta.type_name] = verifiedRecolor;
+      }
     }
   }
 
@@ -207,7 +212,6 @@ export function getPaletteOptions(itemId, meta) {
   // Initialize Palette Options
   const selectionGroup = getSelectionGroup(itemId);
   const paletteOptions = [];
-  const bodyColor = getBodyColor(itemId, state.selections);
   const selectedColors = getMultiRecolors(itemId, state.selections);
 
   if (meta.recolors && meta.recolors.length > 0) {
