@@ -2,6 +2,37 @@
 import { state, getSelectionGroup } from "./state.js";
 
 /**
+ * Ensure Recolor Exists in Metadata, if Not, Find a Replacement or Delete It
+ * 
+ * @param {string} itemId - The ID of the item to check metadata for
+ * @param {string} typeName - The type name of the recolor
+ * @param {string} recolor - The recolor to check
+ * @returns {string} The fixed recolor
+ */
+export function fixMissingRecolor(itemId, recolor, typeName = null) {
+  // Implementation for fixing missing recolor
+  const meta = window.itemMetadata[itemId];
+  const palette = meta.recolors.find(r => r.type_name === typeName);
+
+  // Recolor Exists on Current Asset?
+  if (palette?.variants.includes(recolor)) {
+    return recolor;
+  }
+
+  // See if Recolor is Non-Standard for the Current Asset
+  let newRecolor = null;
+  for (const variant of palette?.variants ?? []) {
+    const parts = variant.split('.');
+    if (parts.length > 1 && parts.includes(recolor)) {
+      const index = parts.indexOf(recolor);
+      newRecolor = parts[index];
+      break;
+    }
+  }
+  return newRecolor;
+}
+
+/**
  * Function to get multiple recolor options from selections.
  * @param {string} itemId - The ID of the item to get recolors for
  * @param {Array} selections - The array of selections to filter
@@ -34,18 +65,21 @@ export function getMultiRecolors(itemId, selections) {
       continue;
 
     // Process Each Item
+    const verifiedRecolor = fixMissingRecolor(itemId, selection.recolor, typeName);
     if (selection.subId) {
-      recolors[typeName] = selection.recolor;
+      recolors[typeName] = verifiedRecolor;
     } else if (selection.recolor) {
-      recolors[subMeta.type_name] = selection.recolor;
+      recolors[subMeta.type_name] = verifiedRecolor;
     }
   }
 
-  // No Results?!
+  // If Body Color, Force Match Body Color
   if (meta.matchBodyColor) {
     const bodyColor = getBodyColor(itemId, selections);
     if (bodyColor) recolors[meta.type_name] = bodyColor;
   }
+
+  // Return Recolors Object (key > value)
   return Object.keys(recolors).length > 0 ? recolors : null;
 }
 
@@ -175,6 +209,8 @@ export function getPaletteOptions(itemId, meta) {
   const selectionGroup = getSelectionGroup(itemId);
   const paletteOptions = [];
   const bodyColor = getBodyColor(itemId, state.selections);
+  const selectedColors = getMultiRecolors(itemId, state.selections);
+
   if (meta.recolors && meta.recolors.length > 0) {
     meta.recolors.forEach((color, idx) => {
       const subGroup = idx !== 0 ? color.type_name : selectionGroup;
@@ -207,7 +243,7 @@ export function getPaletteOptions(itemId, meta) {
       });
     });
   }
-  return paletteOptions;
+  return [paletteOptions, selectedColors];
 }
 
 /**
