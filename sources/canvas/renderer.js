@@ -132,6 +132,7 @@ export async function renderCharacter(
 
           customAnimationItems.push({
             itemId,
+            name: selection.name,
             variant,
             recolors,
             spritePath,
@@ -184,6 +185,7 @@ export async function renderCharacter(
 
           itemsToDraw.push({
             itemId,
+            name: selection.name,
             variant,
             recolors,
             spritePath,
@@ -345,6 +347,8 @@ export async function renderCharacter(
               spritePath: item.spritePath,
               itemId: item.itemId,
               animation: customAnimName,
+              variant: item.variant,
+              name: item.name,
             });
           }
         }
@@ -363,6 +367,7 @@ export async function renderCharacter(
                 needsRecolor: item.needsRecolor,
                 recolors: item.recolors,
                 variant: item.variant,
+                name: item.name,
               });
             }
           }
