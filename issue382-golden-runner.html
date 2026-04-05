@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Issue #382 golden ZIP path generator (fixture-builder only)</title>
+    <!-- Served at site root (like tests_run.html) so spritesheets/... URLs resolve correctly. -->
+    <script
+      src="https://unpkg.com/mithril@2.3.8/mithril.min.js"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"
+      crossorigin="anonymous"
+    ></script>
+    <script type="text/javascript" src="/item-metadata.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "chai": "https://cdn.jsdelivr.net/npm/chai@6.2.2+esm",
+          "sinon": "https://cdn.jsdelivr.net/npm/sinon@21.0.3/+esm",
+          "mocha-globals": "/tests/bdd-globals.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <p id="status">Generating issue #382 golden zip paths…</p>
+    <script type="module" src="/issue382-golden-runner.mjs"></script>
+  </body>
+</html>
