@@ -190,7 +190,7 @@ You can also pass a comma-separated list if you want a subset, for example `--la
 
 **Manual static server:** Alternatively, start any HTTP server in the project root (for example `python -m http.server 8080`) and open `http://localhost:<port>/tests_run.html` in a browser. That path does not apply Testem’s `?debug=false` URL; on localhost, debug logging follows the normal URL rules in `getDebugParam()`.
 
-**CI Integration**: Tests run automatically in GitHub Actions on every push and pull request using Chrome headless. All tests must pass before a PR can be merged.
+**CI Integration**: Tests run automatically in GitHub Actions on every push and pull request using Chrome headless and Firefox headless, matching the CI browser launch configuration in `testem.js`. All tests must pass before a PR can be merged.
 
 #### Visual regression tests (Playwright + Argos)
 

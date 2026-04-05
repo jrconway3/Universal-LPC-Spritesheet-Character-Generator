@@ -168,15 +168,20 @@ async function main() {
 
   const wanted = collectItemIdsFromExport(data);
   if (wanted.size === 0) {
-    debugWarn("No itemId values found in input JSON; output will be empty.");
+    const message =
+      "No itemId values found in input JSON; output will be empty.";
+    console.warn(message);
+    debugWarn(message);
   }
+
+  const sortedWanted = Array.from(wanted).sort();
 
   debugLog(`Loading ${ITEM_METADATA_PATH} …`);
   const full = loadFullItemMetadata();
 
   const filtered = {};
   const missing = [];
-  for (const id of wanted) {
+  for (const id of sortedWanted) {
     if (Object.prototype.hasOwnProperty.call(full, id)) {
       filtered[id] = full[id];
     } else {
@@ -185,7 +190,8 @@ async function main() {
   }
 
   if (missing.length > 0) {
-    debugWarn(
+    // eslint-disable-next-line no-console -- missing itemIds should always be visible
+    console.warn(
       "itemId(s) not found in item-metadata.js (skipped):",
       missing.join(", "),
     );
