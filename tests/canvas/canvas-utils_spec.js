@@ -239,16 +239,22 @@ describe("canvas/canvas-utils.js", () => {
     });
 
     it("returns false and warns when getImageData throws", () => {
-      const canvas = createCanvas(8, 8);
-      const ctx = canvas.getContext("2d");
-      sinon.stub(ctx, "getImageData").throws(new Error("not readable"));
-      const warnSpy = sinon.stub(console, "warn");
+      const prevDebug = window.DEBUG;
+      window.DEBUG = true;
+      try {
+        const canvas = createCanvas(8, 8);
+        const ctx = canvas.getContext("2d");
+        sinon.stub(ctx, "getImageData").throws(new Error("not readable"));
+        const warnSpy = sinon.stub(console, "warn");
 
-      expect(hasContentInRegion(ctx, 0, 0, 8, 8)).to.equal(false);
-      expect(warnSpy.calledOnce).to.be.true;
-      expect(warnSpy.firstCall.args[0]).to.equal(
-        "Error checking region content:",
-      );
+        expect(hasContentInRegion(ctx, 0, 0, 8, 8)).to.equal(false);
+        expect(warnSpy.calledOnce).to.be.true;
+        expect(warnSpy.firstCall.args[0]).to.equal(
+          "Error checking region content:",
+        );
+      } finally {
+        window.DEBUG = prevDebug;
+      }
     });
   });
 

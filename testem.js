@@ -1,8 +1,17 @@
 "use strict";
 
+// Suppress app debug logs during tests by default (?debug=false), so localhost does not
+// enable window.DEBUG via getDebugParam(). Set DEBUG=true or DEBUG=1 in the environment
+// when launching testem to keep verbose debug output (same as opening tests_run.html without
+// ?debug=false on localhost).
+const testPageFromEnv =
+  process.env.DEBUG === "true" || process.env.DEBUG === "1"
+    ? "tests_run.html"
+    : "tests_run.html?debug=false";
+
 let testemConfig = {
   framework: "mocha+chai",
-  test_page: "tests_run.html",
+  test_page: testPageFromEnv,
   parallel: 2,
   debug: true,
   disable_watching: true,
