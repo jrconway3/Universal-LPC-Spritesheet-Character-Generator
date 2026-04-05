@@ -12,6 +12,7 @@ export function fixMissingRecolor(itemId, recolor, typeName = null) {
   // Implementation for fixing missing recolor
   const meta = window.itemMetadata[itemId];
   const palette = meta.recolors.find((r) => r.type_name === typeName);
+  if (!palette) return null;
 
   // Recolor Exists on Current Asset?
   if (palette?.variants.includes(recolor)) {
@@ -245,7 +246,7 @@ export function getPaletteOptions(itemId, meta) {
       });
     });
   }
-  return [paletteOptions, selectedColors];
+  return [paletteOptions, selectedColors ?? {}];
 }
 
 /**
