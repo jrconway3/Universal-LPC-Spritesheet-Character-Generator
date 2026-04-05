@@ -349,6 +349,7 @@ export async function renderCharacter(
               spritePath: item.spritePath,
               itemId: item.itemId,
               animation: customAnimName,
+              recolors: item.recolors,
               variant: item.variant,
               name: item.name,
             });
@@ -401,7 +402,7 @@ export async function renderCharacter(
                 renderCtx,
                 customAnimDef,
                 offsetY,
-                img,
+                imageToUse,
               );
             }
           }

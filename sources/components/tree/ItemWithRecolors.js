@@ -1,7 +1,7 @@
 // Item with recolors component
 import { state, getSelectionGroup, selectItem } from "../../state/state.js";
 import { drawRecolorPreview } from "../../canvas/palette-recolor.js";
-import { getMultiRecolors, getPaletteOptions } from "../../state/palettes.js";
+import { getPaletteOptions } from "../../state/palettes.js";
 import { PaletteSelectModal } from "./PaletteSelectModal.js";
 import { COMPACT_FRAME_SIZE, FRAME_SIZE } from "../../state/constants.js";
 
@@ -24,10 +24,9 @@ export const ItemWithRecolors = {
     const isExpanded = state.expandedNodes[nodePath] || false;
     const selection = state.selections[selectionGroup];
     const isSelected = selection?.itemId === itemId;
-    const selectedColors = getMultiRecolors(itemId, state.selections);
 
     // Build palette/color options for all recolor fields
-    const paletteOptions = getPaletteOptions(itemId, meta);
+    const [paletteOptions, selectedColors] = getPaletteOptions(itemId, meta);
 
     // Check Selection Status
     let paletteModal = null;

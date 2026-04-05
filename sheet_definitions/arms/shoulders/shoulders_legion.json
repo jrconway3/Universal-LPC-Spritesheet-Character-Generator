@@ -5,13 +5,9 @@
     "male": "shoulders/legion/male/",
     "female": "shoulders/legion/female/",
     "muscular": "shoulders/legion/male/",
-    "pregnant": "shoulders/legion/female/"
+    "pregnant": "shoulders/legion/female/",
+    "teen": "shoulders/legion/female/"
   },
-  "variants": [
-    "bronze",
-    "steel",
-    "gold"
-  ],
   "animations": [
     "spellcast",
     "thrust",
@@ -39,10 +35,13 @@
       ]
     }
   ],
-  "path": [
-    "arms",
-    "shoulders",
-    "shoulders_legion"
-  ],
+  "recolors": {
+    "material": "metal",
+    "palettes": [
+      "ulpc",
+      "lpcr",
+      "all.lpcr"
+    ]
+  },
   "type_name": "shoulders"
 }

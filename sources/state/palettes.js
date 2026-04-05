@@ -2,10 +2,47 @@
 import { state, getSelectionGroup } from "./state.js";
 
 /**
+ * Ensure Recolor Exists in Metadata, if Not, Find a Replacement or Delete It
+ * @param {string} itemId - The ID of the item to check metadata for
+ * @param {string} recolor - The recolor to check
+ * @param {string|null} typeName - The type name of the recolor
+ * @returns {string|null} The fixed recolor
+ */
+export function fixMissingRecolor(itemId, recolor, typeName = null) {
+  // Implementation for fixing missing recolor
+  const meta = window.itemMetadata[itemId];
+  const palette = meta.recolors.find((r) => r.type_name === typeName);
+  if (!palette) return null;
+
+  // Recolor Exists on Current Asset?
+  if (palette?.variants.includes(recolor)) {
+    return recolor;
+  }
+
+  // Get Material From Palette
+  const materialMeta = window.paletteMetadata?.materials[palette.material];
+  const [, , parsedRecolor] = parseRecolorKey(recolor, materialMeta);
+
+  // See if Recolor is Non-Standard for the Current Asset
+  let newRecolor = null;
+  for (const variant of palette?.variants ?? []) {
+    const parts = variant.split(".");
+    if (parts.length > 1 && parts.includes(parsedRecolor ?? recolor)) {
+      newRecolor = variant;
+      break;
+    } else if (parsedRecolor === variant) {
+      newRecolor = variant;
+      break;
+    }
+  }
+  return newRecolor;
+}
+
+/**
  * Function to get multiple recolor options from selections.
  * @param {string} itemId - The ID of the item to get recolors for
  * @param {Array} selections - The array of selections to filter
- * @returns {Object} An object mapping type_name to recolor
+ * @returns {Object|null} An object mapping type_name to recolor
  */
 export function getMultiRecolors(itemId, selections) {
   // Implementation for getting multiple recolor options from selections
@@ -34,18 +71,27 @@ export function getMultiRecolors(itemId, selections) {
       continue;
 
     // Process Each Item
-    if (selection.subId) {
-      recolors[typeName] = selection.recolor;
-    } else if (selection.recolor) {
-      recolors[subMeta.type_name] = selection.recolor;
+    const verifiedRecolor = fixMissingRecolor(
+      itemId,
+      selection.recolor,
+      !selection.subId ? null : typeName,
+    );
+    if (verifiedRecolor) {
+      if (selection.subId) {
+        recolors[typeName] = verifiedRecolor;
+      } else if (selection.recolor) {
+        recolors[subMeta.type_name] = verifiedRecolor;
+      }
     }
   }
 
-  // No Results?!
+  // If Body Color, Force Match Body Color
   if (meta.matchBodyColor) {
     const bodyColor = getBodyColor(itemId, selections);
     if (bodyColor) recolors[meta.type_name] = bodyColor;
   }
+
+  // Return Recolors Object (key > value)
   return Object.keys(recolors).length > 0 ? recolors : null;
 }
 
@@ -168,26 +214,19 @@ export function getPalettesForItem(itemId, meta) {
  * Get palette options for item ID, its meta data, and the selection group it belongs to
  * @param {string} itemId
  * @param {Object} meta
- * @returns {Array} Array of palette options for the item
+ * @returns {Array[Array, Object]} Returns palette options and selected colors for the item
  */
 export function getPaletteOptions(itemId, meta) {
   // Initialize Palette Options
   const selectionGroup = getSelectionGroup(itemId);
   const paletteOptions = [];
-  const bodyColor = getBodyColor(itemId, state.selections);
+  const selectedColors = getMultiRecolors(itemId, state.selections);
+
   if (meta.recolors && meta.recolors.length > 0) {
     meta.recolors.forEach((color, idx) => {
       const subGroup = idx !== 0 ? color.type_name : selectionGroup;
-      const selection = state.selections[subGroup];
       const versions = Object.keys(color.palettes);
-      let selectedColor = selection?.recolor;
-      if (!selectedColor) {
-        if (idx !== 0) {
-          selectedColor = color.matchBodyColor ? bodyColor : null;
-        } else {
-          selectedColor = bodyColor ?? null;
-        }
-      }
+      let selectedColor = selectedColors?.[subGroup] ?? null;
 
       // Get Recolors from Selection
       const [material, version, recolor] = parseRecolorKey(
@@ -207,7 +246,7 @@ export function getPaletteOptions(itemId, meta) {
       });
     });
   }
-  return paletteOptions;
+  return [paletteOptions, selectedColors ?? {}];
 }
 
 /**
