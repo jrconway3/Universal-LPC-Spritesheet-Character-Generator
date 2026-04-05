@@ -155,18 +155,40 @@ The project includes automated tests for the Mithril components that run directl
 
 **Running Tests Locally**:
 
-1. Start a local HTTP server in the project root:
-   ```bash
-   python -m http.server 8080
-   # or use any other HTTP server
-   ```
+From the project root, run:
 
-2. Open the test runner in your browser:
-   ```
-   http://localhost:8080/tests_run.html
-   ```
+```bash
+npm run test
+```
 
-The tests will display with visual pass/fail indicators, error details, and a summary.
+This uses [Testem](https://github.com/testem/testem) in CI mode (`testem ci`), launches **Chrome** and **Firefox** headlessly, and loads `tests_run.html`. Results are printed in the terminal.
+
+**`DEBUG` environment variable (optional):** By default the test page is opened with `?debug=false` so application debug logging (`debugLog` / `debugWarn` in `sources/utils/debug.js`) stays **off** and the run stays quiet. To enable the same verbose debug output you would get when developing on localhost without that query flag, run:
+
+```bash
+DEBUG=1 npm run test
+# or
+DEBUG=true npm run test
+```
+
+**Interactive mode (`test:server`):** To use Testem’s dev UI (file watching, visible browsers, keyboard shortcuts), run:
+
+```bash
+npm run test:server
+```
+
+By default this follows `testem.js` and opens **Chrome**, **Firefox**, and **Safari** (where available) as configured for dev. The same **`DEBUG`** rules apply as for `npm run test` (`?debug=false` unless you set `DEBUG=1` or `DEBUG=true` when starting Testem).
+
+To run **only one** browser in that mode, pass Testem’s **`--launch`** (`-l`) flag after `--` (arguments after `--` are forwarded to `testem`):
+
+```bash
+npm run test:server -- --launch Chrome
+npm run test:server -- --launch Firefox
+```
+
+You can also pass a comma-separated list if you want a subset, for example `--launch Chrome,Firefox`.
+
+**Manual static server:** Alternatively, start any HTTP server in the project root (for example `python -m http.server 8080`) and open `http://localhost:<port>/tests_run.html` in a browser. That path does not apply Testem’s `?debug=false` URL; on localhost, debug logging follows the normal URL rules in `getDebugParam()`.
 
 **CI Integration**: Tests run automatically in GitHub Actions on every push and pull request using Chrome headless. All tests must pass before a PR can be merged.
 
