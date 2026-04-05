@@ -206,7 +206,7 @@ describe("state/zip.js", () => {
       expect(fakeZip.files.get("standard/1h_slash.png")).to.exist;
     });
 
-    it("includes character.json, credits credits.txt/credits.csv, and credits/metadata.json at ZIP root", async () => {
+    it("includes character.json, credits credits.txt/credits.csv, and credits/metadata.json", async () => {
       await exportSplitAnimations();
 
       expect(fakeZip.files.get("character.json")).to.exist;

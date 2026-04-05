@@ -69,7 +69,7 @@ const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
 const { pathToFileURL } = require("url");
-const { debugLog, debugWarn } = require("./utils/debug.js");
+const { debugLog } = require("./utils/debug.js");
 
 const REPO_ROOT = path.join(__dirname, "..");
 const ITEM_METADATA_PATH = path.join(REPO_ROOT, "item-metadata.js");
@@ -168,10 +168,8 @@ async function main() {
 
   const wanted = collectItemIdsFromExport(data);
   if (wanted.size === 0) {
-    const message =
-      "No itemId values found in input JSON; output will be empty.";
-    console.warn(message);
-    debugWarn(message);
+    // eslint-disable-next-line no-console -- always visible (not gated on DEBUG)
+    console.warn("No itemId values found in input JSON; output will be empty.");
   }
 
   const sortedWanted = Array.from(wanted).sort();
