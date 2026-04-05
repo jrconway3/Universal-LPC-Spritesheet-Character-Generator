@@ -64,11 +64,89 @@ export function setPreviewAnimation(animationName) {
 }
 
 /**
+ * Draw one preview frame for a given index into `animationFrames` (the cycle).
+ * Used by the animation loop and by visual tests (static frame, no rAF).
+ */
+function paintPreviewFrameForCycleIndex(cycleIndex) {
+  if (!previewCtx || !canvas) {
+    return;
+  }
+
+  previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+
+  // Draw transparency grid if enabled
+  if (state.showTransparencyGrid) {
+    drawTransparencyBackground(
+      previewCtx,
+      previewCanvas.width,
+      previewCanvas.height,
+    );
+  }
+
+  const currentFrame = animationFrames[cycleIndex];
+
+  // Determine frameSize and Y offset based on animation type
+  let frameSize = FRAME_SIZE;
+  let yOffset = 0;
+
+  if (activeCustomAnimation && customAnimations) {
+    const customAnimDef = customAnimations[activeCustomAnimation];
+    if (customAnimDef) {
+      frameSize = customAnimDef.frameSize;
+      yOffset = customAnimYPositions[activeCustomAnimation] || 0;
+    }
+  }
+
+  let tmpCanvas;
+  if (state.applyTransparencyMask) {
+    // using a tmpCanvas here to avoid modifying the original offscreen canvas
+    // which causes a bug if the user toggles the checkbox multiple times
+    tmpCanvas = document.createElement("canvas");
+    tmpCanvas.width = canvas.width;
+    tmpCanvas.height = canvas.height;
+    const tmpCtx = get2DContext(tmpCanvas);
+    tmpCtx.drawImage(canvas, 0, 0);
+    applyTransparencyMaskToCanvas(tmpCanvas, tmpCtx);
+  } else {
+    tmpCanvas = canvas;
+  }
+
+  // Draw stacked rows from main canvas to preview
+  for (let i = 0; i < animRowNum; i++) {
+    const srcY = activeCustomAnimation
+      ? yOffset + i * frameSize // Custom animation: use Y offset + row * frameSize
+      : (animRowStart + i) * FRAME_SIZE; // Standard animation: use row * 64
+    previewCtx.drawImage(
+      tmpCanvas,
+      currentFrame * frameSize, // source x
+      srcY, // source y
+      frameSize, // source width
+      frameSize, // source height
+      i * frameSize, // dest x (spread horizontally)
+      0, // dest y
+      frameSize, // dest width
+      frameSize, // dest height
+    );
+  }
+}
+
+/**
  * Start the preview animation loop
  */
 export function startPreviewAnimation() {
   if (animationFrameId !== null) {
     return; // Already running
+  }
+
+  // Set by Playwright visual tests (see tests/visual/home.spec.js) so Argos
+  // screenshots are not flaky due to cycling frames during load.
+  if (
+    typeof window !== "undefined" &&
+    window.__DISABLE_PREVIEW_ANIMATION__ === true
+  ) {
+    currentFrameIndex = 0;
+    paintPreviewFrameForCycleIndex(0);
+    return;
   }
 
   function nextFrame() {
@@ -80,63 +158,8 @@ export function startPreviewAnimation() {
       lastFrameTime = now - (elapsed % fpsInterval);
 
       if (previewCtx && canvas) {
-        previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
-
-        // Draw transparency grid if enabled
-        if (state.showTransparencyGrid) {
-          drawTransparencyBackground(
-            previewCtx,
-            previewCanvas.width,
-            previewCanvas.height,
-          );
-        }
-
         currentFrameIndex = (currentFrameIndex + 1) % animationFrames.length;
-        const currentFrame = animationFrames[currentFrameIndex];
-
-        // Determine frameSize and Y offset based on animation type
-        let frameSize = FRAME_SIZE;
-        let yOffset = 0;
-
-        if (activeCustomAnimation && customAnimations) {
-          const customAnimDef = customAnimations[activeCustomAnimation];
-          if (customAnimDef) {
-            frameSize = customAnimDef.frameSize;
-            yOffset = customAnimYPositions[activeCustomAnimation] || 0;
-          }
-        }
-
-        let tmpCanvas;
-        if (state.applyTransparencyMask) {
-          // using a tmpCanvas here to avoid modifying the original offscreen canvas
-          // which causes a bug if the user toggles the checkbox multiple times
-          tmpCanvas = document.createElement("canvas");
-          tmpCanvas.width = canvas.width;
-          tmpCanvas.height = canvas.height;
-          const tmpCtx = get2DContext(tmpCanvas);
-          tmpCtx.drawImage(canvas, 0, 0);
-          applyTransparencyMaskToCanvas(tmpCanvas, tmpCtx);
-        } else {
-          tmpCanvas = canvas;
-        }
-
-        // Draw stacked rows from main canvas to preview
-        for (let i = 0; i < animRowNum; i++) {
-          const srcY = activeCustomAnimation
-            ? yOffset + i * frameSize // Custom animation: use Y offset + row * frameSize
-            : (animRowStart + i) * FRAME_SIZE; // Standard animation: use row * 64
-          previewCtx.drawImage(
-            tmpCanvas,
-            currentFrame * frameSize, // source x
-            srcY, // source y
-            frameSize, // source width
-            frameSize, // source height
-            i * frameSize, // dest x (spread horizontally)
-            0, // dest y
-            frameSize, // dest width
-            frameSize, // dest height
-          );
-        }
+        paintPreviewFrameForCycleIndex(currentFrameIndex);
       }
     }
 

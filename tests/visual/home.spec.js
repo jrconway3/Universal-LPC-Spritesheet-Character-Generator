@@ -25,6 +25,12 @@ const ARGOS_SCREENSHOT_OPTIONS = {
   },
 };
 
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    window.__DISABLE_PREVIEW_ANIMATION__ = true;
+  });
+});
+
 /**
  * Load the homepage and wait until async work has settled: network, character
  * render (preview `.loading` overlays), then one paint frame.
