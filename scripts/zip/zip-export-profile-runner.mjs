@@ -148,14 +148,15 @@ window.__ZIP_PROFILE_DATA__ = null;
 window.__ZIP_PROFILE_READY__ = false;
 window.__ZIP_PROFILE_ERROR__ = null;
 
+const injected = window.__ZIP_PROFILE_OPTS__;
 const params = new URLSearchParams(window.location.search);
-const quick =
-  params.get("quick") === "1" || params.get("quick") === "true";
+const quick = injected
+  ? injected.quick
+  : params.get("quick") === "1" || params.get("quick") === "true";
 const onlyParam = params.get("only");
-const only =
-  onlyParam && onlyParam.trim() !== ""
-    ? onlyParam.trim()
-    : null;
+const onlyFromUrl =
+  onlyParam && onlyParam.trim() !== "" ? onlyParam.trim() : null;
+const only = injected ? injected.only : onlyFromUrl;
 
 runProfiles({ useRealJsZip: !quick, only })
   .then((data) => {

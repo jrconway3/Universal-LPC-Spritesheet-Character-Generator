@@ -103,6 +103,17 @@ async function main() {
     const pageErrors = [];
     page.on("pageerror", (e) => pageErrors.push(String(e)));
 
+    /**
+     * `serve` redirects `…/runner.html?…` to a clean URL and drops the query
+     * string, so URL params are unreliable. Inject CLI options before load.
+     */
+    await page.addInitScript(
+      ({ quick: q, only: o }) => {
+        window.__ZIP_PROFILE_OPTS__ = { quick: q, only: o };
+      },
+      { quick, only: only ?? null },
+    );
+
     await page.goto(
       `${BASE_URL}/scripts/zip/zip-export-profile-runner.html?${qs.toString()}`,
       {
