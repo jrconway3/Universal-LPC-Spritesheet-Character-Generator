@@ -54,54 +54,121 @@ function blitFrameFromSheet(destCtx, sourceCanvas, sourceX, sourceY, size) {
   );
 }
 
-export function newAnimationFromSheet(src, srcRect) {
-  const { x, y, width, height } = srcRect || {
-    x: 0,
-    y: 0,
-    width: src.width,
-    height: src.height,
-  };
+/**
+ * @param {HTMLCanvasElement} src
+ * @param {DOMRect | { x: number; y: number; width: number; height: number } | undefined} srcRect
+ */
+function normalizeAnimationSrcRect(src, srcRect) {
+  return srcRect
+    ? {
+        x: srcRect.x,
+        y: srcRect.y,
+        width: srcRect.width,
+        height: srcRect.height,
+      }
+    : {
+        x: 0,
+        y: 0,
+        width: src.width,
+        height: src.height,
+      };
+}
+
+/**
+ * @param {HTMLCanvasElement} src
+ * @param {number} x
+ * @param {number} y
+ * @param {number} width
+ * @param {number} height
+ */
+function animationSubregionHasContent(src, x, y, width, height) {
   const fromSubregion =
     x !== 0 || y !== 0 || width !== src.width || height !== src.height;
   if (fromSubregion) {
     const srcCtx = get2DContext(src, true);
-    if (!hasContentInRegion(srcCtx, x, y, width, height)) return null;
+    if (!hasContentInRegion(srcCtx, x, y, width, height)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * Draws the slice from `src` onto `animCanvas` (must already match width/height).
+ */
+function drawAnimationSliceOntoCanvas(src, x, y, width, height, animCanvas) {
+  const animCtx = get2DContext(animCanvas, true);
+  if (!animCtx) {
+    throw new Error("Failed to get canvas context");
+  }
+  animCtx.drawImage(src, x, y, width, height, 0, 0, width, height);
+}
+
+export function newAnimationFromSheet(src, srcRect) {
+  const { x, y, width, height } = normalizeAnimationSrcRect(src, srcRect);
+  if (!animationSubregionHasContent(src, x, y, width, height)) {
+    return null;
   }
 
   const animCanvas = document.createElement("canvas");
   animCanvas.width = width;
   animCanvas.height = height;
-  const animCtx = get2DContext(animCanvas, true);
-
-  if (!animCtx) {
-    throw new Error("Failed to get canvas context");
-  }
-
-  animCtx.drawImage(src, x, y, width, height, 0, 0, width, height);
+  drawAnimationSliceOntoCanvas(src, x, y, width, height, animCanvas);
 
   return animCanvas;
 }
 
+/**
+ * @param {{ phase: (name: string, fn: () => void | Promise<void>) => Promise<void> } | null | undefined} profiler
+ * @param {string} name
+ * @param {() => void | Promise<void>} fn
+ */
+async function runZipProfilerPhase(profiler, name, fn) {
+  if (profiler && typeof profiler.phase === "function") {
+    return profiler.phase(name, fn);
+  }
+  return fn();
+}
+
+/**
+ * @param {{
+ *   profiler?: { phase: (name: string, fn: () => void | Promise<void>) => Promise<void> };
+ * }} [options]
+ */
 export async function addAnimationToZipFolder(
   folder,
   fileName,
   srcCanvas,
   srcRect,
+  options = {},
 ) {
+  const profiler = options.profiler ?? null;
   if (srcCanvas) {
-    const animCanvas = newAnimationFromSheet(srcCanvas, srcRect);
+    let animCanvas;
+    /** @type {Blob | undefined} */
+    let blob;
+    await runZipProfilerPhase(profiler, "sliceAndPng", async () => {
+      animCanvas = newAnimationFromSheet(srcCanvas, srcRect);
+      if (!animCanvas) {
+        return;
+      }
+      blob = await canvasToBlob(animCanvas);
+    });
     if (animCanvas) {
-      const blob = await canvasToBlob(animCanvas);
-      const zipEntryName = fileName.endsWith(".png")
-        ? fileName
-        : `${fileName}.png`;
-      debugLog(
-        `Adding to ZIP: `,
-        `${folder.root}${zipEntryName}`,
-        "size: ",
-        blob.size,
-      );
-      folder.file(zipEntryName, blob);
+      if (blob) {
+        const zipEntryName = fileName.endsWith(".png")
+          ? fileName
+          : `${fileName}.png`;
+        debugLog(
+          `Adding to ZIP: `,
+          `${folder.root}${zipEntryName}`,
+          "size: ",
+          blob.size,
+        );
+        await runZipProfilerPhase(profiler, "zipFile", async () => {
+          folder.file(zipEntryName, blob);
+        });
+      }
       return animCanvas;
     }
   }
@@ -125,16 +192,27 @@ export function newStandardAnimationForCustomAnimation(src, custAnim) {
 /**
  * Encodes the standard-animation slice for a custom animation as PNG and adds
  * it to a JSZip subfolder under the given filename.
+ *
+ * @param {{
+ *   profiler?: { phase: (name: string, fn: () => void | Promise<void>) => Promise<void> };
+ * }} [options]
  */
 export async function addStandardAnimationToZipCustomFolder(
   custAnimFolder,
   itemFileName,
   src,
   custAnim,
+  options = {},
 ) {
+  const profiler = options.profiler ?? null;
   const custCanvas = newStandardAnimationForCustomAnimation(src, custAnim);
-  const custBlob = await canvasToBlob(custCanvas);
-  custAnimFolder.file(itemFileName, custBlob);
+  let custBlob;
+  await runZipProfilerPhase(profiler, "sliceAndPng", async () => {
+    custBlob = await canvasToBlob(custCanvas);
+  });
+  await runZipProfilerPhase(profiler, "zipFile", async () => {
+    custAnimFolder.file(itemFileName, custBlob);
+  });
   return custCanvas;
 }
 

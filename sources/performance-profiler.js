@@ -22,7 +22,7 @@ import {
  * Usage (ZIP export):
  *   import { createZipExportProfiler } from './performance-profiler.js';
  *   const zipProfiler = createZipExportProfiler('splitAnimations');
- *   await zipProfiler.phase('standardAnimations', async () => { ... });
+ *   await zipProfiler.phase('render', async () => { ... });
  */
 
 export class PerformanceProfiler {
