@@ -8,8 +8,8 @@
     "validate-site-sources": "node scripts/generate_sources.js",
     "z-positions": "node scripts/zPositioning/parse_zpos.js",
     "z-positions:update": "node scripts/zPositioning/update_zpos.js",
-    "test": "testem ci",
-    "test:server": "testem",
+    "test": "node ./node_modules/testem/testem.js ci",
+    "test:server": "node ./node_modules/testem/testem.js",
     "test:visual": "playwright test",
     "test:visual:headed": "playwright test --headed",
     "fixture:issue382": "node scripts/fixture-builder.js"
