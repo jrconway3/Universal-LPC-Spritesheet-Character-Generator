@@ -9,16 +9,20 @@ import {
 /**
  * Performance Profiler for LPC Spritesheet Generator
  *
- * Provides real-time performance monitoring using browser Performance API.
- * All measurements appear in Chrome DevTools Performance tab as User Timing marks.
+ * - {@link PerformanceProfiler}: real-time monitoring (marks/measures, FPS) when enabled.
+ * - {@link createZipExportProfiler}: phase timings for ZIP export (metadata.json + optional DEBUG table).
  *
- * Usage:
+ * Usage (global profiler):
  *   import { PerformanceProfiler } from './performance-profiler.js';
  *   const profiler = new PerformanceProfiler({ enabled: true });
  *   profiler.mark('operation:start');
- *   // ... do work ...
  *   profiler.mark('operation:end');
  *   profiler.measure('operation', 'operation:start', 'operation:end');
+ *
+ * Usage (ZIP export):
+ *   import { createZipExportProfiler } from './performance-profiler.js';
+ *   const zipProfiler = createZipExportProfiler('splitAnimations');
+ *   await zipProfiler.phase('standardAnimations', async () => { ... });
  */
 
 export class PerformanceProfiler {
@@ -282,4 +286,100 @@ export class PerformanceProfiler {
       debugWarn("Failed to clear performance data:", e);
     }
   }
+}
+
+function zipProfilerNowMs() {
+  if (
+    typeof performance !== "undefined" &&
+    typeof performance.now === "function"
+  ) {
+    return performance.now();
+  }
+  return Date.now();
+}
+
+function zipProfilerRoundMs(ms) {
+  return Math.round(ms * 10) / 10;
+}
+
+/**
+ * High-resolution phase timings for ZIP export. Safe in tests (no User Timing side effects unless DEBUG).
+ *
+ * @param {string} exportKind — e.g. `splitAnimations` (for logging / optional performance marks)
+ */
+export function createZipExportProfiler(exportKind) {
+  const t0 = zipProfilerNowMs();
+  /** @type {Record<string, number>} */
+  const phases = {};
+
+  function userMark(suffix) {
+    if (
+      typeof performance === "undefined" ||
+      typeof performance.mark !== "function" ||
+      typeof window === "undefined" ||
+      !window.DEBUG
+    ) {
+      return;
+    }
+    try {
+      performance.mark(`zip:${exportKind}:${suffix}`);
+    } catch {
+      /* ignore quota / duplicate mark */
+    }
+  }
+
+  /**
+   * @param {string} name
+   * @param {() => void | Promise<void>} fn
+   */
+  async function phase(name, fn) {
+    const start = zipProfilerNowMs();
+    userMark(`${name}-start`);
+    try {
+      await fn();
+    } finally {
+      const elapsed = zipProfilerNowMs() - start;
+      phases[name] = (phases[name] ?? 0) + elapsed;
+      userMark(`${name}-end`);
+    }
+  }
+
+  function totalMs() {
+    return zipProfilerNowMs() - t0;
+  }
+
+  /**
+   * Snapshot for metadata.json (deterministic rounding).
+   * Call before `generateZip` so the zip does not embed compression time (avoids a second `generateAsync`).
+   */
+  function toMetadata() {
+    const phasesRounded = {};
+    for (const [k, v] of Object.entries(phases)) {
+      phasesRounded[k] = zipProfilerRoundMs(v);
+    }
+    return {
+      exportKind,
+      /** Wall time for recorded phases only (typically everything except JSZip compression). */
+      totalMs: zipProfilerRoundMs(totalMs()),
+      phasesMs: phasesRounded,
+      userAgent:
+        typeof navigator !== "undefined" ? navigator.userAgent : undefined,
+    };
+  }
+
+  /** Pretty console report when `window.DEBUG` is set. */
+  function logReport() {
+    if (typeof window === "undefined" || !window.DEBUG) return;
+    const meta = toMetadata();
+    debugGroup(`ZIP export profile: ${exportKind} (${meta.totalMs} ms total)`);
+    const rows = Object.entries(meta.phasesMs).map(([phase, ms]) => ({
+      phase,
+      ms,
+    }));
+    rows.sort((a, b) => b.ms - a.ms);
+    debugTable(rows);
+    debugGroupEnd();
+  }
+
+  return { phase, toMetadata, logReport };
 }
