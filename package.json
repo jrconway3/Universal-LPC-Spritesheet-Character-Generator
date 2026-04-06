@@ -14,7 +14,9 @@
     "test:visual:headed": "playwright test --headed",
     "fixture:issue382": "node scripts/fixture-builder.js",
     "profile:zip": "node scripts/zip-export-profile.mjs",
-    "profile:zip:quick": "node scripts/zip-export-profile.mjs --quick"
+    "profile:zip:quick": "node scripts/zip-export-profile.mjs --quick",
+    "profile:zip:baseline": "node scripts/zip-export-profile.mjs --out tmp/baseline-zip-export-profile.json",
+    "profile:zip:baseline:quick": "node scripts/zip-export-profile.mjs --quick --out tmp/baseline-zip-export-profile-quick.json"
   },
   "devDependencies": {
     "@argos-ci/playwright": "^6.6.1",

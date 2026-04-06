@@ -44,7 +44,8 @@ export const ZIP_PROFILE_EXPORT_KINDS = [
  * @param {string | null} [opts.only] — one of {@link ZIP_PROFILE_EXPORT_KINDS}, or null for all
  */
 async function runProfiles(opts = {}) {
-  const useRealJsZip = opts.useRealJsZip !== false;
+  /** @type {boolean} — default true; pass `false` for fake JSZip (quick mode). */
+  const useRealJsZip = opts.useRealJsZip ?? true;
   const only = opts.only ?? null;
 
   if (only !== null && !ZIP_PROFILE_EXPORT_KINDS.includes(only)) {

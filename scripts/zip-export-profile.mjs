@@ -132,7 +132,8 @@ async function main() {
     const payload = {
       generatedAt: new Date().toISOString(),
       selectionLabel: data.selectionLabel,
-      useRealJsZip: data.useRealJsZip,
+      /** CLI `quick` mode uses fake JSZip; keep in sync with runner. */
+      useRealJsZip: !quick,
       quickMode: quick,
       only: data.only,
       profiles: data.profiles,
