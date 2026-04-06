@@ -25,6 +25,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { chromium } from "playwright";
 
+import { ZIP_PROFILE_DEFAULT_HASH } from "./zip-profile-default-hash.mjs";
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.join(__dirname, "..", "..");
 
@@ -108,14 +110,18 @@ async function main() {
      * string, so URL params are unreliable. Inject CLI options before load.
      */
     await page.addInitScript(
-      ({ quick: q, only: o }) => {
-        window.__ZIP_PROFILE_OPTS__ = { quick: q, only: o };
+      ({ quick: q, only: o, profileHash: ph }) => {
+        window.__ZIP_PROFILE_OPTS__ = {
+          quick: q,
+          only: o,
+          profileHash: ph,
+        };
       },
-      { quick, only: only ?? null },
+      { quick, only: only ?? null, profileHash: ZIP_PROFILE_DEFAULT_HASH },
     );
 
     await page.goto(
-      `${BASE_URL}/scripts/zip/zip-export-profile-runner.html?${qs.toString()}`,
+      `${BASE_URL}/scripts/zip/zip-export-profile-runner.html?${qs.toString()}#${ZIP_PROFILE_DEFAULT_HASH}`,
       {
         waitUntil: "networkidle",
         timeout: 120000,

@@ -30,15 +30,51 @@ The profiler tracks these expensive operations:
 
 ZIP generation uses **`createZipExportProfiler`** in `sources/performance-profiler.js`, wired from `sources/state/zip.js` (split-by-animation, split-by-item, split-by-animation-and-item, individual frames).
 
-- **Embedded timings:** Exports that write `credits/metadata.json` include a **`performance`** object (`exportKind`, `totalMs`, `phasesMs`, `userAgent`). Open the downloaded zip → `credits/metadata.json` → **`performance.phasesMs`** to see per-phase milliseconds. Phases cover work **before** JSZip `generateAsync` (compression is not included in that JSON, to avoid double compression).
+- **Embedded timings:** Exports that write `credits/metadata.json` include a **`performance`** object (`exportKind`, `totalMs`, `phasesMs`, `userAgent`).
+  - In the downloaded zip: **`credits/metadata.json`** → **`performance.phasesMs`** for per-phase milliseconds.
+  - Phases cover work **before** JSZip `generateAsync` (compression is omitted in that JSON to avoid double compression).
 - **Console (DEBUG):** With `window.DEBUG` true (localhost or `?debug=true`), finishing an export logs a **ZIP export profile** table in the console (phases sorted by duration).
 - **User Timing:** With DEBUG on, phases also emit `performance.mark` names like `zip:<exportKind>:<phase>-start` / `-end`, visible under **DevTools → Performance** when recording.
 - **Split-by-item sheets** does not add `metadata.json`; use the console table and Performance marks when DEBUG is on.
 
-- **Automation / agents:** After each export, `zipGenerateBlobWithProfiler` stores the latest `toMetadata()` snapshot on **`window.__lastZipExportProfile`** and accumulates **`window.__zipExportProfiles`** keyed by `exportKind`. Run **`npm run profile:zip`** or **`npm run profile:zip:quick`** to open headless Chromium against the issue #382 fixture, write JSON to **`tmp/zip-export-profile.json`** or **`tmp/zip-export-profile-quick.json`** (gitignored), and print the same JSON to stdout. Use **`--only <kind>`** with **`npm run profile:zip -- --only splitAnimations`** (kinds: `splitAnimations`, `splitItemSheets`, `splitItemAnimations`, `individualFrames`) to profile a single export. Override the output path with **`--out`**. Requires Playwright browsers: **`npx playwright install`**. Default mode uses real JSZip (meaningful `generateZip` ms); **`--quick`** uses a fake zip (faster, tiny compression time). Env: **`ZIP_PROFILE_PORT`** (default `9877`). See **`scripts/zip/zip-export-profile.mjs`** and **`scripts/zip/zip-export-profile-runner.html`**. **Headless CLI options:** `npx serve` may redirect the runner to a clean URL and drop **`?`** query parameters, so **`--quick`** and **`--only`** are injected as **`window.__ZIP_PROFILE_OPTS__`** before page load (Playwright `addInitScript`). Opening the runner manually in a browser still relies on the URL query string when it is preserved.
-- **Baseline snapshots (local, gitignored):** Regenerate with **`npm run profile:zip:baseline`** → **`tmp/baseline-zip-export-profile.json`**, and **`npm run profile:zip:baseline:quick`** → **`tmp/baseline-zip-export-profile-quick.json`**. Compare two JSON files with **`npm run diff:zip-profile -- tmp/baseline-zip-export-profile.json tmp/zip-export-profile.json`** (or **`node scripts/zip/diff-zip-profile.mjs --before … --after …`**) to see per-phase deltas (same machine/fixture) when spotting regressions or improvements.
+- **Automation / agents:** After each export, `zipGenerateBlobWithProfiler` stores the latest `toMetadata()` snapshot on **`window.__lastZipExportProfile`** and accumulates **`window.__zipExportProfiles`** keyed by `exportKind`.
+  - **Scripts:** **`npm run profile:zip`** or **`npm run profile:zip:quick`** — run headless Chromium with the default URL hash from **`scripts/zip/zip-profile-default-hash.mjs`** (full outfit + weapon so custom layers show up in profiles).
+  - **Output:** **`tmp/zip-export-profile.json`** or **`tmp/zip-export-profile-quick.json`** (gitignored), and the same JSON on stdout.
+  - **Flags:** **`--only <kind>`** (e.g. **`npm run profile:zip -- --only splitAnimations`**) with kinds `splitAnimations`, `splitItemSheets`, `splitItemAnimations`, `individualFrames`. **`--out <path>`** overrides the JSON path. **`--quick`** uses a fake JSZip (faster; small **`generateZip`** time); default mode uses real JSZip.
+  - **Setup:** Playwright browsers **`npx playwright install`**. Server port **`ZIP_PROFILE_PORT`** (default **`9877`**). Entry points: **`scripts/zip/zip-export-profile.mjs`**, **`scripts/zip/zip-export-profile-runner.html`**.
+  - **`serve` and query strings:** Redirects may drop **`?`** params on the runner URL, so **`--quick`**, **`--only`**, and the default hash are injected via **`window.__ZIP_PROFILE_OPTS__`** before load (Playwright `addInitScript`). Opening the runner manually: preserve the query when possible, or add **`#`** plus the same hash as in **`zip-profile-default-hash.mjs`** (or rely on that module’s default in the runner).
+
+- **Baseline snapshots (local, gitignored):**
+  - **`npm run profile:zip:baseline`** → **`tmp/baseline-zip-export-profile.json`**
+  - **`npm run profile:zip:baseline:quick`** → **`tmp/baseline-zip-export-profile-quick.json`**
+  - Compare runs: **`npm run diff:zip-profile -- tmp/baseline-zip-export-profile.json tmp/zip-export-profile.json`**, or **`node scripts/zip/diff-zip-profile.mjs --before … --after …`**, for per-phase deltas on the same machine/fixture.
 
 Query param note: only **`?debug=true`** and **`?debug=false`** are recognized as overrides (`sources/utils/debug.js`). Other values (e.g. `?debug=1`) fall through to localhost detection.
+
+## Reviewing ZIP performance changes (PR)
+
+Suggested **read order** (core behavior → profiling → automation):
+
+| Order | File | What to check |
+| ----- | ---- | ------------- |
+| 1 | `sources/state/zip.js` | Four exports (`exportSplitAnimations`, `exportSplitItemSheets`, `exportSplitItemAnimations`, `exportIndividualFrames`): `createZipExportProfiler`, `beginZipExportUiSuspend` / `endZipExportUiSuspend` in `try`/`finally`, `zipGenerateBlobWithProfiler` |
+| 2 | `sources/utils/zip-helpers.js` | `addAnimationToZipFolder`, `addStandardAnimationToZipCustomFolder`, `zipGenerateBlobWithProfiler`; phases `drawAndSlice` → `pngEncode` → `zipFile` |
+| 3 | `sources/canvas/renderer.js` | `zipExportProfiledLoadComposite` — splits **image load/decode** vs **composite** for item renders when `zipProfiler` is passed |
+| 4 | `sources/performance-profiler.js` | `createZipExportProfiler`, `ZIP_EXPORT_COUNTER_KEYS`, `toMetadata()` |
+| 5 | `sources/utils/zip-export-ui-suspend.js` | Mithril redraw + preview rAF suspend during export |
+| 6 | `scripts/zip/*` | Headless profile runner, `diff-zip-profile`, default hash |
+
+**Phase name vocabulary** (strings in `phasesMs` / metadata):
+
+- **`render_imageLoadDecode_*`** — async: loading/decoding images before compositing.
+- **`render_composite_*`** — sync: drawing onto canvases after images are ready.
+- **`drawAndSlice`** — building a cropped/sliced canvas before PNG encode (`zip-helpers`).
+- **`pngEncode`** — `canvas.toBlob` (and batched frame encodes in individual-frames export).
+- **`zipFile`** — `JSZip` file entries.
+- **`staticFiles`** — `character.json`, credits, metadata.
+- **`generateZip`** — `zip.generateAsync` (often profiled separately from metadata embedding).
+
+Counters (`pngEncodeCount`, `drawAndSliceCount`, etc.) are defined on `ZIP_EXPORT_COUNTER_KEYS` in `performance-profiler.js`.
 
 ## Using the Profiler
 

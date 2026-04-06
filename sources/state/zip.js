@@ -30,6 +30,15 @@ import {
 import { debugLog, debugWarn } from "../utils/debug.js";
 import { createZipExportProfiler } from "../performance-profiler.js";
 
+/**
+ * ZIP download pack exports. Each flow uses `createZipExportProfiler` (see
+ * `performance-profiler.js`) for `credits/metadata.json` timings where applicable,
+ * suspends UI redraw/preview during export (`zip-export-ui-suspend.js`), and uses
+ * `zipGenerateBlobWithProfiler` for the final blob.
+ *
+ * Reviewer map: `PERFORMANCE_PROFILING.md` → “Reviewing ZIP performance changes (PR)”.
+ */
+
 // Export ZIP - Split by animation
 /**
  * @param {object} [deps]

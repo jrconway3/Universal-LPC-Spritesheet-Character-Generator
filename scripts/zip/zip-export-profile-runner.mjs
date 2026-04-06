@@ -2,8 +2,9 @@
 
 /**
  * Browser harness for `scripts/zip/zip-export-profile.mjs`.
- * Loads issue #382 fixture (longsword + full outfit) and runs ZIP export(s)
- * with real canvas + optional real JSZip.
+ * Loads selections from the URL hash (see `zip-profile-default-hash.mjs`) so
+ * layered gear and custom sprites are present; runs ZIP export(s) with real
+ * canvas + optional real JSZip.
  *
  * Query: `only=splitAnimations` | `splitItemSheets` | `splitItemAnimations` | `individualFrames`
  * — omit to run all four. `quick=1` uses fake JSZip.
@@ -25,11 +26,9 @@ import {
   exportSplitItemAnimations,
   exportSplitItemSheets,
 } from "../../sources/state/zip.js";
-import { resetState } from "../../sources/state/hash.js";
+import { loadSelectionsFromHash, resetState } from "../../sources/state/hash.js";
 import { state } from "../../sources/state/state.js";
-import { importStateFromJSON } from "../../sources/state/json.js";
-import issue382ItemMetadata from "../../tests/fixtures/issue-382-itemdata.js";
-import issue382Selections from "../../tests/fixtures/issue-382-selections.js";
+import { ZIP_PROFILE_DEFAULT_HASH } from "./zip-profile-default-hash.mjs";
 
 /** @type {readonly string[]} */
 export const ZIP_PROFILE_EXPORT_KINDS = [
@@ -38,6 +37,18 @@ export const ZIP_PROFILE_EXPORT_KINDS = [
   "splitItemAnimations",
   "individualFrames",
 ];
+
+function resolveProfileHashString() {
+  const fromUrl = window.location.hash?.replace(/^#/, "")?.trim();
+  if (fromUrl) {
+    return fromUrl;
+  }
+  const opts = window.__ZIP_PROFILE_OPTS__;
+  if (opts?.profileHash) {
+    return opts.profileHash;
+  }
+  return ZIP_PROFILE_DEFAULT_HASH;
+}
 
 /**
  * @param {{ useRealJsZip?: boolean }} opts
@@ -59,12 +70,7 @@ async function runProfiles(opts = {}) {
   resetState();
   layers.length = 0;
 
-  window.itemMetadata = {
-    ...(window.itemMetadata || {}),
-    ...issue382ItemMetadata,
-  };
-
-  Object.assign(state, importStateFromJSON(JSON.stringify(issue382Selections)));
+  loadSelectionsFromHash(resolveProfileHashString());
 
   window.alert = () => {};
   if (typeof m !== "undefined" && m.redraw) {
@@ -138,7 +144,7 @@ async function runProfiles(opts = {}) {
   const profiles = window.__zipExportProfiles || {};
   return {
     profiles,
-    selectionLabel: "issue-382 (tests/fixtures/issue-382-selections.js)",
+    selectionLabel: "zip-profile-default-hash.mjs",
     useRealJsZip,
     only: only === null ? "all" : only,
   };
