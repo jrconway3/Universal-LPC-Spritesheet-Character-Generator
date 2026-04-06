@@ -12,7 +12,9 @@
     "test:server": "node ./node_modules/testem/testem.js",
     "test:visual": "playwright test",
     "test:visual:headed": "playwright test --headed",
-    "fixture:issue382": "node scripts/fixture-builder.js"
+    "fixture:issue382": "node scripts/fixture-builder.js",
+    "profile:zip": "node scripts/zip-export-profile.mjs",
+    "profile:zip:quick": "node scripts/zip-export-profile.mjs --quick"
   },
   "devDependencies": {
     "@argos-ci/playwright": "^6.6.1",

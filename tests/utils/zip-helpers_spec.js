@@ -698,6 +698,38 @@ describe("utils/zip-helpers.js", () => {
         });
         expect(logReportSpy.calledOnce).to.be.true;
       });
+
+      it("stores profiling snapshots on window when profiler has toMetadata", async () => {
+        const expectedBlob = new Blob(["z"], { type: "application/zip" });
+        const zip = {
+          generateAsync: sinon.stub().resolves(expectedBlob),
+        };
+        const meta = {
+          exportKind: "testKind",
+          totalMs: 12.3,
+          phasesMs: { generateZip: 5 },
+          userAgent: "test-ua",
+        };
+        const profiler = {
+          phase: async (_name, fn) => {
+            await fn();
+          },
+          logReport: () => {},
+          toMetadata: () => meta,
+        };
+        const prevLast = window.__lastZipExportProfile;
+        const prevMap = window.__zipExportProfiles;
+        delete window.__lastZipExportProfile;
+        delete window.__zipExportProfiles;
+
+        await zipGenerateBlobWithProfiler(profiler, zip);
+
+        expect(window.__lastZipExportProfile).to.deep.equal(meta);
+        expect(window.__zipExportProfiles.testKind).to.deep.equal(meta);
+
+        window.__lastZipExportProfile = prevLast;
+        window.__zipExportProfiles = prevMap;
+      });
     });
 
     describe("downloadZipBlob", () => {

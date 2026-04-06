@@ -367,6 +367,16 @@ export async function zipGenerateBlobWithProfiler(profiler, zip) {
     zipBlob = await zip.generateAsync({ type: "blob" });
   });
   profiler.logReport();
+  if (
+    typeof window !== "undefined" &&
+    profiler &&
+    typeof profiler.toMetadata === "function"
+  ) {
+    const meta = profiler.toMetadata();
+    window.__lastZipExportProfile = meta;
+    window.__zipExportProfiles = window.__zipExportProfiles || {};
+    window.__zipExportProfiles[meta.exportKind] = meta;
+  }
   return zipBlob;
 }
 

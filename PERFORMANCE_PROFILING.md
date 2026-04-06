@@ -32,6 +32,8 @@ ZIP generation uses **`createZipExportProfiler`** in `sources/performance-profil
 - **User Timing:** With DEBUG on, phases also emit `performance.mark` names like `zip:<exportKind>:<phase>-start` / `-end`, visible under **DevTools → Performance** when recording.
 - **Split-by-item sheets** does not add `metadata.json`; use the console table and Performance marks when DEBUG is on.
 
+- **Automation / agents:** After each export, `zipGenerateBlobWithProfiler` stores the latest `toMetadata()` snapshot on **`window.__lastZipExportProfile`** and accumulates **`window.__zipExportProfiles`** keyed by `exportKind`. Run **`npm run profile:zip`** or **`npm run profile:zip:quick`** to open headless Chromium against the issue #382 fixture, write JSON to **`tmp/zip-export-profile.json`** or **`tmp/zip-export-profile-quick.json`** (gitignored), and print the same JSON to stdout. Use **`--only <kind>`** with **`npm run profile:zip -- --only splitAnimations`** (kinds: `splitAnimations`, `splitItemSheets`, `splitItemAnimations`, `individualFrames`) to profile a single export. Override the output path with **`--out`**. Requires Playwright browsers: **`npx playwright install`**. Default mode uses real JSZip (meaningful `generateZip` ms); **`--quick`** uses a fake zip (faster, tiny compression time). Env: **`ZIP_PROFILE_PORT`** (default `9877`). See **`scripts/zip-export-profile.mjs`** and **`scripts/zip-export-profile-runner.html`**.
+
 Query param note: only **`?debug=true`** and **`?debug=false`** are recognized as overrides (`sources/utils/debug.js`). Other values (e.g. `?debug=1`) fall through to localhost detection.
 
 ## Using the Profiler
