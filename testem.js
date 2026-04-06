@@ -41,7 +41,8 @@ let testemConfig = {
         "--remote-debugging-port=0",
         "--window-size=1680,1024",
         "--enable-logging=stderr",
-        "--user-data-dir=/tmp",
+        // Omit --user-data-dir: Testem already sets a per-run temp profile. A second flag breaks
+        // Chrome on some setups (e.g. macOS), and /tmp is not valid on Windows.
       ].filter(Boolean),
     },
     Firefox: {
