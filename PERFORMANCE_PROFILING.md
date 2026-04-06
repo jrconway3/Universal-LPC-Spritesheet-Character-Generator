@@ -3,6 +3,7 @@
 ## How to Enable Profiling
 
 The app includes a performance profiler that is automatically enabled when:
+
 1. Running on localhost (127.0.0.1 or localhost)
 2. Adding `?debug=true` to the URL query string (overrides localhost detection)
 3. Adding `?debug=false` to disable it even on localhost
@@ -14,11 +15,13 @@ The DEBUG flag and profiler are initialized in `sources/main.js`.
 The profiler tracks these expensive operations:
 
 ### Image Loading
+
 - **Operation:** `loadImage()` in `sources/canvas/renderer.js`
 - **Measures:** Individual image load times
 - **Format:** `image-load:<path>`
 
 ### Character Rendering
+
 - **Operation:** `renderCharacter()` in `sources/canvas/renderer.js`
 - **Measures:** Total rendering time including image loading and canvas operations
 - **Format:** `renderCharacter`
@@ -32,7 +35,7 @@ ZIP generation uses **`createZipExportProfiler`** in `sources/performance-profil
 - **User Timing:** With DEBUG on, phases also emit `performance.mark` names like `zip:<exportKind>:<phase>-start` / `-end`, visible under **DevTools → Performance** when recording.
 - **Split-by-item sheets** does not add `metadata.json`; use the console table and Performance marks when DEBUG is on.
 
-- **Automation / agents:** After each export, `zipGenerateBlobWithProfiler` stores the latest `toMetadata()` snapshot on **`window.__lastZipExportProfile`** and accumulates **`window.__zipExportProfiles`** keyed by `exportKind`. Run **`npm run profile:zip`** or **`npm run profile:zip:quick`** to open headless Chromium against the issue #382 fixture, write JSON to **`tmp/zip-export-profile.json`** or **`tmp/zip-export-profile-quick.json`** (gitignored), and print the same JSON to stdout. Use **`--only <kind>`** with **`npm run profile:zip -- --only splitAnimations`** (kinds: `splitAnimations`, `splitItemSheets`, `splitItemAnimations`, `individualFrames`) to profile a single export. Override the output path with **`--out`**. Requires Playwright browsers: **`npx playwright install`**. Default mode uses real JSZip (meaningful `generateZip` ms); **`--quick`** uses a fake zip (faster, tiny compression time). Env: **`ZIP_PROFILE_PORT`** (default `9877`). See **`scripts/zip/zip-export-profile.mjs`** and **`scripts/zip/zip-export-profile-runner.html`**.
+- **Automation / agents:** After each export, `zipGenerateBlobWithProfiler` stores the latest `toMetadata()` snapshot on **`window.__lastZipExportProfile`** and accumulates **`window.__zipExportProfiles`** keyed by `exportKind`. Run **`npm run profile:zip`** or **`npm run profile:zip:quick`** to open headless Chromium against the issue #382 fixture, write JSON to **`tmp/zip-export-profile.json`** or **`tmp/zip-export-profile-quick.json`** (gitignored), and print the same JSON to stdout. Use **`--only <kind>`** with **`npm run profile:zip -- --only splitAnimations`** (kinds: `splitAnimations`, `splitItemSheets`, `splitItemAnimations`, `individualFrames`) to profile a single export. Override the output path with **`--out`**. Requires Playwright browsers: **`npx playwright install`**. Default mode uses real JSZip (meaningful `generateZip` ms); **`--quick`** uses a fake zip (faster, tiny compression time). Env: **`ZIP_PROFILE_PORT`** (default `9877`). See **`scripts/zip/zip-export-profile.mjs`** and **`scripts/zip/zip-export-profile-runner.html`**. **Headless CLI options:** `npx serve` may redirect the runner to a clean URL and drop **`?`** query parameters, so **`--quick`** and **`--only`** are injected as **`window.__ZIP_PROFILE_OPTS__`** before page load (Playwright `addInitScript`). Opening the runner manually in a browser still relies on the URL query string when it is preserved.
 - **Baseline snapshots (local, gitignored):** Regenerate with **`npm run profile:zip:baseline`** → **`tmp/baseline-zip-export-profile.json`**, and **`npm run profile:zip:baseline:quick`** → **`tmp/baseline-zip-export-profile-quick.json`**. Compare two JSON files with **`npm run diff:zip-profile -- tmp/baseline-zip-export-profile.json tmp/zip-export-profile.json`** (or **`node scripts/zip/diff-zip-profile.mjs --before … --after …`**) to see per-phase deltas (same machine/fixture) when spotting regressions or improvements.
 
 Query param note: only **`?debug=true`** and **`?debug=false`** are recognized as overrides (`sources/utils/debug.js`). Other values (e.g. `?debug=1`) fall through to localhost detection.
@@ -70,9 +73,9 @@ The profiler is configured in `sources/main.js`:
 
 ```javascript
 const profiler = new window.PerformanceProfiler({
-  enabled: DEBUG,           // Enable/disable profiler
-  verbose: false,           // Log all marks/measures to console
-  logSlowOperations: true   // Log warnings for slow operations
+  enabled: DEBUG, // Enable/disable profiler
+  verbose: false, // Log all marks/measures to console
+  logSlowOperations: true, // Log warnings for slow operations
 });
 ```
 
@@ -92,15 +95,15 @@ To profile a new operation:
 // Mark start
 const profiler = window.profiler;
 if (profiler) {
-  profiler.mark('myOperation:start');
+  profiler.mark("myOperation:start");
 }
 
 // ... do expensive work ...
 
 // Mark end and measure
 if (profiler) {
-  profiler.mark('myOperation:end');
-  profiler.measure('myOperation', 'myOperation:start', 'myOperation:end');
+  profiler.mark("myOperation:end");
+  profiler.measure("myOperation", "myOperation:start", "myOperation:end");
 }
 ```
 
