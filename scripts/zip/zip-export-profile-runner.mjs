@@ -1,14 +1,14 @@
 /* eslint-disable no-undef -- browser harness (window, document, m) */
 
 /**
- * Browser harness for `scripts/zip-export-profile.mjs`.
+ * Browser harness for `scripts/zip/zip-export-profile.mjs`.
  * Loads issue #382 fixture (longsword + full outfit) and runs ZIP export(s)
  * with real canvas + optional real JSZip.
  *
  * Query: `only=splitAnimations` | `splitItemSheets` | `splitItemAnimations` | `individualFrames`
  * — omit to run all four. `quick=1` uses fake JSZip.
  *
- * @see scripts/zip-export-profile.mjs
+ * @see scripts/zip/zip-export-profile.mjs
  */
 
 import {
@@ -18,18 +18,18 @@ import {
   SHEET_HEIGHT,
   SHEET_WIDTH,
   renderCharacter,
-} from "../sources/canvas/renderer.js";
+} from "../../sources/canvas/renderer.js";
 import {
   exportIndividualFrames,
   exportSplitAnimations,
   exportSplitItemAnimations,
   exportSplitItemSheets,
-} from "../sources/state/zip.js";
-import { resetState } from "../sources/state/hash.js";
-import { state } from "../sources/state/state.js";
-import { importStateFromJSON } from "../sources/state/json.js";
-import issue382ItemMetadata from "../tests/fixtures/issue-382-itemdata.js";
-import issue382Selections from "../tests/fixtures/issue-382-selections.js";
+} from "../../sources/state/zip.js";
+import { resetState } from "../../sources/state/hash.js";
+import { state } from "../../sources/state/state.js";
+import { importStateFromJSON } from "../../sources/state/json.js";
+import issue382ItemMetadata from "../../tests/fixtures/issue-382-itemdata.js";
+import issue382Selections from "../../tests/fixtures/issue-382-selections.js";
 
 /** @type {readonly string[]} */
 export const ZIP_PROFILE_EXPORT_KINDS = [
@@ -92,7 +92,7 @@ async function runProfiles(opts = {}) {
 
   const RealJSZip = window.JSZip;
   if (!useRealJsZip) {
-    const { createFakeJSZip } = await import("../tests/helpers/fake-jszip.js");
+    const { createFakeJSZip } = await import("../../tests/helpers/fake-jszip.js");
     window.JSZip = function FakeJSZip() {
       return createFakeJSZip();
     };

@@ -5,16 +5,16 @@
  * under `tmp/` by default, and prints the same JSON to stdout.
  *
  * Usage:
- *   node scripts/zip-export-profile.mjs
- *   node scripts/zip-export-profile.mjs --quick
- *   node scripts/zip-export-profile.mjs --only splitAnimations
- *   node scripts/zip-export-profile.mjs --out custom/path.json
+ *   node scripts/zip/zip-export-profile.mjs
+ *   node scripts/zip/zip-export-profile.mjs --quick
+ *   node scripts/zip/zip-export-profile.mjs --only splitAnimations
+ *   node scripts/zip/zip-export-profile.mjs --out custom/path.json
  *
  * Environment:
  *   ZIP_PROFILE_PORT — TCP port for `npx serve` (default 9877).
  *
- * @see scripts/zip-export-profile-runner.html
- * @see scripts/zip-export-profile-runner.mjs
+ * @see scripts/zip/zip-export-profile-runner.html
+ * @see scripts/zip/zip-export-profile-runner.mjs
  */
 
 /* eslint-disable no-undef -- Playwright page callbacks run in browser context */
@@ -26,7 +26,7 @@ import { fileURLToPath } from "url";
 import { chromium } from "playwright";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const REPO_ROOT = path.join(__dirname, "..");
+const REPO_ROOT = path.join(__dirname, "..", "..");
 
 const EXPORT_KINDS = new Set([
   "splitAnimations",
@@ -104,7 +104,7 @@ async function main() {
     page.on("pageerror", (e) => pageErrors.push(String(e)));
 
     await page.goto(
-      `${BASE_URL}/scripts/zip-export-profile-runner.html?${qs.toString()}`,
+      `${BASE_URL}/scripts/zip/zip-export-profile-runner.html?${qs.toString()}`,
       {
         waitUntil: "networkidle",
         timeout: 120000,
