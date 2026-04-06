@@ -23,6 +23,17 @@ The profiler tracks these expensive operations:
 - **Measures:** Total rendering time including image loading and canvas operations
 - **Format:** `renderCharacter`
 
+### ZIP export (download packs)
+
+ZIP generation uses **`createZipExportProfiler`** in `sources/performance-profiler.js`, wired from `sources/state/zip.js` (split-by-animation, split-by-item, split-by-animation-and-item, individual frames).
+
+- **Embedded timings:** Exports that write `credits/metadata.json` include a **`performance`** object (`exportKind`, `totalMs`, `phasesMs`, `userAgent`). Open the downloaded zip → `credits/metadata.json` → **`performance.phasesMs`** to see per-phase milliseconds. Phases cover work **before** JSZip `generateAsync` (compression is not included in that JSON, to avoid double compression).
+- **Console (DEBUG):** With `window.DEBUG` true (localhost or `?debug=true`), finishing an export logs a **ZIP export profile** table in the console (phases sorted by duration).
+- **User Timing:** With DEBUG on, phases also emit `performance.mark` names like `zip:<exportKind>:<phase>-start` / `-end`, visible under **DevTools → Performance** when recording.
+- **Split-by-item sheets** does not add `metadata.json`; use the console table and Performance marks when DEBUG is on.
+
+Query param note: only **`?debug=true`** and **`?debug=false`** are recognized as overrides (`sources/utils/debug.js`). Other values (e.g. `?debug=1`) fall through to localhost detection.
+
 ## Using the Profiler
 
 ### Via Browser Console
@@ -33,21 +44,21 @@ The profiler tracks these expensive operations:
 4. Use these commands:
 
 ```javascript
-// Get a full performance report
-window.profiler.report()
+// Full report (categories, FPS, User Timing measures)
+window.profiler.report();
 
-// Get measurements for a specific operation
-window.profiler.getMeasures('renderCharacter')
+// Inspect measures by name (Performance API — not a method on profiler)
+performance.getEntriesByName("renderCharacter", "measure");
 
-// Clear all profiling data
-window.profiler.clear()
+// Clear marks/measures and reset in-profiler metrics
+window.profiler.clear();
 
 // Check if profiler is enabled
-window.profiler.enabled
+window.profiler.enabled;
 
 // Enable/disable profiler manually
-window.profiler.enable()
-window.profiler.disable()
+window.profiler.enable();
+window.profiler.disable();
 ```
 
 ### Configuration
@@ -64,20 +75,11 @@ const profiler = new window.PerformanceProfiler({
 
 ## Example Output
 
-```
-[Profiler] renderCharacter took 145.2ms
-[Profiler] Warning: image-load:spritesheets/body/male/walk/light.png took 85ms (threshold: 50ms)
-```
+With **`verbose: true`** in `main.js` (or if a measure exceeds `slowThresholdMs`), you may see timing lines in the console. Slow-operation warnings use the configured threshold (default 50ms).
 
-## Performance Report
+Call **`window.profiler.report()`** to open grouped console output: category totals (imageLoads, draws, etc.), current FPS, optional memory (Chrome), and a table of recent **`performance.measure`** entries from the User Timing API.
 
-Call `window.profiler.report()` to see a summary:
-
-```
-=== Performance Report ===
-renderCharacter: 3 measurements, avg: 142ms, min: 128ms, max: 167ms
-image-load:...: 15 measurements, avg: 23ms, min: 8ms, max: 85ms
-```
+ZIP exports with DEBUG on log a separate group, e.g. **`ZIP export profile: splitAnimations (… ms total)`**, with a **`phase` / `ms`** table.
 
 ## Adding New Profiling Points
 
