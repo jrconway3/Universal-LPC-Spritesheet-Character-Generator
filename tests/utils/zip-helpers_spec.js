@@ -1,19 +1,24 @@
 import { expect } from "chai";
 import sinon from "sinon";
-import { describe, it, afterEach } from "mocha-globals";
+import { describe, it, beforeEach, afterEach } from "mocha-globals";
 import {
   customAnimations,
   customAnimationSize,
 } from "../../sources/custom-animations.js";
 import {
   addAnimationToZipFolder,
+  addCharacterJsonAndCredits,
   addStandardAnimationToZipCustomFolder,
   checkFrameContentFromImageData,
   CUSTOM_ANIM_DIRECTION_TO_ROW,
+  downloadZipBlob,
   extractFramesFromAnimation,
   extractFramesFromCustomAnimation,
+  guardZipExportEnvironment,
   newAnimationFromSheet,
   newStandardAnimationForCustomAnimation,
+  zipExportTimestamp,
+  zipGenerateBlobWithProfiler,
 } from "../../sources/utils/zip-helpers.js";
 
 function createCanvas(width, height) {
@@ -566,6 +571,166 @@ describe("utils/zip-helpers.js", () => {
       expect(out.left.length).to.be.greaterThan(0);
       expect(out.down).to.deep.equal([]);
       expect(out.right).to.deep.equal([]);
+    });
+  });
+
+  describe("zip export helpers", () => {
+    describe("zipExportTimestamp", () => {
+      it("returns a string with no colons or dots (filename-safe)", () => {
+        const t = zipExportTimestamp();
+        expect(t).to.be.a("string");
+        expect(t).to.not.match(/[:.]/);
+        expect(t).to.match(/^\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}$/);
+      });
+    });
+
+    describe("guardZipExportEnvironment", () => {
+      let canvasRendererOrig;
+      let jsZipOrig;
+
+      beforeEach(() => {
+        canvasRendererOrig = window.canvasRenderer;
+        jsZipOrig = window.JSZip;
+      });
+
+      afterEach(() => {
+        window.canvasRenderer = canvasRendererOrig;
+        window.JSZip = jsZipOrig;
+      });
+
+      it("returns true and does not alert when prerequisites exist", () => {
+        window.canvasRenderer = {};
+        window.JSZip = function FakeJSZip() {};
+        const alertSpy = sinon.stub(window, "alert");
+        expect(guardZipExportEnvironment()).to.be.true;
+        expect(alertSpy.called).to.be.false;
+        alertSpy.restore();
+      });
+
+      it("returns false and alerts when JSZip is missing", () => {
+        window.canvasRenderer = {};
+        window.JSZip = undefined;
+        const alertSpy = sinon.stub(window, "alert");
+        expect(guardZipExportEnvironment()).to.be.false;
+        expect(alertSpy.firstCall.args[0]).to.equal("JSZip library not loaded");
+        alertSpy.restore();
+      });
+
+      it("returns false and alerts when canvasRenderer is missing", () => {
+        window.canvasRenderer = undefined;
+        window.JSZip = function FakeJSZip() {};
+        const alertSpy = sinon.stub(window, "alert");
+        expect(guardZipExportEnvironment()).to.be.false;
+        expect(alertSpy.calledOnce).to.be.true;
+        alertSpy.restore();
+      });
+    });
+
+    describe("addCharacterJsonAndCredits", () => {
+      it("writes character.json at zip root and credits files under the credits folder", () => {
+        const rootWrites = [];
+        const creditWrites = [];
+        const zip = {
+          file(name, data) {
+            rootWrites.push({ name, data });
+          },
+        };
+        const creditsFolder = {
+          file(name, data) {
+            creditWrites.push({ name, data });
+          },
+        };
+
+        const state = {
+          bodyType: "male",
+          selections: {},
+          selectedAnimation: "walk",
+          showTransparencyGrid: true,
+          applyTransparencyMask: false,
+          matchBodyColorEnabled: true,
+          compactDisplay: false,
+          enabledLicenses: { cc0: true },
+          enabledAnimations: { walk: false },
+        };
+        const layerList = [];
+
+        addCharacterJsonAndCredits(zip, creditsFolder, state, layerList);
+
+        expect(rootWrites).to.have.length(1);
+        expect(rootWrites[0].name).to.equal("character.json");
+        const character = JSON.parse(rootWrites[0].data);
+        expect(character.version).to.equal(2);
+        expect(character.bodyType).to.equal("male");
+        expect(character.layers).to.deep.equal(layerList);
+
+        expect(creditWrites.map((w) => w.name)).to.deep.equal([
+          "credits.txt",
+          "credits.csv",
+        ]);
+        expect(creditWrites[0].data).to.be.a("string");
+        expect(creditWrites[1].data).to.be.a("string");
+      });
+    });
+
+    describe("zipGenerateBlobWithProfiler", () => {
+      it("runs generateZip phase, generateAsync, and logReport; returns the blob", async () => {
+        const expectedBlob = new Blob(["z"], { type: "application/zip" });
+        const zip = {
+          generateAsync: sinon.stub().resolves(expectedBlob),
+        };
+        const phaseSpy = sinon.spy(async (name, fn) => {
+          expect(name).to.equal("generateZip");
+          await fn();
+        });
+        const logReportSpy = sinon.spy();
+        const profiler = {
+          phase: phaseSpy,
+          logReport: logReportSpy,
+        };
+
+        const out = await zipGenerateBlobWithProfiler(profiler, zip);
+
+        expect(out).to.equal(expectedBlob);
+        expect(phaseSpy.calledOnce).to.be.true;
+        expect(zip.generateAsync.calledOnce).to.be.true;
+        expect(zip.generateAsync.firstCall.args[0]).to.deep.equal({
+          type: "blob",
+        });
+        expect(logReportSpy.calledOnce).to.be.true;
+      });
+    });
+
+    describe("downloadZipBlob", () => {
+      it("creates an object URL, sets download on an anchor, clicks, revokes", () => {
+        const blob = new Blob(["x"]);
+        const url = "blob:mock-url";
+        const createUrl = sinon.stub(URL, "createObjectURL").returns(url);
+        const revoke = sinon.stub(URL, "revokeObjectURL");
+        const click = sinon.spy();
+        const origCreate = document.createElement.bind(document);
+        const createEl = sinon
+          .stub(document, "createElement")
+          .callsFake((tag) => {
+            if (tag === "a") {
+              return { click, href: "", download: "" };
+            }
+            return origCreate(tag);
+          });
+
+        downloadZipBlob(blob, "out.zip");
+
+        expect(createUrl.calledOnceWithExactly(blob)).to.be.true;
+        expect(createEl.calledOnceWithExactly("a")).to.be.true;
+        const a = createEl.firstCall.returnValue;
+        expect(a.download).to.equal("out.zip");
+        expect(a.href).to.equal(url);
+        expect(click.calledOnce).to.be.true;
+        expect(revoke.calledOnceWithExactly(url)).to.be.true;
+
+        createUrl.restore();
+        revoke.restore();
+        createEl.restore();
+      });
     });
   });
 });

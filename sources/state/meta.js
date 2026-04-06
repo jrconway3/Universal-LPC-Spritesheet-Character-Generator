@@ -58,6 +58,20 @@ export function getSortedLayers(itemId, standardOnly = false) {
 }
 
 /**
+ * Layers for item-based ZIP exports: prefer standard sheet rows; if none
+ * (custom-animation-only items), fall back to all layers.
+ *
+ * @param {string} itemId
+ */
+export function getSortedLayersWithCustomFallback(itemId) {
+  let layers = getSortedLayers(itemId, true);
+  if (!layers || layers.length === 0) {
+    layers = getSortedLayers(itemId);
+  }
+  return layers;
+}
+
+/**
  * Split Layers by Animation Type, Then Sort by zPos
  *
  * @param {string} itemId - The ID of the item to get layers for

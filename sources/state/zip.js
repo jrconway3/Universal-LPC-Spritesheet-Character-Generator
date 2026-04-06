@@ -10,19 +10,22 @@ import {
   addedCustomAnimations,
 } from "../canvas/renderer.js";
 import { getMultiRecolors } from "./palettes.js";
-import { getAllCredits, creditsToTxt, creditsToCsv } from "../utils/credits.js";
 import { getItemFileName } from "../utils/fileName.js";
 import { loadImage } from "../canvas/load-image.js";
-import { exportStateAsJSON } from "./json.js";
 import { customAnimations, customAnimationSize } from "../custom-animations.js";
-import { getSortedLayers } from "./meta.js";
+import { getSortedLayersWithCustomFallback } from "./meta.js";
 import { canvasToBlob, image2canvas } from "../canvas/canvas-utils.js";
 import {
   addAnimationToZipFolder,
   addStandardAnimationToZipCustomFolder,
+  addCharacterJsonAndCredits,
+  downloadZipBlob,
   extractFramesFromAnimation,
   extractFramesFromCustomAnimation,
+  guardZipExportEnvironment,
   newAnimationFromSheet,
+  zipExportTimestamp,
+  zipGenerateBlobWithProfiler,
 } from "../utils/zip-helpers.js";
 import { debugLog, debugWarn } from "../utils/debug.js";
 import { createZipExportProfiler } from "../performance-profiler.js";
@@ -36,10 +39,7 @@ export const exportSplitAnimations = async (deps = {}) => {
   const addAnimationToZipFolderFn =
     deps.addAnimationToZipFolder ?? addAnimationToZipFolder;
 
-  if (!window.canvasRenderer || !window.JSZip) {
-    alert("JSZip library not loaded");
-    return;
-  }
+  if (!guardZipExportEnvironment()) return;
 
   let state;
 
@@ -47,10 +47,7 @@ export const exportSplitAnimations = async (deps = {}) => {
 
   try {
     const zip = new window.JSZip();
-    const timestamp = new Date()
-      .toISOString()
-      .replace(/[:.]/g, "-")
-      .slice(0, -5);
+    const timestamp = zipExportTimestamp();
 
     state = (await import("./state.js")).state; // Ensure state is loaded
     state.zipByAnimation.isRunning = true;
@@ -118,10 +115,7 @@ export const exportSplitAnimations = async (deps = {}) => {
     });
 
     await profiler.phase("staticFiles", async () => {
-      zip.file("character.json", exportStateAsJSON(state, layers));
-      const allCredits = getAllCredits(state.selections, state.bodyType);
-      creditsFolder.file("credits.txt", creditsToTxt(allCredits));
-      creditsFolder.file("credits.csv", creditsToCsv(allCredits));
+      addCharacterJsonAndCredits(zip, creditsFolder, state, layers);
     });
 
     const metadata = {
@@ -141,18 +135,8 @@ export const exportSplitAnimations = async (deps = {}) => {
     };
     creditsFolder.file("metadata.json", JSON.stringify(metadata, null, 2));
 
-    // Generate and download ZIP
-    let zipBlob;
-    await profiler.phase("generateZip", async () => {
-      zipBlob = await zip.generateAsync({ type: "blob" });
-    });
-    profiler.logReport();
-    const url = URL.createObjectURL(zipBlob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `lpc_${bodyType}_animations_${timestamp}.zip`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const zipBlob = await zipGenerateBlobWithProfiler(profiler, zip);
+    downloadZipBlob(zipBlob, `lpc_${bodyType}_animations_${timestamp}.zip`);
 
     if (failedStandard.length > 0 || failedCustom.length > 0) {
       alert(
@@ -183,10 +167,7 @@ export const exportSplitItemSheets = async (deps = {}) => {
     deps.addAnimationToZipFolder ?? addAnimationToZipFolder;
   const renderSingleItemFn = deps.renderSingleItem ?? renderSingleItem;
 
-  if (!window.canvasRenderer || !window.JSZip) {
-    alert("JSZip library not loaded");
-    return;
-  }
+  if (!guardZipExportEnvironment()) return;
 
   let state;
 
@@ -194,10 +175,7 @@ export const exportSplitItemSheets = async (deps = {}) => {
 
   try {
     const zip = new window.JSZip();
-    const timestamp = new Date()
-      .toISOString()
-      .replace(/[:.]/g, "-")
-      .slice(0, -5);
+    const timestamp = zipExportTimestamp();
 
     state = (await import("./state.js")).state; // Ensure state is loaded
     state.zipByItem.isRunning = true;
@@ -215,17 +193,13 @@ export const exportSplitItemSheets = async (deps = {}) => {
       // Render each item individually
       for (const [, selection] of Object.entries(state.selections)) {
         const { itemId, variant, name } = selection;
-        let layers = getSortedLayers(itemId, true);
-        if (!layers || layers.length === 0) {
-          // If no layers found when skipping custom animations, grab ONLY custom animations
-          layers = getSortedLayers(itemId);
-        }
+        const itemLayers = getSortedLayersWithCustomFallback(itemId);
 
         // Get Multiple Recolors If Available
         const recolors = getMultiRecolors(itemId, state.selections);
 
         // Render each layer of the item separately
-        for (const layer of layers) {
+        for (const layer of itemLayers) {
           const fileName = getItemFileName(
             itemId,
             variant,
@@ -260,24 +234,14 @@ export const exportSplitItemSheets = async (deps = {}) => {
     });
 
     await profiler.phase("staticFiles", async () => {
-      zip.file("character.json", exportStateAsJSON(state, layers));
-      const allCredits = getAllCredits(state.selections, state.bodyType);
-      creditsFolder.file("credits.txt", creditsToTxt(allCredits));
-      creditsFolder.file("credits.csv", creditsToCsv(allCredits));
+      addCharacterJsonAndCredits(zip, creditsFolder, state, layers);
     });
 
-    // Generate and download ZIP
-    let zipBlob;
-    await profiler.phase("generateZip", async () => {
-      zipBlob = await zip.generateAsync({ type: "blob" });
-    });
-    profiler.logReport();
-    const url = URL.createObjectURL(zipBlob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `lpc_${bodyType}_item_spritesheets_${timestamp}.zip`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const zipBlob = await zipGenerateBlobWithProfiler(profiler, zip);
+    downloadZipBlob(
+      zipBlob,
+      `lpc_${bodyType}_item_spritesheets_${timestamp}.zip`,
+    );
 
     if (failedItems.length > 0) {
       alert(
@@ -315,10 +279,7 @@ export const exportSplitItemAnimations = async (deps = {}) => {
     deps.addStandardAnimationToZipCustomFolder ??
     addStandardAnimationToZipCustomFolder;
 
-  if (!window.canvasRenderer || !window.JSZip) {
-    alert("JSZip library not loaded");
-    return;
-  }
+  if (!guardZipExportEnvironment()) return;
 
   let state;
 
@@ -326,10 +287,7 @@ export const exportSplitItemAnimations = async (deps = {}) => {
 
   try {
     const zip = new window.JSZip();
-    const timestamp = new Date()
-      .toISOString()
-      .replace(/[:.]/g, "-")
-      .slice(0, -5);
+    const timestamp = zipExportTimestamp();
 
     state = (await import("./state.js")).state; // Ensure state is loaded
     state.zipByAnimimationAndItem.isRunning = true;
@@ -375,14 +333,8 @@ export const exportSplitItemAnimations = async (deps = {}) => {
           // Get Multiple Recolors If Available
           const recolors = getMultiRecolors(itemId, state.selections);
 
-          // Render each layer of the item separately
-          let layers = getSortedLayers(itemId, true);
-          if (!layers || layers.length === 0) {
-            // If no layers found when skipping custom animations, use all layers
-            // (custom-animation-only items have no "standard" sheet rows).
-            layers = getSortedLayers(itemId);
-          }
-          for (const layer of layers) {
+          const itemLayers = getSortedLayersWithCustomFallback(itemId);
+          for (const layer of itemLayers) {
             const fileName = getItemFileName(
               itemId,
               variant,
@@ -487,10 +439,7 @@ export const exportSplitItemAnimations = async (deps = {}) => {
     });
 
     await profiler.phase("staticFiles", async () => {
-      zip.file("character.json", exportStateAsJSON(state, layers));
-      const allCredits = getAllCredits(state.selections, state.bodyType);
-      creditsFolder.file("credits.txt", creditsToTxt(allCredits));
-      creditsFolder.file("credits.csv", creditsToCsv(allCredits));
+      addCharacterJsonAndCredits(zip, creditsFolder, state, layers);
     });
 
     const metadata = {
@@ -510,17 +459,11 @@ export const exportSplitItemAnimations = async (deps = {}) => {
     };
     creditsFolder.file("metadata.json", JSON.stringify(metadata, null, 2));
 
-    let zipBlob;
-    await profiler.phase("generateZip", async () => {
-      zipBlob = await zip.generateAsync({ type: "blob" });
-    });
-    profiler.logReport();
-    const url = URL.createObjectURL(zipBlob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `lpc_${bodyType}_item_animations_${timestamp}.zip`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const zipBlob = await zipGenerateBlobWithProfiler(profiler, zip);
+    downloadZipBlob(
+      zipBlob,
+      `lpc_${bodyType}_item_animations_${timestamp}.zip`,
+    );
 
     // Report failures if any
     const failedCount = Object.values(failedStandard).reduce(
@@ -567,10 +510,7 @@ export const exportIndividualFrames = async (deps = {}) => {
   const extractFramesFromCustomAnimationFn =
     deps.extractFramesFromCustomAnimation ?? extractFramesFromCustomAnimation;
 
-  if (!window.canvasRenderer || !window.JSZip) {
-    alert("JSZip library not loaded");
-    return;
-  }
+  if (!guardZipExportEnvironment()) return;
 
   let state;
 
@@ -578,10 +518,7 @@ export const exportIndividualFrames = async (deps = {}) => {
 
   try {
     const zip = new window.JSZip();
-    const timestamp = new Date()
-      .toISOString()
-      .replace(/[:.]/g, "-")
-      .slice(0, -5);
+    const timestamp = zipExportTimestamp();
 
     state = (await import("./state.js")).state;
     state.zipIndividualFrames = state.zipIndividualFrames || {
@@ -761,10 +698,7 @@ export const exportIndividualFrames = async (deps = {}) => {
     );
 
     await profiler.phase("staticFiles", async () => {
-      zip.file("character.json", exportStateAsJSON(state, layers));
-      const allCredits = getAllCredits(state.selections, state.bodyType);
-      creditsFolder.file("credits.txt", creditsToTxt(allCredits));
-      creditsFolder.file("credits.csv", creditsToCsv(allCredits));
+      addCharacterJsonAndCredits(zip, creditsFolder, state, layers);
     });
 
     const metadata = {
@@ -788,19 +722,12 @@ export const exportIndividualFrames = async (deps = {}) => {
     };
     creditsFolder.file("metadata.json", JSON.stringify(metadata, null, 2));
 
-    // Generate and download ZIP
     debugLog("Generating ZIP file...");
-    let zipBlob;
-    await profiler.phase("generateZip", async () => {
-      zipBlob = await zip.generateAsync({ type: "blob" });
-    });
-    profiler.logReport();
-    const url = URL.createObjectURL(zipBlob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `lpc_${bodyType}_individual_frames_${timestamp}.zip`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const zipBlob = await zipGenerateBlobWithProfiler(profiler, zip);
+    downloadZipBlob(
+      zipBlob,
+      `lpc_${bodyType}_individual_frames_${timestamp}.zip`,
+    );
 
     // Report results
     const totalFailed = failedAnimations.length + failedCustom.length;

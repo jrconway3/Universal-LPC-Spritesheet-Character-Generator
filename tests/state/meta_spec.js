@@ -2,6 +2,7 @@ import {
   getLayersToLoad,
   getSortedLayers,
   getSortedLayersByAnim,
+  getSortedLayersWithCustomFallback,
   resetMetaDeps,
   setMetaDeps,
 } from "../../sources/state/meta.js";
@@ -59,6 +60,38 @@ describe("state/meta.js", () => {
       expect(getSortedLayers("itemA", true)).to.deep.equal([
         { layerNum: 2, zPos: 1 },
       ]);
+    });
+  });
+
+  describe("getSortedLayersWithCustomFallback", () => {
+    it("matches getSortedLayers when standard rows exist", () => {
+      setMetaDeps({
+        getItemMetadata: () => ({
+          layers: {
+            layer_1: {},
+            layer_2: {},
+          },
+        }),
+        getZPos: (itemId, layerNum) => layerNum * 10,
+      });
+      expect(getSortedLayersWithCustomFallback("itemA")).to.deep.equal(
+        getSortedLayers("itemA", true),
+      );
+    });
+
+    it("falls back to all layers when standardOnly would be empty", () => {
+      setMetaDeps({
+        getItemMetadata: () => ({
+          layers: {
+            layer_1: { custom_animation: "wheelchair" },
+          },
+        }),
+        getZPos: () => 100,
+      });
+      expect(getSortedLayers("itemA", true)).to.deep.equal([]);
+      expect(getSortedLayersWithCustomFallback("itemA")).to.deep.equal(
+        getSortedLayers("itemA"),
+      );
     });
   });
 

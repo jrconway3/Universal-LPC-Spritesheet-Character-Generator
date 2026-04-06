@@ -11,6 +11,8 @@ import {
   hasContentInRegion,
 } from "../canvas/canvas-utils.js";
 import { debugLog, debugWarn } from "../utils/debug.js";
+import { getAllCredits, creditsToTxt, creditsToCsv } from "./credits.js";
+import { exportStateAsJSON } from "../state/json.js";
 
 /**
  * Maps direction names to row indices on a custom-animation grid (LPC order:
@@ -330,4 +332,49 @@ export function extractFramesFromCustomAnimation(
   }
 
   return frames;
+}
+
+/** ISO-like filename token for ZIP names (no colons). */
+export function zipExportTimestamp() {
+  return new Date().toISOString().replace(/[:.]/g, "-").slice(0, -5);
+}
+
+/** @returns {boolean} */
+export function guardZipExportEnvironment() {
+  if (!window.canvasRenderer || !window.JSZip) {
+    alert("JSZip library not loaded");
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Writes `character.json` at zip root and `credits.txt` / `credits.csv` under `creditsFolder`.
+ */
+export function addCharacterJsonAndCredits(zip, creditsFolder, state, layers) {
+  zip.file("character.json", exportStateAsJSON(state, layers));
+  const allCredits = getAllCredits(state.selections, state.bodyType);
+  creditsFolder.file("credits.txt", creditsToTxt(allCredits));
+  creditsFolder.file("credits.csv", creditsToCsv(allCredits));
+}
+
+/**
+ * Runs the `generateZip` profiler phase, `generateAsync({ type: "blob" })`, and `logReport()`.
+ */
+export async function zipGenerateBlobWithProfiler(profiler, zip) {
+  let zipBlob;
+  await profiler.phase("generateZip", async () => {
+    zipBlob = await zip.generateAsync({ type: "blob" });
+  });
+  profiler.logReport();
+  return zipBlob;
+}
+
+export function downloadZipBlob(zipBlob, filename) {
+  const url = URL.createObjectURL(zipBlob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
 }
