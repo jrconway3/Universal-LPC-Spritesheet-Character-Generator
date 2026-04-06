@@ -131,8 +131,42 @@ async function runZipProfilerPhase(profiler, name, fn) {
 }
 
 /**
+ * @param {{ incrementCounter?: (n: string, d?: number) => void; addCounter?: (n: string, a: number) => void } | null | undefined} profiler
+ * @param {Blob} blob
+ */
+function zipProfilerNotePngEncode(profiler, blob) {
+  if (!profiler || !blob) return;
+  if (typeof profiler.incrementCounter === "function") {
+    profiler.incrementCounter("pngEncodeCount");
+  }
+  if (typeof profiler.addCounter === "function") {
+    profiler.addCounter("totalPngBytes", blob.size);
+  }
+}
+
+/**
+ * @param {{ incrementCounter?: (n: string, d?: number) => void } | null | undefined} profiler
+ */
+function zipProfilerNoteDrawAndSlice(profiler) {
+  if (!profiler || typeof profiler.incrementCounter !== "function") return;
+  profiler.incrementCounter("drawAndSliceCount");
+}
+
+/**
+ * @param {{ incrementCounter?: (n: string, d?: number) => void } | null | undefined} profiler
+ */
+function zipProfilerNoteZipEntry(profiler) {
+  if (!profiler || typeof profiler.incrementCounter !== "function") return;
+  profiler.incrementCounter("zipFileEntryCount");
+}
+
+/**
  * @param {{
- *   profiler?: { phase: (name: string, fn: () => void | Promise<void>) => Promise<void> };
+ *   profiler?: {
+ *     phase: (name: string, fn: () => void | Promise<void>) => Promise<void>;
+ *     incrementCounter?: (name: string, delta?: number) => void;
+ *     addCounter?: (name: string, amount: number) => void;
+ *   };
  * }} [options]
  */
 export async function addAnimationToZipFolder(
@@ -147,13 +181,18 @@ export async function addAnimationToZipFolder(
     let animCanvas;
     /** @type {Blob | undefined} */
     let blob;
-    await runZipProfilerPhase(profiler, "sliceAndPng", async () => {
+    await runZipProfilerPhase(profiler, "drawAndSlice", async () => {
       animCanvas = newAnimationFromSheet(srcCanvas, srcRect);
-      if (!animCanvas) {
-        return;
-      }
-      blob = await canvasToBlob(animCanvas);
     });
+    if (animCanvas) {
+      zipProfilerNoteDrawAndSlice(profiler);
+      await runZipProfilerPhase(profiler, "pngEncode", async () => {
+        blob = await canvasToBlob(animCanvas);
+      });
+      if (blob) {
+        zipProfilerNotePngEncode(profiler, blob);
+      }
+    }
     if (animCanvas) {
       if (blob) {
         const zipEntryName = fileName.endsWith(".png")
@@ -168,6 +207,7 @@ export async function addAnimationToZipFolder(
         await runZipProfilerPhase(profiler, "zipFile", async () => {
           folder.file(zipEntryName, blob);
         });
+        zipProfilerNoteZipEntry(profiler);
       }
       return animCanvas;
     }
@@ -194,7 +234,11 @@ export function newStandardAnimationForCustomAnimation(src, custAnim) {
  * it to a JSZip subfolder under the given filename.
  *
  * @param {{
- *   profiler?: { phase: (name: string, fn: () => void | Promise<void>) => Promise<void> };
+ *   profiler?: {
+ *     phase: (name: string, fn: () => void | Promise<void>) => Promise<void>;
+ *     incrementCounter?: (name: string, delta?: number) => void;
+ *     addCounter?: (name: string, amount: number) => void;
+ *   };
  * }} [options]
  */
 export async function addStandardAnimationToZipCustomFolder(
@@ -205,14 +249,26 @@ export async function addStandardAnimationToZipCustomFolder(
   options = {},
 ) {
   const profiler = options.profiler ?? null;
-  const custCanvas = newStandardAnimationForCustomAnimation(src, custAnim);
+  /** @type {HTMLCanvasElement | undefined} */
+  let custCanvas;
+  await runZipProfilerPhase(profiler, "drawAndSlice", async () => {
+    custCanvas = newStandardAnimationForCustomAnimation(src, custAnim);
+  });
+  if (!custCanvas) {
+    return undefined;
+  }
+  zipProfilerNoteDrawAndSlice(profiler);
   let custBlob;
-  await runZipProfilerPhase(profiler, "sliceAndPng", async () => {
+  await runZipProfilerPhase(profiler, "pngEncode", async () => {
     custBlob = await canvasToBlob(custCanvas);
   });
+  if (custBlob) {
+    zipProfilerNotePngEncode(profiler, custBlob);
+  }
   await runZipProfilerPhase(profiler, "zipFile", async () => {
     custAnimFolder.file(itemFileName, custBlob);
   });
+  zipProfilerNoteZipEntry(profiler);
   return custCanvas;
 }
 

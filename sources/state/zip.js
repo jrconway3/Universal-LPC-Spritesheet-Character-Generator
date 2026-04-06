@@ -72,9 +72,11 @@ export const exportSplitAnimations = async (deps = {}) => {
     for (const anim of animationList) {
       try {
         let animCanvas;
-        await profiler.phase("render", async () => {
-          animCanvas = extractAnimationFromCanvas(anim.value);
-        });
+        animCanvas = profiler.syncPhase(
+          "render_composite_extractAnimationFromCanvas",
+          () => extractAnimationFromCanvas(anim.value),
+        );
+        profiler.incrementCounter("renderExtractAnimationFromCanvasCalls");
         const result = await addAnimationToZipFolderFn(
           standardFolder,
           `${anim.value}.png`,
@@ -212,16 +214,16 @@ export const exportSplitItemSheets = async (deps = {}) => {
         const fileName = getItemFileName(itemId, variant, name, layer.layerNum);
         try {
           let itemCanvas;
-          await profiler.phase("render", async () => {
-            itemCanvas = await renderSingleItemFn(
-              itemId,
-              variant,
-              recolors,
-              bodyType,
-              state.selections,
-              layer.layerNum,
-            );
-          });
+          itemCanvas = await renderSingleItemFn(
+            itemId,
+            variant,
+            recolors,
+            bodyType,
+            state.selections,
+            layer.layerNum,
+            profiler,
+          );
+          profiler.incrementCounter("renderSingleItemCalls");
 
           if (itemCanvas) {
             await addAnimationToZipFolderFn(itemsFolder, fileName, itemCanvas);
@@ -360,17 +362,17 @@ export const exportSplitItemAnimations = async (deps = {}) => {
 
           try {
             let animCanvas;
-            await profiler.phase("render", async () => {
-              animCanvas = await renderSingleItemAnimationFn(
-                itemId,
-                variant,
-                recolors,
-                bodyType,
-                anim.value,
-                state.selections,
-                layer.layerNum,
-              );
-            });
+            animCanvas = await renderSingleItemAnimationFn(
+              itemId,
+              variant,
+              recolors,
+              bodyType,
+              anim.value,
+              state.selections,
+              layer.layerNum,
+              profiler,
+            );
+            profiler.incrementCounter("renderSingleItemAnimationCalls");
 
             if (animCanvas) {
               await addAnimationToZipFolderFn(animFolder, fileName, animCanvas);
@@ -412,12 +414,20 @@ export const exportSplitItemAnimations = async (deps = {}) => {
           );
           let img;
           let imgCanvas;
-          await profiler.phase("render", async () => {
-            img = await loadImageFn(spritePath, false);
-            if (!img) return;
-            imgCanvas = image2canvas(img);
-          });
-          if (!img || !imgCanvas) continue;
+          await profiler.phase(
+            "render_imageLoadDecode_customItemSprite",
+            async () => {
+              img = await loadImageFn(spritePath, false);
+            },
+          );
+          if (!img) continue;
+          await profiler.phase(
+            "render_composite_customItemSprite",
+            async () => {
+              imgCanvas = image2canvas(img);
+            },
+          );
+          if (!imgCanvas) continue;
 
           const custAnim = customAnimations[customAnimName];
           if (!custAnim)
@@ -565,122 +575,152 @@ export const exportIndividualFrames = async (deps = {}) => {
     const failedCustom = [];
     let y = SHEET_HEIGHT;
 
-    await profiler.phase("render", async () => {
-      for (const anim of ANIMATIONS) {
-        try {
-          const animationName = anim.value;
-          const animCanvas = extractAnimationFromCanvasFn(animationName, true); // Enable caching
-          if (animCanvas) {
-            animationCanvases.set(animationName, animCanvas);
-          }
-        } catch (err) {
-          console.error(`Failed to extract animation ${anim.value}:`, err);
-          failedAnimations.push(anim.value);
-        }
+    for (const anim of ANIMATIONS) {
+      try {
+        const animationName = anim.value;
+        profiler.syncPhase(
+          "render_composite_extractAnimationFromCanvas",
+          () => {
+            const animCanvas = extractAnimationFromCanvasFn(animationName);
+            if (animCanvas) {
+              animationCanvases.set(animationName, animCanvas);
+            }
+          },
+        );
+        profiler.incrementCounter("renderExtractAnimationFromCanvasCalls");
+      } catch (err) {
+        console.error(`Failed to extract animation ${anim.value}:`, err);
+        failedAnimations.push(anim.value);
       }
+    }
 
-      for (const anim of ANIMATIONS) {
-        try {
-          const animationName = anim.value;
-          const animCanvas = animationCanvases.get(animationName);
+    for (const anim of ANIMATIONS) {
+      try {
+        const animationName = anim.value;
+        const animCanvas = animationCanvases.get(animationName);
 
-          if (animCanvas) {
-            const animFolder = standardFolder.folder(animationName);
-            const frames = extractFramesFromAnimationFn(
-              animCanvas,
-              animationName,
-              directions,
-            );
+        if (animCanvas) {
+          await profiler.phase(
+            "render_composite_extractFramesFromAnimation",
+            async () => {
+              const animFolder = standardFolder.folder(animationName);
+              const frames = extractFramesFromAnimationFn(
+                animCanvas,
+                animationName,
+                directions,
+              );
 
-            for (const [direction, frameList] of Object.entries(frames)) {
-              if (frameList.length > 0) {
-                const directionFolder = animFolder.folder(direction);
+              for (const [direction, frameList] of Object.entries(frames)) {
+                if (frameList.length > 0) {
+                  const directionFolder = animFolder.folder(direction);
 
-                for (const { canvas: frameCanvas, frameNumber } of frameList) {
-                  blobTasks.push({
-                    encode: () => canvasToBlobFn(frameCanvas),
-                    folder: directionFolder,
-                    filename: `${frameNumber}.png`,
-                    debugPath: `standard/${animationName}/${direction}/${frameNumber}.png`,
-                  });
+                  for (const {
+                    canvas: frameCanvas,
+                    frameNumber,
+                  } of frameList) {
+                    blobTasks.push({
+                      encode: () => canvasToBlobFn(frameCanvas),
+                      folder: directionFolder,
+                      filename: `${frameNumber}.png`,
+                      debugPath: `standard/${animationName}/${direction}/${frameNumber}.png`,
+                    });
+                  }
                 }
               }
-            }
-            exportedAnimations.push(animationName);
-          }
-        } catch (err) {
-          console.error(
-            `Failed to process frames for animation ${anim.value}:`,
-            err,
+              exportedAnimations.push(animationName);
+            },
           );
-          failedAnimations.push(anim.value);
+          profiler.incrementCounter("extractFramesFromAnimationBatchCount");
         }
+      } catch (err) {
+        console.error(
+          `Failed to process frames for animation ${anim.value}:`,
+          err,
+        );
+        failedAnimations.push(anim.value);
       }
+    }
 
-      for (const animName of addedCustomAnimations) {
-        try {
-          const customAnimDef = customAnimations[animName];
-          if (!customAnimDef) {
-            throw new Error("Custom animation definition not found");
-          }
+    for (const animName of addedCustomAnimations) {
+      try {
+        const customAnimDef = customAnimations[animName];
+        if (!customAnimDef) {
+          throw new Error("Custom animation definition not found");
+        }
 
-          const custSize = customAnimationSize(customAnimDef);
-          const srcRect = { x: 0, y, ...custSize };
+        const custSize = customAnimationSize(customAnimDef);
+        const srcRect = { x: 0, y, ...custSize };
 
-          debugLog(`Processing custom animation: ${animName}`, {
-            frameSize: customAnimDef.frameSize,
-            frames: customAnimDef.frames,
-            srcRect: srcRect,
-          });
+        debugLog(`Processing custom animation: ${animName}`, {
+          frameSize: customAnimDef.frameSize,
+          frames: customAnimDef.frames,
+          srcRect: srcRect,
+        });
 
-          const custAnimCanvas = sliceCanvasForCustomAnim(canvas, srcRect);
-          if (custAnimCanvas) {
-            const animFolder = customFolder.folder(animName);
-            const frames = extractFramesFromCustomAnimationFn(
-              custAnimCanvas,
-              customAnimDef,
-              directions,
-            );
+        /** @type {HTMLCanvasElement | null | undefined} */
+        let custAnimCanvas;
+        profiler.syncPhase("render_composite_sliceCanvasForCustomAnim", () => {
+          custAnimCanvas = sliceCanvasForCustomAnim(canvas, srcRect);
+        });
+        if (custAnimCanvas) {
+          profiler.syncPhase(
+            "render_composite_extractFramesFromCustomAnimation",
+            () => {
+              const animFolder = customFolder.folder(animName);
+              const frames = extractFramesFromCustomAnimationFn(
+                custAnimCanvas,
+                customAnimDef,
+                directions,
+              );
 
-            debugLog(`Extracted frames for ${animName}:`, frames);
+              debugLog(`Extracted frames for ${animName}:`, frames);
 
-            for (const [direction, frameList] of Object.entries(frames)) {
-              if (frameList.length > 0) {
-                const directionFolder = animFolder.folder(direction);
+              for (const [direction, frameList] of Object.entries(frames)) {
+                if (frameList.length > 0) {
+                  const directionFolder = animFolder.folder(direction);
 
-                for (const { canvas: frameCanvas, frameNumber } of frameList) {
-                  blobTasks.push({
-                    encode: () => canvasToBlobFn(frameCanvas),
-                    folder: directionFolder,
-                    filename: `${frameNumber}.png`,
-                    debugPath: `custom/${animName}/${direction}/${frameNumber}.png`,
-                  });
+                  for (const {
+                    canvas: frameCanvas,
+                    frameNumber,
+                  } of frameList) {
+                    blobTasks.push({
+                      encode: () => canvasToBlobFn(frameCanvas),
+                      folder: directionFolder,
+                      filename: `${frameNumber}.png`,
+                      debugPath: `custom/${animName}/${direction}/${frameNumber}.png`,
+                    });
+                  }
                 }
               }
-            }
-            exportedCustom.push(animName);
-          } else {
-            debugWarn(`No canvas generated for custom animation: ${animName}`);
-          }
-
-          y += srcRect.height;
-        } catch (err) {
-          console.error(
-            `Failed to export frames for custom animation ${animName}:`,
-            err,
+              exportedCustom.push(animName);
+            },
           );
-          failedCustom.push(animName);
+          profiler.incrementCounter("renderSliceCanvasForCustomAnimCalls");
+        } else {
+          debugWarn(`No canvas generated for custom animation: ${animName}`);
         }
+
+        y += srcRect.height;
+      } catch (err) {
+        console.error(
+          `Failed to export frames for custom animation ${animName}:`,
+          err,
+        );
+        failedCustom.push(animName);
       }
-    });
+    }
 
     debugLog(`Converting ${blobTasks.length} frames to blobs...`);
     let blobResults;
-    await profiler.phase("sliceAndPng", async () => {
+    await profiler.phase("pngEncode", async () => {
       blobResults = await Promise.all(
         blobTasks.map(async (task) => {
           try {
             const blob = await task.encode();
+            if (blob) {
+              profiler.incrementCounter("pngEncodeCount");
+              profiler.addCounter("totalPngBytes", blob.size);
+            }
             return { ...task, blob, success: true };
           } catch (err) {
             console.error(`Failed to create blob for ${task.debugPath}:`, err);
@@ -695,6 +735,7 @@ export const exportIndividualFrames = async (deps = {}) => {
       for (const result of blobResults) {
         if (result.success && result.blob) {
           result.folder.file(result.filename, result.blob);
+          profiler.incrementCounter("zipFileEntryCount");
           successCount++;
           debugLog(`Added frame: ${result.debugPath}`);
         }

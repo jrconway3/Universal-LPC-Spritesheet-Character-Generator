@@ -22,7 +22,9 @@ import {
  * Usage (ZIP export):
  *   import { createZipExportProfiler } from './performance-profiler.js';
  *   const zipProfiler = createZipExportProfiler('splitAnimations');
- *   await zipProfiler.phase('render', async () => { ... });
+ *   await zipProfiler.phase('drawAndSlice', async () => { ... });
+ *   zipProfiler.syncPhase('render_composite_extractAnimationFromCanvas', () => { ... });
+ *   zipProfiler.incrementCounter('pngEncodeCount');
  */
 
 export class PerformanceProfiler {
@@ -302,6 +304,19 @@ function zipProfilerRoundMs(ms) {
   return Math.round(ms * 10) / 10;
 }
 
+/** Default keys so ZIP profile JSON has a stable `counters` shape (zeros omitted until first increment). */
+const ZIP_EXPORT_COUNTER_KEYS = [
+  "pngEncodeCount",
+  "totalPngBytes",
+  "drawAndSliceCount",
+  "zipFileEntryCount",
+  "renderExtractAnimationFromCanvasCalls",
+  "renderSingleItemCalls",
+  "renderSingleItemAnimationCalls",
+  "extractFramesFromAnimationBatchCount",
+  "renderSliceCanvasForCustomAnimCalls",
+];
+
 /**
  * High-resolution phase timings for ZIP export. Safe in tests (no User Timing side effects unless DEBUG).
  *
@@ -311,6 +326,8 @@ export function createZipExportProfiler(exportKind) {
   const t0 = zipProfilerNowMs();
   /** @type {Record<string, number>} */
   const phases = {};
+  /** @type {Record<string, number>} */
+  const counters = {};
 
   function userMark(suffix) {
     if (
@@ -344,6 +361,41 @@ export function createZipExportProfiler(exportKind) {
     }
   }
 
+  /**
+   * Like {@link phase} but for synchronous work (no `await` inside `fn`).
+   * @template T
+   * @param {string} name
+   * @param {() => T} fn
+   * @returns {T}
+   */
+  function syncPhase(name, fn) {
+    const start = zipProfilerNowMs();
+    userMark(`${name}-start`);
+    try {
+      return fn();
+    } finally {
+      const elapsed = zipProfilerNowMs() - start;
+      phases[name] = (phases[name] ?? 0) + elapsed;
+      userMark(`${name}-end`);
+    }
+  }
+
+  /**
+   * @param {string} name
+   * @param {number} [delta]
+   */
+  function incrementCounter(name, delta = 1) {
+    counters[name] = (counters[name] ?? 0) + delta;
+  }
+
+  /**
+   * @param {string} name
+   * @param {number} amount
+   */
+  function addCounter(name, amount) {
+    counters[name] = (counters[name] ?? 0) + amount;
+  }
+
   function totalMs() {
     return zipProfilerNowMs() - t0;
   }
@@ -357,11 +409,19 @@ export function createZipExportProfiler(exportKind) {
     for (const [k, v] of Object.entries(phases)) {
       phasesRounded[k] = zipProfilerRoundMs(v);
     }
+    const countersOut = {};
+    for (const k of ZIP_EXPORT_COUNTER_KEYS) {
+      countersOut[k] = 0;
+    }
+    for (const [k, v] of Object.entries(counters)) {
+      countersOut[k] = Number.isInteger(v) ? v : zipProfilerRoundMs(v);
+    }
     return {
       exportKind,
       /** Wall time for recorded phases only (typically everything except JSZip compression). */
       totalMs: zipProfilerRoundMs(totalMs()),
       phasesMs: phasesRounded,
+      counters: countersOut,
       userAgent:
         typeof navigator !== "undefined" ? navigator.userAgent : undefined,
     };
@@ -378,8 +438,23 @@ export function createZipExportProfiler(exportKind) {
     }));
     rows.sort((a, b) => b.ms - a.ms);
     debugTable(rows);
+    if (meta.counters && Object.keys(meta.counters).length > 0) {
+      const cRows = Object.entries(meta.counters).map(([name, value]) => ({
+        counter: name,
+        value,
+      }));
+      cRows.sort((a, b) => a.counter.localeCompare(b.counter));
+      debugTable(cRows);
+    }
     debugGroupEnd();
   }
 
-  return { phase, toMetadata, logReport };
+  return {
+    phase,
+    syncPhase,
+    incrementCounter,
+    addCounter,
+    toMetadata,
+    logReport,
+  };
 }

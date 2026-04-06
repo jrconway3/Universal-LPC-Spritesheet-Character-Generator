@@ -100,6 +100,7 @@ describe("performance-profiler.js", () => {
       expect(meta.exportKind).to.equal("splitAnimations");
       expect(meta.phasesMs.alpha).to.be.at.least(0);
       expect(meta.phasesMs.beta).to.be.at.least(0);
+      expect(meta.counters).to.be.an("object");
       expect(meta.totalMs).to.be.at.least(
         meta.phasesMs.alpha + meta.phasesMs.beta - 0.1,
       );
@@ -140,6 +141,21 @@ describe("performance-profiler.js", () => {
         groupSpy.restore();
         window.DEBUG = prev;
       }
+    });
+
+    it("syncPhase and counters accumulate into toMetadata()", () => {
+      const z = createZipExportProfiler("splitAnimations");
+      z.syncPhase("render_composite_extractAnimationFromCanvas", () => {
+        cpuWork(200_000);
+      });
+      z.incrementCounter("pngEncodeCount", 2);
+      z.addCounter("totalPngBytes", 100);
+      const meta = z.toMetadata();
+      expect(
+        meta.phasesMs.render_composite_extractAnimationFromCanvas,
+      ).to.be.at.least(0);
+      expect(meta.counters.pngEncodeCount).to.equal(2);
+      expect(meta.counters.totalPngBytes).to.equal(100);
     });
 
     it("logReport() groups and tables when window.DEBUG is true", async () => {
