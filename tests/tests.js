@@ -27,6 +27,7 @@ import "./utils/fileName_spec.js";
 import "./utils/helpers_spec.js";
 import "./utils/credits_spec.js";
 import "./utils/zip-helpers_spec.js";
+import "./utils/zip-export-ui-suspend_spec.js";
 import "./state/zip_spec.js";
 import "./state/zip-issue-382_spec.js";
 import "./performance-profiler_spec.js";

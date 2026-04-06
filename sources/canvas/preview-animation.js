@@ -170,13 +170,16 @@ export function startPreviewAnimation() {
 }
 
 /**
- * Stop the preview animation loop
+ * Stop the preview animation loop.
+ * @returns {boolean} true if a running loop was stopped
  */
 export function stopPreviewAnimation() {
   if (animationFrameId !== null) {
     cancelAnimationFrame(animationFrameId);
     animationFrameId = null;
+    return true;
   }
+  return false;
 }
 
 /**

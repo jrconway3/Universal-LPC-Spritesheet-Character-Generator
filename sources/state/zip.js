@@ -29,6 +29,10 @@ import {
 } from "../utils/zip-helpers.js";
 import { debugLog, debugWarn } from "../utils/debug.js";
 import { createZipExportProfiler } from "../performance-profiler.js";
+import {
+  beginZipExportUiSuspend,
+  endZipExportUiSuspend,
+} from "../utils/zip-export-ui-suspend.js";
 
 /**
  * ZIP download pack exports. Each flow uses `createZipExportProfiler` (see
@@ -66,6 +70,7 @@ export const exportSplitAnimations = async (deps = {}) => {
     state = (await import("./state.js")).state; // Ensure state is loaded
     state.zipByAnimation.isRunning = true;
     m.redraw();
+    beginZipExportUiSuspend();
     const bodyType = state.bodyType;
 
     // Create folder structure to match original
@@ -169,6 +174,7 @@ export const exportSplitAnimations = async (deps = {}) => {
     console.error("Export failed:", err);
     alert(`Export failed: ${err.message}`);
   } finally {
+    endZipExportUiSuspend();
     state.zipByAnimation.isRunning = false;
     m.redraw();
   }
@@ -201,6 +207,7 @@ export const exportSplitItemSheets = async (deps = {}) => {
     state = (await import("./state.js")).state; // Ensure state is loaded
     state.zipByItem.isRunning = true;
     m.redraw();
+    beginZipExportUiSuspend();
     const bodyType = state.bodyType;
 
     // Create folder structure
@@ -268,6 +275,7 @@ export const exportSplitItemSheets = async (deps = {}) => {
     console.error("Export failed:", err);
     alert(`Export failed: ${err.message}`);
   } finally {
+    endZipExportUiSuspend();
     state.zipByItem.isRunning = false;
     m.redraw();
   }
@@ -320,6 +328,7 @@ export const exportSplitItemAnimations = async (deps = {}) => {
     state = (await import("./state.js")).state; // Ensure state is loaded
     state.zipByAnimimationAndItem.isRunning = true;
     m.redraw();
+    beginZipExportUiSuspend();
     const bodyType = state.bodyType;
 
     // Create folder structure
@@ -520,6 +529,7 @@ export const exportSplitItemAnimations = async (deps = {}) => {
     console.error("Export failed:", err);
     alert(`Export failed: ${err.message}`);
   } finally {
+    endZipExportUiSuspend();
     state.zipByAnimimationAndItem.isRunning = false;
     m.redraw();
   }
@@ -566,6 +576,7 @@ export const exportIndividualFrames = async (deps = {}) => {
     };
     state.zipIndividualFrames.isRunning = true;
     m.redraw();
+    beginZipExportUiSuspend();
     const bodyType = state.bodyType;
 
     // Create folder structure
@@ -805,6 +816,7 @@ export const exportIndividualFrames = async (deps = {}) => {
     console.error("Individual frames export failed:", err);
     alert(`Export failed: ${err.message}`);
   } finally {
+    endZipExportUiSuspend();
     if (state && state.zipIndividualFrames) {
       state.zipIndividualFrames.isRunning = false;
     }
