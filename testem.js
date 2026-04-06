@@ -16,7 +16,11 @@ let testemConfig = {
   debug: true,
   disable_watching: true,
   launch_in_ci: ["Chrome", "Firefox"],
-  launch_in_dev: ["Chrome", "Firefox", "Safari"],
+  launch_in_dev: [
+    "Chrome",
+    "Firefox",
+    ...(process.platform === "darwin" ? ["Safari"] : []),
+  ],
   browser_start_timeout: 30,
   browser_args: {
     Chrome: {
@@ -60,5 +64,19 @@ let testemConfig = {
     },
   },
 };
+
+// Testem's stock Safari launcher opens a temp start.html via file://, which triggers macOS/Safari
+// prompts. Launch the Testem HTTP URL with `open` instead.
+if (process.platform === "darwin") {
+  testemConfig.launchers = {
+    Safari: {
+      protocol: "browser",
+      exe: "/usr/bin/open",
+      args(_config, url) {
+        return ["-a", "Safari", url];
+      },
+    },
+  };
+}
 
 module.exports = testemConfig;
