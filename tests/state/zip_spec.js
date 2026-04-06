@@ -24,74 +24,16 @@ import {
 import { resetState } from "../../sources/state/hash.js";
 import { state } from "../../sources/state/state.js";
 import { ANIMATIONS } from "../../sources/state/constants.js";
+import { createFakeJSZip } from "../helpers/fake-jszip.js";
 
 /**
- * @param {{
- *   failStandardFileAfter?: number;
- *   failStandardTreeAfter?: number;
- *   failItemsFileAfter?: number;
- * }} opts
- * If failStandardFileAfter is set, the Nth successful write under standard/ throws (simulates ZIP errors).
- * If failStandardTreeAfter is set, the Nth successful write under standard/ or standard/<anim>/ throws.
- * If failItemsFileAfter is set, the Nth successful write under items/ throws.
+ * `noExport` on an entry in ANIMATIONS is handled differently per export:
+ * - `exportSplitItemAnimations` skips `anim.noExport` (no `standard/<anim>/` tree for that id).
+ * - `exportSplitAnimations` and `exportIndividualFrames` iterate every ANIMATIONS entry and do not
+ *   skip `noExport` (e.g. `watering`, `1h_slash` are still exported).
+ * It is unclear whether `noExport` should be applied consistently across all ZIP exports; for now
+ * tests document the current behavior above.
  */
-function createFakeJSZip(opts = {}) {
-  const files = new Map();
-  let standardFileCount = 0;
-  let standardTreeWrites = 0;
-  let itemsFileCount = 0;
-
-  function makeFolder(name, parentPath = "") {
-    const fullPath = parentPath ? `${parentPath}/${name}` : name;
-    return {
-      root: `${fullPath}/`,
-      file(filename, data) {
-        if (
-          fullPath === "standard" &&
-          typeof opts.failStandardFileAfter === "number"
-        ) {
-          standardFileCount += 1;
-          if (standardFileCount > opts.failStandardFileAfter) {
-            throw new Error("simulated zip write failure");
-          }
-        }
-        if (
-          fullPath.startsWith("standard") &&
-          typeof opts.failStandardTreeAfter === "number"
-        ) {
-          standardTreeWrites += 1;
-          if (standardTreeWrites > opts.failStandardTreeAfter) {
-            throw new Error("simulated zip write failure");
-          }
-        }
-        if (
-          fullPath === "items" &&
-          typeof opts.failItemsFileAfter === "number"
-        ) {
-          itemsFileCount += 1;
-          if (itemsFileCount > opts.failItemsFileAfter) {
-            throw new Error("simulated zip write failure");
-          }
-        }
-        files.set(`${fullPath}/${filename}`, data);
-      },
-      folder(sub) {
-        return makeFolder(sub, fullPath);
-      },
-    };
-  }
-
-  return {
-    files,
-    file(name, data) {
-      files.set(name, data);
-    },
-    folder(name) {
-      return makeFolder(name);
-    },
-    generateAsync: async () => new Blob([]),
-  };
-}
 
 /** Minimal metadata so getSortedLayers / getItemFileName work when global itemMetadata was cleared by other specs. */
 const ZIP_SPEC_ITEM_METADATA = {
@@ -256,6 +198,58 @@ describe("state/zip.js", () => {
       );
       expect(alertStub.called).to.be.true;
     });
+
+    it("noExport: still writes flat standard PNGs for animations marked noExport (e.g. watering, 1h_slash)", async () => {
+      await exportSplitAnimations();
+
+      expect(fakeZip.files.get("standard/watering.png")).to.exist;
+      expect(fakeZip.files.get("standard/1h_slash.png")).to.exist;
+    });
+
+    it("includes character.json, credits credits.txt/credits.csv, and credits/metadata.json", async () => {
+      await exportSplitAnimations();
+
+      expect(fakeZip.files.get("character.json")).to.exist;
+      expect(fakeZip.files.get("credits/credits.txt")).to.exist;
+      expect(fakeZip.files.get("credits/credits.csv")).to.exist;
+      expect(fakeZip.files.get("credits/metadata.json")).to.exist;
+    });
+
+    it("calls addAnimationToZipFolder for custom/<name>.png when addedCustomAnimations is non-empty after renderCharacter", async () => {
+      window.itemMetadata = {
+        ...(window.itemMetadata || {}),
+        ...ZIP_SPEC_ITEM_METADATA,
+      };
+      state.selections = {
+        body: {
+          itemId: "body",
+          variant: "light",
+          name: "Body color (light)",
+        },
+        head: {
+          itemId: "heads_human_male",
+          variant: "light",
+          name: "Human male (light)",
+        },
+        weapon: {
+          itemId: "longsword",
+          variant: "longsword",
+          name: "Longsword (longsword)",
+        },
+      };
+
+      const addSpy = sinon.spy(addAnimationToZipFolder);
+
+      await renderCharacter(state.selections, "male");
+      await exportSplitAnimations({ addAnimationToZipFolder: addSpy });
+
+      const customPng = addSpy
+        .getCalls()
+        .find(
+          (c) => c.args[0]?.root === "custom/" && c.args[1] === "walk_128.png",
+        );
+      expect(customPng, "custom walk_128 export should be attempted").to.exist;
+    });
   });
 
   describe("exportSplitItemSheets", () => {
@@ -384,6 +378,19 @@ describe("state/zip.js", () => {
 
       expect(fakeZip.files.get(`items/${expectedFileName}`)).to.exist;
       expect(alertStub.calledWith("Export complete!")).to.be.true;
+    });
+
+    it("includes character.json and credits credits.txt/credits.csv but not credits/metadata.json", async () => {
+      const renderStub = sandbox.stub().resolves(nonEmptyItemCanvas());
+
+      await exportSplitItemSheets({
+        renderSingleItem: renderStub,
+      });
+
+      expect(fakeZip.files.get("character.json")).to.exist;
+      expect(fakeZip.files.get("credits/credits.txt")).to.exist;
+      expect(fakeZip.files.get("credits/credits.csv")).to.exist;
+      expect(fakeZip.files.get("credits/metadata.json")).to.equal(undefined);
     });
 
     it("records later item layers as failed when items/ write fails after prior successes", async () => {
@@ -672,6 +679,77 @@ describe("state/zip.js", () => {
       ]);
       expect(metadata.standardAnimations.failed.walk).to.deep.equal([]);
       expect(alertStub.calledWith("Export complete!")).to.be.true;
+    });
+
+    it("noExport: does not create standard/<anim>/ trees for animations marked noExport (e.g. watering, 1h_slash)", async () => {
+      const renderStub = sandbox.stub().resolves(nonEmptyAnimCanvas());
+
+      await exportSplitItemAnimations({
+        renderSingleItemAnimation: renderStub,
+      });
+
+      const keys = [...fakeZip.files.keys()];
+      expect(keys.some((k) => k.startsWith("standard/watering/"))).to.be.false;
+      expect(keys.some((k) => k.startsWith("standard/1h_slash/"))).to.be.false;
+      expect(keys.some((k) => k.startsWith("standard/walk/"))).to.be.true;
+    });
+
+    it("includes character.json, credits credits.txt/credits.csv, and credits/metadata.json", async () => {
+      const renderStub = sandbox.stub().resolves(nonEmptyAnimCanvas());
+
+      await exportSplitItemAnimations({
+        renderSingleItemAnimation: renderStub,
+      });
+
+      expect(fakeZip.files.get("character.json")).to.exist;
+      expect(fakeZip.files.get("credits/credits.txt")).to.exist;
+      expect(fakeZip.files.get("credits/credits.csv")).to.exist;
+      expect(fakeZip.files.get("credits/metadata.json")).to.exist;
+    });
+
+    it("records failed custom item in metadata when a second write under custom/ throws", async () => {
+      state.selections = {
+        body: {
+          itemId: "body",
+          variant: "light",
+          name: "Body color (light)",
+        },
+        head: {
+          itemId: "heads_human_male",
+          variant: "light",
+          name: "Human male (light)",
+        },
+        weapon: {
+          itemId: "longsword",
+          variant: "longsword",
+          name: "Longsword (longsword)",
+        },
+      };
+
+      window.JSZip = function FakeJSZip() {
+        fakeZip = createFakeJSZip({ failCustomTreeAfter: 1 });
+        return fakeZip;
+      };
+
+      const loadImageStub = sandbox.stub().resolves(nonEmptyAnimCanvas());
+
+      await renderCharacter(state.selections, "male");
+      await exportSplitItemAnimations({
+        loadImage: loadImageStub,
+      });
+
+      const metadataEntry = fakeZip.files.get("credits/metadata.json");
+      const metadata = JSON.parse(metadataEntry);
+      const failedWalk = metadata.customAnimations.failed.walk_128;
+      expect(
+        failedWalk,
+        "metadata should record a failed custom layer",
+      ).to.be.an("array").that.is.not.empty;
+      const exportedWalk = metadata.customAnimations.exported.walk_128;
+      expect(
+        exportedWalk,
+        "at least one custom layer should succeed first",
+      ).to.be.an("array").that.is.not.empty;
     });
 
     it("records failed item layers in metadata when a write under standard/<anim>/ fails after prior successes", async () => {
@@ -1011,6 +1089,81 @@ describe("state/zip.js", () => {
         );
       expect(issueAlert, "partial failure alert").to.exist;
       expect(String(issueAlert.args[0])).to.include("thrust");
+    });
+
+    it("noExport: still writes per-frame paths under standard/<anim>/ for animations marked noExport", async () => {
+      const extractStub = sandbox.stub().callsFake(() => smallAnimCanvas());
+      const framesSpy = sinon.spy(() => {
+        const fc = frameCanvas();
+        return { up: [{ canvas: fc, frameNumber: 0 }] };
+      });
+
+      await exportIndividualFrames({
+        extractAnimationFromCanvas: extractStub,
+        extractFramesFromAnimation: framesSpy,
+      });
+
+      expect(fakeZip.files.get("standard/watering/up/0.png")).to.exist;
+      expect(fakeZip.files.get("standard/1h_slash/up/0.png")).to.exist;
+    });
+
+    it("includes character.json, credits credits.txt/credits.csv, and credits/metadata.json", async () => {
+      const extractStub = sandbox.stub().callsFake(() => smallAnimCanvas());
+      const framesFake = sinon.spy(() => ({}));
+
+      await exportIndividualFrames({
+        extractAnimationFromCanvas: extractStub,
+        extractFramesFromAnimation: framesFake,
+      });
+
+      expect(fakeZip.files.get("character.json")).to.exist;
+      expect(fakeZip.files.get("credits/credits.txt")).to.exist;
+      expect(fakeZip.files.get("credits/credits.csv")).to.exist;
+      expect(fakeZip.files.get("credits/metadata.json")).to.exist;
+    });
+
+    it("writes custom frame paths under custom/walk_128/ when renderCharacter adds that custom animation", async () => {
+      window.itemMetadata = {
+        ...(window.itemMetadata || {}),
+        ...ZIP_SPEC_ITEM_METADATA,
+      };
+      state.selections = {
+        body: {
+          itemId: "body",
+          variant: "light",
+          name: "Body color (light)",
+        },
+        head: {
+          itemId: "heads_human_male",
+          variant: "light",
+          name: "Human male (light)",
+        },
+        weapon: {
+          itemId: "longsword",
+          variant: "longsword",
+          name: "Longsword (longsword)",
+        },
+      };
+
+      await renderCharacter(state.selections, "male");
+
+      const extractStub = sandbox.stub().callsFake(() => smallAnimCanvas());
+      const framesStub = sinon.stub().returns({});
+      const extractCustomStub = sinon.stub().callsFake(() => ({
+        up: [{ canvas: frameCanvas(), frameNumber: 1 }],
+      }));
+
+      await exportIndividualFrames({
+        extractAnimationFromCanvas: extractStub,
+        extractFramesFromAnimation: framesStub,
+        extractFramesFromCustomAnimation: extractCustomStub,
+        newAnimationFromSheet: () => smallAnimCanvas(),
+        canvasToBlob: () => Promise.resolve(new Blob(["x"])),
+      });
+
+      expect(fakeZip.files.get("custom/walk_128/up/1.png")).to.exist;
+      const metadata = JSON.parse(fakeZip.files.get("credits/metadata.json"));
+      expect(metadata.structure.custom.exported).to.include("walk_128");
     });
   });
 });

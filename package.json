@@ -11,7 +11,8 @@
     "test": "testem ci",
     "test:server": "testem",
     "test:visual": "playwright test",
-    "test:visual:headed": "playwright test --headed"
+    "test:visual:headed": "playwright test --headed",
+    "fixture:issue382": "node scripts/fixture-builder.js"
   },
   "devDependencies": {
     "@argos-ci/playwright": "^6.6.1",
