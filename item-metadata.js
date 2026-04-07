@@ -2771,7 +2771,7 @@ window.itemMetadata = {
         "notes": "minor edits by bluecarrot16, reduced colors by Napsio, adjusted Male colors and Idle/Sit/Emote/Climb by JaidynReiman",
         "authors": [
           "Johannes Sjölund (wulax)",
-          "Napsio",
+          "Napsio (Vitruvian Studio)",
           "JaidynReiman"
         ],
         "licenses": [
@@ -41046,16 +41046,7 @@ window.itemMetadata = {
       "torso_armour_plate"
     ],
     "replace_in_path": {},
-    "variants": [
-      "steel",
-      "iron",
-      "ceramic",
-      "brass",
-      "copper",
-      "bronze",
-      "silver",
-      "gold"
-    ],
+    "variants": [],
     "layers": {
       "layer_1": {
         "zPos": 60,
@@ -41067,9 +41058,13 @@ window.itemMetadata = {
     "credits": [
       {
         "file": "torso/armour/plate/male",
-        "notes": "original by wulax, recolor by bigbeargames, color reduced to 7 colors and adapted to v3 bases by bluecarrot16, run/jump/sit/climb/revised combat by JaidynReiman",
+        "notes": "original by wulax, recolor by bigbeargames, color reduced to 7 colors and adapted to v3 bases by bluecarrot16, run/jump/sit/climb/revised combat by JaidynReiman, reduced colors to 6 (based on Napsio's Vitruvian)",
         "authors": [
-          "JaidynReiman, bluecarrot16, Michael Whitlock (bigbeargames), Johannes Sjölund (wulax)"
+          "Napsio (Vitruvian Studio)",
+          "JaidynReiman",
+          "bluecarrot16",
+          "Michael Whitlock (bigbeargames)",
+          "Johannes Sjölund (wulax)"
         ],
         "licenses": [
           "OGA-BY 3.0",
@@ -41083,7 +41078,7 @@ window.itemMetadata = {
       },
       {
         "file": "torso/armour/plate/female",
-        "notes": "original by wulax, adapted to female base by makrohn, recolor by bigbeargames, color reduced to 7 colors and adapted to v3 bases by bluecarrot16, run/jump/sit/climb/revised combat by JaidynReiman",
+        "notes": "original by wulax, adapted to female base by makrohn, recolor by bigbeargames, color reduced to 7 colors and adapted to v3 bases by bluecarrot16, run/jump/sit/climb/revised combat by JaidynReiman, reduced colors to 6 (based on Napsio's Vitruvian)",
         "authors": [
           "JaidynReiman",
           "bluecarrot16",
@@ -41127,7 +41122,205 @@ window.itemMetadata = {
     "preview_x_offset": 0,
     "preview_y_offset": 0,
     "matchBodyColor": false,
-    "recolors": [],
+    "recolors": [
+      {
+        "material": "metal",
+        "palettes": {
+          "metal.ulpc": [
+            "ceramic",
+            "brass",
+            "copper",
+            "bronze",
+            "iron",
+            "steel",
+            "silver",
+            "gold"
+          ],
+          "metal.lpcr": [
+            "brass",
+            "copper",
+            "bronze",
+            "iron",
+            "steel",
+            "silver",
+            "gold"
+          ],
+          "all.lpcr": [
+            "ivory",
+            "porcelain",
+            "peach",
+            "tan",
+            "tawny",
+            "honey",
+            "bronze",
+            "brown",
+            "coffee",
+            "aegean",
+            "amber",
+            "amethyst",
+            "apple",
+            "apricot",
+            "azure",
+            "beige",
+            "black",
+            "blue",
+            "blue_violet",
+            "cerise",
+            "cerulean",
+            "charcoal",
+            "chocolate",
+            "coral",
+            "cornflower",
+            "cyan",
+            "denim",
+            "dove",
+            "emerald",
+            "fern",
+            "forest",
+            "garnet",
+            "gray",
+            "green",
+            "heather",
+            "ice",
+            "indigo",
+            "lavender",
+            "leather",
+            "lemon",
+            "linen",
+            "mauve",
+            "midnight",
+            "mint",
+            "mustard",
+            "navy",
+            "neptune",
+            "oak",
+            "ochre",
+            "olivine",
+            "orange",
+            "pearl",
+            "periwinkle",
+            "pink",
+            "plum",
+            "powder",
+            "purple",
+            "red",
+            "red_orange",
+            "royal",
+            "salmon",
+            "sepia",
+            "shadow",
+            "silver",
+            "sky",
+            "smoke",
+            "soot",
+            "spring",
+            "swamp",
+            "teal",
+            "tumeric",
+            "umber",
+            "white",
+            "wine",
+            "yellow"
+          ]
+        },
+        "default": "ulpc",
+        "type_name": null,
+        "label": "Metal",
+        "base": "ulpc.steel",
+        "variants": [
+          "ceramic",
+          "brass",
+          "copper",
+          "bronze",
+          "iron",
+          "steel",
+          "silver",
+          "gold",
+          "lpcr.brass",
+          "lpcr.copper",
+          "lpcr.bronze",
+          "lpcr.iron",
+          "lpcr.steel",
+          "lpcr.silver",
+          "lpcr.gold",
+          "all.lpcr.ivory",
+          "all.lpcr.porcelain",
+          "all.lpcr.peach",
+          "all.lpcr.tan",
+          "all.lpcr.tawny",
+          "all.lpcr.honey",
+          "all.lpcr.bronze",
+          "all.lpcr.brown",
+          "all.lpcr.coffee",
+          "all.lpcr.aegean",
+          "all.lpcr.amber",
+          "all.lpcr.amethyst",
+          "all.lpcr.apple",
+          "all.lpcr.apricot",
+          "all.lpcr.azure",
+          "all.lpcr.beige",
+          "all.lpcr.black",
+          "all.lpcr.blue",
+          "all.lpcr.blue_violet",
+          "all.lpcr.cerise",
+          "all.lpcr.cerulean",
+          "all.lpcr.charcoal",
+          "all.lpcr.chocolate",
+          "all.lpcr.coral",
+          "all.lpcr.cornflower",
+          "all.lpcr.cyan",
+          "all.lpcr.denim",
+          "all.lpcr.dove",
+          "all.lpcr.emerald",
+          "all.lpcr.fern",
+          "all.lpcr.forest",
+          "all.lpcr.garnet",
+          "all.lpcr.gray",
+          "all.lpcr.green",
+          "all.lpcr.heather",
+          "all.lpcr.ice",
+          "all.lpcr.indigo",
+          "all.lpcr.lavender",
+          "all.lpcr.leather",
+          "all.lpcr.lemon",
+          "all.lpcr.linen",
+          "all.lpcr.mauve",
+          "all.lpcr.midnight",
+          "all.lpcr.mint",
+          "all.lpcr.mustard",
+          "all.lpcr.navy",
+          "all.lpcr.neptune",
+          "all.lpcr.oak",
+          "all.lpcr.ochre",
+          "all.lpcr.olivine",
+          "all.lpcr.orange",
+          "all.lpcr.pearl",
+          "all.lpcr.periwinkle",
+          "all.lpcr.pink",
+          "all.lpcr.plum",
+          "all.lpcr.powder",
+          "all.lpcr.purple",
+          "all.lpcr.red",
+          "all.lpcr.red_orange",
+          "all.lpcr.royal",
+          "all.lpcr.salmon",
+          "all.lpcr.sepia",
+          "all.lpcr.shadow",
+          "all.lpcr.silver",
+          "all.lpcr.sky",
+          "all.lpcr.smoke",
+          "all.lpcr.soot",
+          "all.lpcr.spring",
+          "all.lpcr.swamp",
+          "all.lpcr.teal",
+          "all.lpcr.tumeric",
+          "all.lpcr.umber",
+          "all.lpcr.white",
+          "all.lpcr.wine",
+          "all.lpcr.yellow"
+        ]
+      }
+    ],
     "licenses": {
       "male": [
         "OGA-BY 3.0",
@@ -59369,7 +59562,7 @@ window.itemMetadata = {
         "authors": [
           "bluecarrot16",
           "Stephen Challener (Redshrike)",
-          "Napsio",
+          "Napsio (Vitruvian Studio)",
           "JaidynReiman"
         ],
         "licenses": [
@@ -59688,7 +59881,7 @@ window.itemMetadata = {
         "authors": [
           "bluecarrot16",
           "Stephen Challener (Redshrike)",
-          "Napsio",
+          "Napsio (Vitruvian Studio)",
           "JaidynReiman"
         ],
         "licenses": [
@@ -60657,7 +60850,7 @@ window.itemMetadata = {
         "authors": [
           "bluecarrot16",
           "Stephen Challener (Redshrike)",
-          "Napsio",
+          "Napsio (Vitruvian Studio)",
           "JaidynReiman"
         ],
         "licenses": [
@@ -60976,7 +61169,7 @@ window.itemMetadata = {
         "authors": [
           "bluecarrot16",
           "Stephen Challener (Redshrike)",
-          "Napsio",
+          "Napsio (Vitruvian Studio)",
           "JaidynReiman"
         ],
         "licenses": [
@@ -61307,7 +61500,7 @@ window.itemMetadata = {
         "authors": [
           "bluecarrot16",
           "Stephen Challener (Redshrike)",
-          "Napsio",
+          "Napsio (Vitruvian Studio)",
           "JaidynReiman"
         ],
         "licenses": [
@@ -61626,7 +61819,7 @@ window.itemMetadata = {
         "authors": [
           "bluecarrot16",
           "Stephen Challener (Redshrike)",
-          "Napsio",
+          "Napsio (Vitruvian Studio)",
           "JaidynReiman"
         ],
         "licenses": [
@@ -61957,7 +62150,7 @@ window.itemMetadata = {
         "authors": [
           "bluecarrot16",
           "Daniel Eddeland (daneeklu)",
-          "Napsio",
+          "Napsio (Vitruvian Studio)",
           "JaidynReiman"
         ],
         "licenses": [
@@ -62274,7 +62467,7 @@ window.itemMetadata = {
         "authors": [
           "bluecarrot16",
           "Daniel Eddeland (daneeklu)",
-          "Napsio",
+          "Napsio (Vitruvian Studio)",
           "JaidynReiman"
         ],
         "licenses": [
@@ -74851,7 +75044,7 @@ window.itemMetadata = {
         "file": "hat/helmet/mail",
         "notes": "reduced palette version by Napsio",
         "authors": [
-          "Napsio",
+          "Napsio (Vitruvian Studio)",
           "Johannes Sjölund (wulax)",
           "JaidynReiman"
         ],
@@ -78687,7 +78880,7 @@ window.itemMetadata = {
         "file": "hat/magic/celestial_moon",
         "notes": "sheet_definitions/hat_magic_celestial.json",
         "authors": [
-          "Napsio",
+          "Napsio (Vitruvian Studio)",
           "Michael Whitlock (bigbeargames)",
           "Tracy"
         ],
@@ -78808,7 +79001,7 @@ window.itemMetadata = {
         "file": "hat/magic/celestial_moon",
         "notes": "sheet_definitions/hat_magic_celestial.json",
         "authors": [
-          "Napsio",
+          "Napsio (Vitruvian Studio)",
           "Michael Whitlock (bigbeargames)",
           "Tracy"
         ],
@@ -78939,8 +79132,8 @@ window.itemMetadata = {
         "file": "hat/magic/celestial",
         "notes": "Original by Tracy, Adapted to ULPC by Big Bear Games, reduced colors by Napsio, second color layer by JaidynReiman",
         "authors": [
+          "Napsio (Vitruvian Studio)",
           "JaidynReiman",
-          "Napsio",
           "Michael Whitlock (bigbeargames)",
           "Tracy"
         ],
@@ -79061,7 +79254,7 @@ window.itemMetadata = {
         "file": "hat/magic/celestial",
         "notes": "Original by Tracy, Adapted to ULPC by Big Bear Games, reduced colors by Napsio",
         "authors": [
-          "Napsio",
+          "Napsio (Vitruvian Studio)",
           "Michael Whitlock (bigbeargames)",
           "Tracy"
         ],
