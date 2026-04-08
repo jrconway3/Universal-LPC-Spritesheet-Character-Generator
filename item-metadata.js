@@ -40956,7 +40956,7 @@ window.itemMetadata = {
     "credits": [
       {
         "file": "torso/armour/legion",
-        "notes": "adapted to v3 bases by bluecarrot16, jump/run/sit/combat and teen by Jaidynreiman, color reduction to 6 colors inspired by Napsio (Vitruvian Studio)",
+        "notes": "adapted to v3 bases by bluecarrot16, jump/run/sit/combat and teen by JaidynReiman, color reduction to 6 colors inspired by Napsio (Vitruvian Studio)",
         "authors": [
           "Napsio (Vitruvian Studio)",
           "JaidynReiman",
