@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>ZIP export profiling (scripts/zip/zip-export-profile.mjs)</title>
+    <!-- Served from repo root so spritesheets/... URLs resolve like tests_run.html. -->
+    <script
+      src="https://unpkg.com/mithril@2.3.8/mithril.min.js"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"
+      crossorigin="anonymous"
+    ></script>
+    <script type="text/javascript" src="/item-metadata.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "chai": "https://cdn.jsdelivr.net/npm/chai@6.2.2+esm",
+          "sinon": "https://cdn.jsdelivr.net/npm/sinon@21.0.3/+esm",
+          "mocha-globals": "/tests/bdd-globals.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <p id="status">Running ZIP export profiling…</p>
+    <script type="module" src="/scripts/zip/zip-export-profile-runner.mjs"></script>
+  </body>
+</html>

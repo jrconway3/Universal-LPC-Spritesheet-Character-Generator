@@ -156,10 +156,12 @@ describe("state/zip.js", () => {
 
       const firstFolder = standardCalls[0].args[0];
       for (let i = 0; i < ANIMATIONS.length; i++) {
-        const call = standardCalls[i];
+        const expectedName = `${ANIMATIONS[i].value}.png`;
+        const call = standardCalls.find((c) => c.args[1] === expectedName);
+        expect(call, `call for ${expectedName}`).to.exist;
         const [folder, fileName, animCanvas, srcRect] = call.args;
         expect(folder, `call ${i} folder`).to.equal(firstFolder);
-        expect(fileName).to.equal(`${ANIMATIONS[i].value}.png`);
+        expect(fileName).to.equal(expectedName);
         expect(animCanvas).to.be.instanceOf(HTMLCanvasElement);
         expect(srcRect).to.be.instanceOf(DOMRect);
         expect(srcRect.x).to.equal(0);

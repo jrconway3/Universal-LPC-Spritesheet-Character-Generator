@@ -9,16 +9,22 @@ import {
 /**
  * Performance Profiler for LPC Spritesheet Generator
  *
- * Provides real-time performance monitoring using browser Performance API.
- * All measurements appear in Chrome DevTools Performance tab as User Timing marks.
+ * - {@link PerformanceProfiler}: real-time monitoring (marks/measures, FPS) when enabled.
+ * - {@link createZipExportProfiler}: phase timings for ZIP export (metadata.json + optional DEBUG table).
  *
- * Usage:
+ * Usage (global profiler):
  *   import { PerformanceProfiler } from './performance-profiler.js';
  *   const profiler = new PerformanceProfiler({ enabled: true });
  *   profiler.mark('operation:start');
- *   // ... do work ...
  *   profiler.mark('operation:end');
  *   profiler.measure('operation', 'operation:start', 'operation:end');
+ *
+ * Usage (ZIP export):
+ *   import { createZipExportProfiler } from './performance-profiler.js';
+ *   const zipProfiler = createZipExportProfiler('splitAnimations');
+ *   await zipProfiler.phase('drawAndSlice', async () => { ... });
+ *   zipProfiler.syncPhase('render_composite_extractAnimationFromCanvas', () => { ... });
+ *   zipProfiler.incrementCounter('pngEncodeCount');
  */
 
 export class PerformanceProfiler {
@@ -282,4 +288,173 @@ export class PerformanceProfiler {
       debugWarn("Failed to clear performance data:", e);
     }
   }
+}
+
+function zipProfilerNowMs() {
+  if (
+    typeof performance !== "undefined" &&
+    typeof performance.now === "function"
+  ) {
+    return performance.now();
+  }
+  return Date.now();
+}
+
+function zipProfilerRoundMs(ms) {
+  return Math.round(ms * 10) / 10;
+}
+
+/** Default keys so ZIP profile JSON has a stable `counters` shape (zeros omitted until first increment). */
+const ZIP_EXPORT_COUNTER_KEYS = [
+  "pngEncodeCount",
+  "totalPngBytes",
+  "drawAndSliceCount",
+  "zipFileEntryCount",
+  "renderExtractAnimationFromCanvasCalls",
+  "renderSingleItemCalls",
+  "renderSingleItemAnimationCalls",
+  "extractFramesFromAnimationBatchCount",
+  "renderSliceCanvasForCustomAnimCalls",
+];
+
+/**
+ * High-resolution phase timings for ZIP export. Safe in tests (no User Timing side effects unless DEBUG).
+ *
+ * @param {string} exportKind — e.g. `splitAnimations` (for logging / optional performance marks)
+ */
+export function createZipExportProfiler(exportKind) {
+  const t0 = zipProfilerNowMs();
+  /** @type {Record<string, number>} */
+  const phases = {};
+  /** @type {Record<string, number>} */
+  const counters = {};
+
+  function userMark(suffix) {
+    if (
+      typeof performance === "undefined" ||
+      typeof performance.mark !== "function" ||
+      typeof window === "undefined" ||
+      !window.DEBUG
+    ) {
+      return;
+    }
+    try {
+      performance.mark(`zip:${exportKind}:${suffix}`);
+    } catch {
+      /* ignore quota / duplicate mark */
+    }
+  }
+
+  /**
+   * @param {string} name
+   * @param {() => void | Promise<void>} fn
+   */
+  async function phase(name, fn) {
+    const start = zipProfilerNowMs();
+    userMark(`${name}-start`);
+    try {
+      await fn();
+    } finally {
+      const elapsed = zipProfilerNowMs() - start;
+      phases[name] = (phases[name] ?? 0) + elapsed;
+      userMark(`${name}-end`);
+    }
+  }
+
+  /**
+   * Like {@link phase} but for synchronous work (no `await` inside `fn`).
+   * @template T
+   * @param {string} name
+   * @param {() => T} fn
+   * @returns {T}
+   */
+  function syncPhase(name, fn) {
+    const start = zipProfilerNowMs();
+    userMark(`${name}-start`);
+    try {
+      return fn();
+    } finally {
+      const elapsed = zipProfilerNowMs() - start;
+      phases[name] = (phases[name] ?? 0) + elapsed;
+      userMark(`${name}-end`);
+    }
+  }
+
+  /**
+   * @param {string} name
+   * @param {number} [delta]
+   */
+  function incrementCounter(name, delta = 1) {
+    counters[name] = (counters[name] ?? 0) + delta;
+  }
+
+  /**
+   * @param {string} name
+   * @param {number} amount
+   */
+  function addCounter(name, amount) {
+    counters[name] = (counters[name] ?? 0) + amount;
+  }
+
+  function totalMs() {
+    return zipProfilerNowMs() - t0;
+  }
+
+  /**
+   * Snapshot for metadata.json (deterministic rounding).
+   * Call before `generateZip` so the zip does not embed compression time (avoids a second `generateAsync`).
+   */
+  function toMetadata() {
+    const phasesRounded = {};
+    for (const [k, v] of Object.entries(phases)) {
+      phasesRounded[k] = zipProfilerRoundMs(v);
+    }
+    const countersOut = {};
+    for (const k of ZIP_EXPORT_COUNTER_KEYS) {
+      countersOut[k] = 0;
+    }
+    for (const [k, v] of Object.entries(counters)) {
+      countersOut[k] = Number.isInteger(v) ? v : zipProfilerRoundMs(v);
+    }
+    return {
+      exportKind,
+      /** Wall time for recorded phases only (typically everything except JSZip compression). */
+      totalMs: zipProfilerRoundMs(totalMs()),
+      phasesMs: phasesRounded,
+      counters: countersOut,
+      userAgent:
+        typeof navigator !== "undefined" ? navigator.userAgent : undefined,
+    };
+  }
+
+  /** Pretty console report when `window.DEBUG` is set. */
+  function logReport() {
+    if (typeof window === "undefined" || !window.DEBUG) return;
+    const meta = toMetadata();
+    debugGroup(`ZIP export profile: ${exportKind} (${meta.totalMs} ms total)`);
+    const rows = Object.entries(meta.phasesMs).map(([phase, ms]) => ({
+      phase,
+      ms,
+    }));
+    rows.sort((a, b) => b.ms - a.ms);
+    debugTable(rows);
+    if (meta.counters && Object.keys(meta.counters).length > 0) {
+      const cRows = Object.entries(meta.counters).map(([name, value]) => ({
+        counter: name,
+        value,
+      }));
+      cRows.sort((a, b) => a.counter.localeCompare(b.counter));
+      debugTable(cRows);
+    }
+    debugGroupEnd();
+  }
+
+  return {
+    phase,
+    syncPhase,
+    incrementCounter,
+    addCounter,
+    toMetadata,
+    logReport,
+  };
 }

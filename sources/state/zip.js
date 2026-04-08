@@ -10,21 +10,38 @@ import {
   addedCustomAnimations,
 } from "../canvas/renderer.js";
 import { getMultiRecolors } from "./palettes.js";
-import { getAllCredits, creditsToTxt, creditsToCsv } from "../utils/credits.js";
 import { getItemFileName } from "../utils/fileName.js";
 import { loadImage } from "../canvas/load-image.js";
-import { exportStateAsJSON } from "./json.js";
 import { customAnimations, customAnimationSize } from "../custom-animations.js";
-import { getSortedLayers } from "./meta.js";
+import { getSortedLayersWithCustomFallback } from "./meta.js";
 import { canvasToBlob, image2canvas } from "../canvas/canvas-utils.js";
 import {
   addAnimationToZipFolder,
   addStandardAnimationToZipCustomFolder,
+  addCharacterJsonAndCredits,
+  downloadZipBlob,
   extractFramesFromAnimation,
   extractFramesFromCustomAnimation,
+  guardZipExportEnvironment,
   newAnimationFromSheet,
+  zipExportTimestamp,
+  zipGenerateBlobWithProfiler,
 } from "../utils/zip-helpers.js";
 import { debugLog, debugWarn } from "../utils/debug.js";
+import { createZipExportProfiler } from "../performance-profiler.js";
+import {
+  beginZipExportUiSuspend,
+  endZipExportUiSuspend,
+} from "../utils/zip-export-ui-suspend.js";
+
+/**
+ * ZIP download pack exports. Each flow uses `createZipExportProfiler` (see
+ * `performance-profiler.js`) for `credits/metadata.json` timings where applicable,
+ * suspends UI redraw/preview during export (`zip-export-ui-suspend.js`), and uses
+ * `zipGenerateBlobWithProfiler` for the final blob.
+ *
+ * Reviewer map: `PERFORMANCE_PROFILING.md` → “Reviewing ZIP performance changes (PR)”.
+ */
 
 // Export ZIP - Split by animation
 /**
@@ -32,26 +49,28 @@ import { debugLog, debugWarn } from "../utils/debug.js";
  * @param {typeof addAnimationToZipFolder} [deps.addAnimationToZipFolder] — for tests (e.g. sinon.spy wrap)
  */
 export const exportSplitAnimations = async (deps = {}) => {
-  const addAnimationToZipFolderFn =
+  const baseAddAnimationToZipFolder =
     deps.addAnimationToZipFolder ?? addAnimationToZipFolder;
 
-  if (!window.canvasRenderer || !window.JSZip) {
-    alert("JSZip library not loaded");
-    return;
-  }
+  if (!guardZipExportEnvironment()) return;
 
   let state;
 
+  const profiler = createZipExportProfiler("splitAnimations");
+
   try {
+    const addAnimationToZipFolderFn = (folder, fileName, srcCanvas, srcRect) =>
+      baseAddAnimationToZipFolder(folder, fileName, srcCanvas, srcRect, {
+        profiler,
+      });
+
     const zip = new window.JSZip();
-    const timestamp = new Date()
-      .toISOString()
-      .replace(/[:.]/g, "-")
-      .slice(0, -5);
+    const timestamp = zipExportTimestamp();
 
     state = (await import("./state.js")).state; // Ensure state is loaded
     state.zipByAnimation.isRunning = true;
     m.redraw();
+    beginZipExportUiSuspend();
     const bodyType = state.bodyType;
 
     // Create folder structure to match original
@@ -64,17 +83,23 @@ export const exportSplitAnimations = async (deps = {}) => {
     const exportedStandard = [];
     const failedStandard = [];
 
-    // Create animation PNGs in standard folder
     for (const anim of animationList) {
       try {
-        const animCanvas = extractAnimationFromCanvas(anim.value);
+        let animCanvas;
+        animCanvas = profiler.syncPhase(
+          "render_composite_extractAnimationFromCanvas",
+          () => extractAnimationFromCanvas(anim.value),
+        );
+        profiler.incrementCounter("renderExtractAnimationFromCanvasCalls");
         const result = await addAnimationToZipFolderFn(
           standardFolder,
           `${anim.value}.png`,
           animCanvas,
           new DOMRect(0, 0, animCanvas.width, animCanvas.height),
         );
-        if (result) exportedStandard.push(anim.value);
+        if (result) {
+          exportedStandard.push(anim.value);
+        }
       } catch (err) {
         console.error(`Failed to export animation ${anim.value}:`, err);
         failedStandard.push(anim.value);
@@ -94,14 +119,16 @@ export const exportSplitAnimations = async (deps = {}) => {
         }
 
         const srcRect = { x: 0, y, ...customAnimationSize(anim) };
-        const animCanvas = await addAnimationToZipFolderFn(
+        const result = await addAnimationToZipFolderFn(
           customFolder,
           `${animName}.png`,
           canvas,
           srcRect,
         );
 
-        if (animCanvas) exportedCustom.push(animName);
+        if (result) {
+          exportedCustom.push(animName);
+        }
 
         y += srcRect.height;
       } catch (err) {
@@ -110,15 +137,10 @@ export const exportSplitAnimations = async (deps = {}) => {
       }
     }
 
-    // Add character.json at root
-    zip.file("character.json", exportStateAsJSON(state, layers));
+    await profiler.phase("staticFiles", async () => {
+      addCharacterJsonAndCredits(zip, creditsFolder, state, layers);
+    });
 
-    // Add credits in credits folder
-    const allCredits = getAllCredits(state.selections, state.bodyType);
-    creditsFolder.file("credits.txt", creditsToTxt(allCredits));
-    creditsFolder.file("credits.csv", creditsToCsv(allCredits));
-
-    // Add metadata.json in credits folder
     const metadata = {
       exportTimestamp: timestamp,
       bodyType: bodyType,
@@ -132,17 +154,12 @@ export const exportSplitAnimations = async (deps = {}) => {
       },
       frameSize: FRAME_SIZE,
       frameCounts: {}, // Would need to map animation frame counts
+      performance: profiler.toMetadata(),
     };
     creditsFolder.file("metadata.json", JSON.stringify(metadata, null, 2));
 
-    // Generate and download ZIP
-    const zipBlob = await zip.generateAsync({ type: "blob" });
-    const url = URL.createObjectURL(zipBlob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `lpc_${bodyType}_animations_${timestamp}.zip`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const zipBlob = await zipGenerateBlobWithProfiler(profiler, zip);
+    downloadZipBlob(zipBlob, `lpc_${bodyType}_animations_${timestamp}.zip`);
 
     if (failedStandard.length > 0 || failedCustom.length > 0) {
       alert(
@@ -157,6 +174,7 @@ export const exportSplitAnimations = async (deps = {}) => {
     console.error("Export failed:", err);
     alert(`Export failed: ${err.message}`);
   } finally {
+    endZipExportUiSuspend();
     state.zipByAnimation.isRunning = false;
     m.redraw();
   }
@@ -169,27 +187,27 @@ export const exportSplitAnimations = async (deps = {}) => {
  * @param {typeof renderSingleItem} [deps.renderSingleItem]
  */
 export const exportSplitItemSheets = async (deps = {}) => {
-  const addAnimationToZipFolderFn =
+  const baseAddAnimationToZipFolder =
     deps.addAnimationToZipFolder ?? addAnimationToZipFolder;
+  const profiler = createZipExportProfiler("splitItemSheets");
+  const addAnimationToZipFolderFn = (folder, fileName, srcCanvas, srcRect) =>
+    baseAddAnimationToZipFolder(folder, fileName, srcCanvas, srcRect, {
+      profiler,
+    });
   const renderSingleItemFn = deps.renderSingleItem ?? renderSingleItem;
 
-  if (!window.canvasRenderer || !window.JSZip) {
-    alert("JSZip library not loaded");
-    return;
-  }
+  if (!guardZipExportEnvironment()) return;
 
   let state;
 
   try {
     const zip = new window.JSZip();
-    const timestamp = new Date()
-      .toISOString()
-      .replace(/[:.]/g, "-")
-      .slice(0, -5);
+    const timestamp = zipExportTimestamp();
 
     state = (await import("./state.js")).state; // Ensure state is loaded
     state.zipByItem.isRunning = true;
     m.redraw();
+    beginZipExportUiSuspend();
     const bodyType = state.bodyType;
 
     // Create folder structure
@@ -202,28 +220,26 @@ export const exportSplitItemSheets = async (deps = {}) => {
     // Render each item individually
     for (const [, selection] of Object.entries(state.selections)) {
       const { itemId, variant, name } = selection;
-      let layers = getSortedLayers(itemId, true);
-      if (!layers || layers.length === 0) {
-        // If no layers found when skipping custom animations, grab ONLY custom animations
-        layers = getSortedLayers(itemId);
-      }
+      const itemLayers = getSortedLayersWithCustomFallback(itemId);
 
       // Get Multiple Recolors If Available
       const recolors = getMultiRecolors(itemId, state.selections);
 
       // Render each layer of the item separately
-      for (const layer of layers) {
+      for (const layer of itemLayers) {
         const fileName = getItemFileName(itemId, variant, name, layer.layerNum);
         try {
-          // Render just this one item
-          const itemCanvas = await renderSingleItemFn(
+          let itemCanvas;
+          itemCanvas = await renderSingleItemFn(
             itemId,
             variant,
             recolors,
             bodyType,
             state.selections,
             layer.layerNum,
+            profiler,
           );
+          profiler.incrementCounter("renderSingleItemCalls");
 
           if (itemCanvas) {
             await addAnimationToZipFolderFn(itemsFolder, fileName, itemCanvas);
@@ -236,22 +252,15 @@ export const exportSplitItemSheets = async (deps = {}) => {
       }
     }
 
-    // Add character.json at root
-    zip.file("character.json", exportStateAsJSON(state, layers));
+    await profiler.phase("staticFiles", async () => {
+      addCharacterJsonAndCredits(zip, creditsFolder, state, layers);
+    });
 
-    // Add credits in credits folder
-    const allCredits = getAllCredits(state.selections, state.bodyType);
-    creditsFolder.file("credits.txt", creditsToTxt(allCredits));
-    creditsFolder.file("credits.csv", creditsToCsv(allCredits));
-
-    // Generate and download ZIP
-    const zipBlob = await zip.generateAsync({ type: "blob" });
-    const url = URL.createObjectURL(zipBlob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `lpc_${bodyType}_item_spritesheets_${timestamp}.zip`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const zipBlob = await zipGenerateBlobWithProfiler(profiler, zip);
+    downloadZipBlob(
+      zipBlob,
+      `lpc_${bodyType}_item_spritesheets_${timestamp}.zip`,
+    );
 
     if (failedItems.length > 0) {
       alert(
@@ -266,6 +275,7 @@ export const exportSplitItemSheets = async (deps = {}) => {
     console.error("Export failed:", err);
     alert(`Export failed: ${err.message}`);
   } finally {
+    endZipExportUiSuspend();
     state.zipByItem.isRunning = false;
     m.redraw();
   }
@@ -280,32 +290,45 @@ export const exportSplitItemSheets = async (deps = {}) => {
  * @param {typeof addStandardAnimationToZipCustomFolder} [deps.addStandardAnimationToZipCustomFolder]
  */
 export const exportSplitItemAnimations = async (deps = {}) => {
-  const addAnimationToZipFolderFn =
+  const baseAddAnimationToZipFolder =
     deps.addAnimationToZipFolder ?? addAnimationToZipFolder;
+  const baseAddStandardAnimationToZipCustomFolder =
+    deps.addStandardAnimationToZipCustomFolder ??
+    addStandardAnimationToZipCustomFolder;
+  const profiler = createZipExportProfiler("splitItemAnimations");
+  const addAnimationToZipFolderFn = (folder, fileName, srcCanvas, srcRect) =>
+    baseAddAnimationToZipFolder(folder, fileName, srcCanvas, srcRect, {
+      profiler,
+    });
+  const addStandardAnimationToZipCustomFolderFn = (
+    custAnimFolder,
+    itemFileName,
+    src,
+    custAnim,
+  ) =>
+    baseAddStandardAnimationToZipCustomFolder(
+      custAnimFolder,
+      itemFileName,
+      src,
+      custAnim,
+      { profiler },
+    );
   const renderSingleItemAnimationFn =
     deps.renderSingleItemAnimation ?? renderSingleItemAnimation;
   const loadImageFn = deps.loadImage ?? loadImage;
-  const addStandardAnimationToZipCustomFolderFn =
-    deps.addStandardAnimationToZipCustomFolder ??
-    addStandardAnimationToZipCustomFolder;
 
-  if (!window.canvasRenderer || !window.JSZip) {
-    alert("JSZip library not loaded");
-    return;
-  }
+  if (!guardZipExportEnvironment()) return;
 
   let state;
 
   try {
     const zip = new window.JSZip();
-    const timestamp = new Date()
-      .toISOString()
-      .replace(/[:.]/g, "-")
-      .slice(0, -5);
+    const timestamp = zipExportTimestamp();
 
     state = (await import("./state.js")).state; // Ensure state is loaded
     state.zipByAnimimationAndItem.isRunning = true;
     m.redraw();
+    beginZipExportUiSuspend();
     const bodyType = state.bodyType;
 
     // Create folder structure
@@ -346,14 +369,8 @@ export const exportSplitItemAnimations = async (deps = {}) => {
         // Get Multiple Recolors If Available
         const recolors = getMultiRecolors(itemId, state.selections);
 
-        // Render each layer of the item separately
-        let layers = getSortedLayers(itemId, true);
-        if (!layers || layers.length === 0) {
-          // If no layers found when skipping custom animations, use all layers
-          // (custom-animation-only items have no "standard" sheet rows).
-          layers = getSortedLayers(itemId);
-        }
-        for (const layer of layers) {
+        const itemLayers = getSortedLayersWithCustomFallback(itemId);
+        for (const layer of itemLayers) {
           const fileName = getItemFileName(
             itemId,
             variant,
@@ -362,8 +379,8 @@ export const exportSplitItemAnimations = async (deps = {}) => {
           );
 
           try {
-            // Render just this item for this animation
-            const animCanvas = await renderSingleItemAnimationFn(
+            let animCanvas;
+            animCanvas = await renderSingleItemAnimationFn(
               itemId,
               variant,
               recolors,
@@ -371,7 +388,9 @@ export const exportSplitItemAnimations = async (deps = {}) => {
               anim.value,
               state.selections,
               layer.layerNum,
+              profiler,
             );
+            profiler.incrementCounter("renderSingleItemAnimationCalls");
 
             if (animCanvas) {
               await addAnimationToZipFolderFn(animFolder, fileName, animCanvas);
@@ -411,10 +430,23 @@ export const exportSplitItemAnimations = async (deps = {}) => {
           debugLog(
             `Exporting item ${itemFileName} for custom animation ${customAnimName}`,
           );
-          const img = await loadImageFn(spritePath, false);
+          let img;
+          let imgCanvas;
+          await profiler.phase(
+            "render_imageLoadDecode_customItemSprite",
+            async () => {
+              img = await loadImageFn(spritePath, false);
+            },
+          );
           if (!img) continue;
+          await profiler.phase(
+            "render_composite_customItemSprite",
+            async () => {
+              imgCanvas = image2canvas(img);
+            },
+          );
+          if (!imgCanvas) continue;
 
-          const imgCanvas = image2canvas(img);
           const custAnim = customAnimations[customAnimName];
           if (!custAnim)
             throw new Error(
@@ -450,15 +482,10 @@ export const exportSplitItemAnimations = async (deps = {}) => {
       }
     }
 
-    // Add character.json at root
-    zip.file("character.json", exportStateAsJSON(state, layers));
+    await profiler.phase("staticFiles", async () => {
+      addCharacterJsonAndCredits(zip, creditsFolder, state, layers);
+    });
 
-    // Add credits in credits folder
-    const allCredits = getAllCredits(state.selections, state.bodyType);
-    creditsFolder.file("credits.txt", creditsToTxt(allCredits));
-    creditsFolder.file("credits.csv", creditsToCsv(allCredits));
-
-    // Add metadata.json in credits folder
     const metadata = {
       exportTimestamp: timestamp,
       bodyType: bodyType,
@@ -472,17 +499,15 @@ export const exportSplitItemAnimations = async (deps = {}) => {
       },
       frameSize: FRAME_SIZE,
       frameCounts: {},
+      performance: profiler.toMetadata(),
     };
     creditsFolder.file("metadata.json", JSON.stringify(metadata, null, 2));
 
-    // Generate and download ZIP
-    const zipBlob = await zip.generateAsync({ type: "blob" });
-    const url = URL.createObjectURL(zipBlob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `lpc_${bodyType}_item_animations_${timestamp}.zip`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const zipBlob = await zipGenerateBlobWithProfiler(profiler, zip);
+    downloadZipBlob(
+      zipBlob,
+      `lpc_${bodyType}_item_animations_${timestamp}.zip`,
+    );
 
     // Report failures if any
     const failedCount = Object.values(failedStandard).reduce(
@@ -504,6 +529,7 @@ export const exportSplitItemAnimations = async (deps = {}) => {
     console.error("Export failed:", err);
     alert(`Export failed: ${err.message}`);
   } finally {
+    endZipExportUiSuspend();
     state.zipByAnimimationAndItem.isRunning = false;
     m.redraw();
   }
@@ -524,24 +550,25 @@ export const exportIndividualFrames = async (deps = {}) => {
   const extractFramesFromAnimationFn =
     deps.extractFramesFromAnimation ?? extractFramesFromAnimation;
   const canvasToBlobFn = deps.canvasToBlob ?? canvasToBlob;
-  const newAnimationFromSheetFn =
-    deps.newAnimationFromSheet ?? newAnimationFromSheet;
   const extractFramesFromCustomAnimationFn =
     deps.extractFramesFromCustomAnimation ?? extractFramesFromCustomAnimation;
 
-  if (!window.canvasRenderer || !window.JSZip) {
-    alert("JSZip library not loaded");
-    return;
-  }
+  const sliceCanvasForCustomAnim = (src, rect) => {
+    if (deps.newAnimationFromSheet) {
+      return deps.newAnimationFromSheet(src, rect);
+    }
+    return newAnimationFromSheet(src, rect);
+  };
+
+  if (!guardZipExportEnvironment()) return;
 
   let state;
 
+  const profiler = createZipExportProfiler("individualFrames");
+
   try {
     const zip = new window.JSZip();
-    const timestamp = new Date()
-      .toISOString()
-      .replace(/[:.]/g, "-")
-      .slice(0, -5);
+    const timestamp = zipExportTimestamp();
 
     state = (await import("./state.js")).state;
     state.zipIndividualFrames = state.zipIndividualFrames || {
@@ -549,6 +576,7 @@ export const exportIndividualFrames = async (deps = {}) => {
     };
     state.zipIndividualFrames.isRunning = true;
     m.redraw();
+    beginZipExportUiSuspend();
     const bodyType = state.bodyType;
 
     // Create folder structure
@@ -560,54 +588,69 @@ export const exportIndividualFrames = async (deps = {}) => {
     const failedAnimations = [];
     const directions = ["up", "down", "left", "right"];
 
-    // Pre-extract all animations with caching enabled for better performance
+    // Pre-extract, slice to per-frame canvases, and queue PNG encodes (render path)
     const animationCanvases = new Map();
+    const blobTasks = [];
+    const exportedCustom = [];
+    const failedCustom = [];
+    let y = SHEET_HEIGHT;
+
     for (const anim of ANIMATIONS) {
       try {
         const animationName = anim.value;
-        const animCanvas = extractAnimationFromCanvasFn(animationName, true); // Enable caching
-        if (animCanvas) {
-          animationCanvases.set(animationName, animCanvas);
-        }
+        profiler.syncPhase(
+          "render_composite_extractAnimationFromCanvas",
+          () => {
+            const animCanvas = extractAnimationFromCanvasFn(animationName);
+            if (animCanvas) {
+              animationCanvases.set(animationName, animCanvas);
+            }
+          },
+        );
+        profiler.incrementCounter("renderExtractAnimationFromCanvasCalls");
       } catch (err) {
         console.error(`Failed to extract animation ${anim.value}:`, err);
         failedAnimations.push(anim.value);
       }
     }
 
-    // Batch blob creation promises for parallel processing
-    const blobTasks = [];
-
-    // Process standard animations with optimized frame extraction
     for (const anim of ANIMATIONS) {
       try {
         const animationName = anim.value;
         const animCanvas = animationCanvases.get(animationName);
 
         if (animCanvas) {
-          const animFolder = standardFolder.folder(animationName);
-          const frames = extractFramesFromAnimationFn(
-            animCanvas,
-            animationName,
-            directions,
-          );
+          await profiler.phase(
+            "render_composite_extractFramesFromAnimation",
+            async () => {
+              const animFolder = standardFolder.folder(animationName);
+              const frames = extractFramesFromAnimationFn(
+                animCanvas,
+                animationName,
+                directions,
+              );
 
-          for (const [direction, frameList] of Object.entries(frames)) {
-            if (frameList.length > 0) {
-              const directionFolder = animFolder.folder(direction);
+              for (const [direction, frameList] of Object.entries(frames)) {
+                if (frameList.length > 0) {
+                  const directionFolder = animFolder.folder(direction);
 
-              // Queue blob creation tasks instead of awaiting each one
-              for (const { canvas: frameCanvas, frameNumber } of frameList) {
-                blobTasks.push({
-                  promise: canvasToBlobFn(frameCanvas),
-                  folder: directionFolder,
-                  filename: `${frameNumber}.png`,
-                  debugPath: `standard/${animationName}/${direction}/${frameNumber}.png`,
-                });
+                  for (const {
+                    canvas: frameCanvas,
+                    frameNumber,
+                  } of frameList) {
+                    blobTasks.push({
+                      encode: () => canvasToBlobFn(frameCanvas),
+                      folder: directionFolder,
+                      filename: `${frameNumber}.png`,
+                      debugPath: `standard/${animationName}/${direction}/${frameNumber}.png`,
+                    });
+                  }
+                }
               }
-            }
-          }
-          exportedAnimations.push(animationName);
+              exportedAnimations.push(animationName);
+            },
+          );
+          profiler.incrementCounter("extractFramesFromAnimationBatchCount");
         }
       } catch (err) {
         console.error(
@@ -617,11 +660,6 @@ export const exportIndividualFrames = async (deps = {}) => {
         failedAnimations.push(anim.value);
       }
     }
-
-    // Process custom animations
-    const exportedCustom = [];
-    const failedCustom = [];
-    let y = SHEET_HEIGHT;
 
     for (const animName of addedCustomAnimations) {
       try {
@@ -639,34 +677,45 @@ export const exportIndividualFrames = async (deps = {}) => {
           srcRect: srcRect,
         });
 
-        // Extract custom animation from main canvas
-        const custAnimCanvas = newAnimationFromSheetFn(canvas, srcRect);
+        /** @type {HTMLCanvasElement | null | undefined} */
+        let custAnimCanvas;
+        profiler.syncPhase("render_composite_sliceCanvasForCustomAnim", () => {
+          custAnimCanvas = sliceCanvasForCustomAnim(canvas, srcRect);
+        });
         if (custAnimCanvas) {
-          const animFolder = customFolder.folder(animName);
-          const frames = extractFramesFromCustomAnimationFn(
-            custAnimCanvas,
-            customAnimDef,
-            directions,
-          );
+          profiler.syncPhase(
+            "render_composite_extractFramesFromCustomAnimation",
+            () => {
+              const animFolder = customFolder.folder(animName);
+              const frames = extractFramesFromCustomAnimationFn(
+                custAnimCanvas,
+                customAnimDef,
+                directions,
+              );
 
-          debugLog(`Extracted frames for ${animName}:`, frames);
+              debugLog(`Extracted frames for ${animName}:`, frames);
 
-          for (const [direction, frameList] of Object.entries(frames)) {
-            if (frameList.length > 0) {
-              const directionFolder = animFolder.folder(direction);
+              for (const [direction, frameList] of Object.entries(frames)) {
+                if (frameList.length > 0) {
+                  const directionFolder = animFolder.folder(direction);
 
-              // Queue blob creation tasks for custom animations too
-              for (const { canvas: frameCanvas, frameNumber } of frameList) {
-                blobTasks.push({
-                  promise: canvasToBlobFn(frameCanvas),
-                  folder: directionFolder,
-                  filename: `${frameNumber}.png`,
-                  debugPath: `custom/${animName}/${direction}/${frameNumber}.png`,
-                });
+                  for (const {
+                    canvas: frameCanvas,
+                    frameNumber,
+                  } of frameList) {
+                    blobTasks.push({
+                      encode: () => canvasToBlobFn(frameCanvas),
+                      folder: directionFolder,
+                      filename: `${frameNumber}.png`,
+                      debugPath: `custom/${animName}/${direction}/${frameNumber}.png`,
+                    });
+                  }
+                }
               }
-            }
-          }
-          exportedCustom.push(animName);
+              exportedCustom.push(animName);
+            },
+          );
+          profiler.incrementCounter("renderSliceCanvasForCustomAnimCalls");
         } else {
           debugWarn(`No canvas generated for custom animation: ${animName}`);
         }
@@ -681,43 +730,46 @@ export const exportIndividualFrames = async (deps = {}) => {
       }
     }
 
-    // Process all blob creation in parallel for much better performance
     debugLog(`Converting ${blobTasks.length} frames to blobs...`);
-    const blobResults = await Promise.all(
-      blobTasks.map(async (task) => {
-        try {
-          const blob = await task.promise;
-          return { ...task, blob, success: true };
-        } catch (err) {
-          console.error(`Failed to create blob for ${task.debugPath}:`, err);
-          return { ...task, blob: null, success: false };
-        }
-      }),
-    );
+    let blobResults;
+    await profiler.phase("pngEncode", async () => {
+      blobResults = await Promise.all(
+        blobTasks.map(async (task) => {
+          try {
+            const blob = await task.encode();
+            if (blob) {
+              profiler.incrementCounter("pngEncodeCount");
+              profiler.addCounter("totalPngBytes", blob.size);
+            }
+            return { ...task, blob, success: true };
+          } catch (err) {
+            console.error(`Failed to create blob for ${task.debugPath}:`, err);
+            return { ...task, blob: null, success: false };
+          }
+        }),
+      );
+    });
 
-    // Add all successful blobs to ZIP
     let successCount = 0;
-    for (const result of blobResults) {
-      if (result.success && result.blob) {
-        result.folder.file(result.filename, result.blob);
-        successCount++;
-        debugLog(`Added frame: ${result.debugPath}`);
+    await profiler.phase("zipFile", async () => {
+      for (const result of blobResults) {
+        if (result.success && result.blob) {
+          result.folder.file(result.filename, result.blob);
+          profiler.incrementCounter("zipFileEntryCount");
+          successCount++;
+          debugLog(`Added frame: ${result.debugPath}`);
+        }
       }
-    }
+    });
 
     debugLog(
       `Successfully processed ${successCount}/${blobTasks.length} frames`,
     );
 
-    // Add character.json at root
-    zip.file("character.json", exportStateAsJSON(state, layers));
+    await profiler.phase("staticFiles", async () => {
+      addCharacterJsonAndCredits(zip, creditsFolder, state, layers);
+    });
 
-    // Add credits in credits folder
-    const allCredits = getAllCredits(state.selections, state.bodyType);
-    creditsFolder.file("credits.txt", creditsToTxt(allCredits));
-    creditsFolder.file("credits.csv", creditsToCsv(allCredits));
-
-    // Add metadata.json with frame structure info
     const metadata = {
       exportTimestamp: timestamp,
       bodyType: bodyType,
@@ -735,18 +787,16 @@ export const exportIndividualFrames = async (deps = {}) => {
       animationConfigs: ANIMATION_CONFIGS,
       directions: directions,
       note: "Individual animation frames organized by standard/custom > animation > direction > frame number",
+      performance: profiler.toMetadata(),
     };
     creditsFolder.file("metadata.json", JSON.stringify(metadata, null, 2));
 
-    // Generate and download ZIP
     debugLog("Generating ZIP file...");
-    const zipBlob = await zip.generateAsync({ type: "blob" });
-    const url = URL.createObjectURL(zipBlob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `lpc_${bodyType}_individual_frames_${timestamp}.zip`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const zipBlob = await zipGenerateBlobWithProfiler(profiler, zip);
+    downloadZipBlob(
+      zipBlob,
+      `lpc_${bodyType}_individual_frames_${timestamp}.zip`,
+    );
 
     // Report results
     const totalFailed = failedAnimations.length + failedCustom.length;
@@ -766,6 +816,7 @@ export const exportIndividualFrames = async (deps = {}) => {
     console.error("Individual frames export failed:", err);
     alert(`Export failed: ${err.message}`);
   } finally {
+    endZipExportUiSuspend();
     if (state && state.zipIndividualFrames) {
       state.zipIndividualFrames.isRunning = false;
     }

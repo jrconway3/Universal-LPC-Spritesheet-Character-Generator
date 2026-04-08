@@ -21,6 +21,31 @@ import {
 import { getSortedLayersByAnim } from "../state/meta.js";
 import { debugWarn } from "../utils/debug.js";
 
+/**
+ * When `zipProfiler` is set, records separate load/decode vs compositing phases; otherwise runs load then composite.
+ *
+ * @param {null | { phase?: (name: string, fn: () => void | Promise<void>) => Promise<void> }} zipProfiler
+ * @param {string} loadPhaseName
+ * @param {string} compositePhaseName
+ * @param {() => void | Promise<void>} loadFn
+ * @param {() => void | Promise<void>} compositeFn
+ */
+async function zipExportProfiledLoadComposite(
+  zipProfiler,
+  loadPhaseName,
+  compositePhaseName,
+  loadFn,
+  compositeFn,
+) {
+  if (zipProfiler && typeof zipProfiler.phase === "function") {
+    await zipProfiler.phase(loadPhaseName, loadFn);
+    await zipProfiler.phase(compositePhaseName, compositeFn);
+  } else {
+    await loadFn();
+    await compositeFn();
+  }
+}
+
 export const SHEET_HEIGHT = 3456; // Full universal sheet height
 export const SHEET_WIDTH = 832; // 13 frames * 64px
 
@@ -476,6 +501,8 @@ export function getCanvas() {
 /**
  * Render a single item to a new canvas
  * Returns a canvas with just this one item rendered
+ *
+ * @param {null | { phase?: (name: string, fn: () => void | Promise<void>) => Promise<void> }} [zipProfiler]
  */
 export async function renderSingleItem(
   itemId,
@@ -484,6 +511,7 @@ export async function renderSingleItem(
   bodyType,
   selections,
   singleLayer = null,
+  zipProfiler = null,
 ) {
   const meta = window.itemMetadata[itemId];
   if (!meta) {
@@ -560,16 +588,24 @@ export async function renderSingleItem(
     // Sort by zPos
     customSprites.sort((a, b) => a.zPos - b.zPos);
 
-    // Load all layers in parallel
-    const loadedSprites = await loadImagesInParallel(customSprites);
-
-    // Draw layers in order
-    for (const { item: sprite, img, success } of loadedSprites) {
-      if (success && img) {
-        const imageToDraw = await getImageToDraw(img, itemId, recolors);
-        itemCtx.drawImage(imageToDraw, 0, sprite.yPos);
-      }
-    }
+    /** @type {Awaited<ReturnType<typeof loadImagesInParallel>> | undefined} */
+    let loadedSprites;
+    await zipExportProfiledLoadComposite(
+      zipProfiler,
+      "render_imageLoadDecode_renderSingleItem",
+      "render_composite_renderSingleItem",
+      async () => {
+        loadedSprites = await loadImagesInParallel(customSprites);
+      },
+      async () => {
+        for (const { item: sprite, img, success } of loadedSprites) {
+          if (success && img) {
+            const imageToDraw = await getImageToDraw(img, itemId, recolors);
+            itemCtx.drawImage(imageToDraw, 0, sprite.yPos);
+          }
+        }
+      },
+    );
   } else {
     // Standard animation item - use standard sheet size
     itemCanvas = document.createElement("canvas");
@@ -634,16 +670,28 @@ export async function renderSingleItem(
       return a.zPos - b.zPos;
     });
 
-    // Load all images in parallel
-    const loadedImages = await loadImagesInParallel(spritesToDraw);
-
-    // Draw images in order
-    for (const { item: sprite, img, success } of loadedImages) {
-      if (success && img) {
-        const imageToDraw = await getImageToDraw(img, itemId, sprite.recolors);
-        itemCtx.drawImage(imageToDraw, 0, sprite.yPos);
-      }
-    }
+    /** @type {Awaited<ReturnType<typeof loadImagesInParallel>> | undefined} */
+    let loadedImages;
+    await zipExportProfiledLoadComposite(
+      zipProfiler,
+      "render_imageLoadDecode_renderSingleItem",
+      "render_composite_renderSingleItem",
+      async () => {
+        loadedImages = await loadImagesInParallel(spritesToDraw);
+      },
+      async () => {
+        for (const { item: sprite, img, success } of loadedImages) {
+          if (success && img) {
+            const imageToDraw = await getImageToDraw(
+              img,
+              itemId,
+              sprite.recolors,
+            );
+            itemCtx.drawImage(imageToDraw, 0, sprite.yPos);
+          }
+        }
+      },
+    );
   }
 
   return itemCanvas;
@@ -652,6 +700,8 @@ export async function renderSingleItem(
 /**
  * Render a single item for a single animation to a new canvas
  * Returns a canvas with just this one item's one animation rendered
+ *
+ * @param {null | { phase?: (name: string, fn: () => void | Promise<void>) => Promise<void> }} [zipProfiler]
  */
 export async function renderSingleItemAnimation(
   itemId,
@@ -661,6 +711,7 @@ export async function renderSingleItemAnimation(
   animationName,
   selections,
   singleLayer = null,
+  zipProfiler = null,
 ) {
   const meta = window.itemMetadata[itemId];
   if (!meta) {
@@ -686,6 +737,7 @@ export async function renderSingleItemAnimation(
       bodyType,
       selections,
       singleLayer,
+      zipProfiler,
     );
   }
 
@@ -752,27 +804,38 @@ export async function renderSingleItemAnimation(
   // Sort by zPos
   spritesToDraw.sort((a, b) => a.zPos - b.zPos);
 
-  // Load all images in parallel
-  const loadedImages = await loadImagesInParallel(spritesToDraw);
-
-  // Draw images in order
-  for (const { item: sprite, img, success } of loadedImages) {
-    if (success && img) {
-      const imageToDraw = await getImageToDraw(img, itemId, sprite.recolors);
-      // Draw at y=0 since this canvas is only for this animation
-      animCtx.drawImage(
-        imageToDraw,
-        0,
-        animYPos,
-        SHEET_WIDTH,
-        animHeight,
-        0,
-        0,
-        SHEET_WIDTH,
-        animHeight,
-      );
-    }
-  }
+  /** @type {Awaited<ReturnType<typeof loadImagesInParallel>> | undefined} */
+  let loadedImages;
+  await zipExportProfiledLoadComposite(
+    zipProfiler,
+    "render_imageLoadDecode_renderSingleItemAnimation",
+    "render_composite_renderSingleItemAnimation",
+    async () => {
+      loadedImages = await loadImagesInParallel(spritesToDraw);
+    },
+    async () => {
+      for (const { item: sprite, img, success } of loadedImages) {
+        if (success && img) {
+          const imageToDraw = await getImageToDraw(
+            img,
+            itemId,
+            sprite.recolors,
+          );
+          animCtx.drawImage(
+            imageToDraw,
+            0,
+            animYPos,
+            SHEET_WIDTH,
+            animHeight,
+            0,
+            0,
+            SHEET_WIDTH,
+            animHeight,
+          );
+        }
+      }
+    },
+  );
 
   return animCanvas;
 }
