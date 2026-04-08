@@ -6,16 +6,6 @@
     "female": "torso/armour/legion/female/",
     "teen": "torso/armour/legion/teen/"
   },
-  "variants": [
-    "steel",
-    "iron",
-    "ceramic",
-    "brass",
-    "copper",
-    "bronze",
-    "silver",
-    "gold"
-  ],
   "animations": [
     "spellcast",
     "thrust",
@@ -32,14 +22,15 @@
     "climb",
     "combat",
     "1h_slash",
-    "1h/backslash",
+    "1h_backslash",
     "1h_halfslash"
   ],
   "credits": [
     {
       "file": "torso/armour/legion",
-      "notes": "adapted to v3 bases by bluecarrot16, jump/run/sit/combat and teen by Jaidynreiman",
+      "notes": "adapted to v3 bases by bluecarrot16, jump/run/sit/combat and teen by JaidynReiman, color reduction to 6 colors inspired by Napsio (Vitruvian Studio)",
       "authors": [
+        "Napsio (Vitruvian Studio)",
         "JaidynReiman",
         "bluecarrot16",
         "Nila122"
@@ -55,10 +46,13 @@
       ]
     }
   ],
-  "path": [
-    "torso",
-    "armour",
-    "torso_armour_legion"
-  ],
+  "recolors": {
+    "material": "metal",
+    "palettes": [
+      "ulpc",
+      "lpcr",
+      "all.lpcr"
+    ]
+  },
   "type_name": "armour"
 }
