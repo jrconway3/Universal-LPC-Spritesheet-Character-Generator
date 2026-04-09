@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const { debugLog, debugWarn } = require("./utils/debug.js");
 
-const { ANIMATIONS} = require("../sources/state/constants.js")
+const { ANIMATIONS } = require("../sources/state/constants.js");
 const SHEETS_DIR = "sheet_definitions" + path.sep;
 const PALETTES_DIR = "palette_definitions" + path.sep;
 
