@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const { debugLog, debugWarn } = require("./utils/debug.js");
 
+const { ANIMATIONS} = require("../sources/state/constants.js")
 const SHEETS_DIR = "sheet_definitions" + path.sep;
 const PALETTES_DIR = "palette_definitions" + path.sep;
 
@@ -402,6 +403,8 @@ function parseJson(filePath, fileName) {
   // Use type_name for radio button grouping (ensures only one item per type can be selected)
   const addedCreditsFor = [];
   for (const anim of animations) {
+    const animConfig = ANIMATIONS.find(({ value }) => value === anim);
+    if (animConfig?.noExport) continue;
     const snakeItemName = anim.replaceAll(" ", "_");
     for (const sex of requiredSexes) {
       // TODO: move any non-layer, non-variant specific code here!
@@ -439,7 +442,7 @@ function parseJson(filePath, fileName) {
 
   for (const sex of requiredSexes) {
     // Store licenses in metadata
-    itemMetadata[itemId].licenses[sex] = listCreditToUse.licenses;
+    itemMetadata[itemId].licenses[sex] = listCreditToUse?.licenses || [];
   }
 
   let parsed = {};
