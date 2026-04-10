@@ -1,6 +1,9 @@
 import { test } from "@playwright/test";
 import { argosScreenshot } from "@argos-ci/playwright";
-import { gotoHomepageReady } from "./home-helpers.js";
+import {
+  gotoHomepageReady,
+  openHumanMaleSkintonePalette,
+} from "./home-helpers.js";
 
 /** Base URL for the static site (see `webServer` in playwright.config.js). */
 const BASE_URL =
@@ -15,6 +18,10 @@ const VIEWPORTS = {
   tablet: { width: 834, height: 1112 },
   mediumDesktop: { width: 1440, height: 900 },
   hugeDesktop: { width: 2560, height: 1440 },
+  mobileLong: { width: 390, height: 844 * 16 },
+  tabletLong: { width: 834, height: 1120 * 8 },
+  mediumDesktopLong: { width: 1440, height: 900 * 4 },
+  hugeDesktopLong: { width: 2560, height: 1440 * 2 },
 };
 
 /** Argos stabilization tuned for a JS-heavy page with images and canvas. */
@@ -44,28 +51,69 @@ async function argosDesktop(page, name) {
   await argosScreenshot(page, name, ARGOS_SCREENSHOT_OPTIONS);
 }
 
+/** Homepage full-page capture, then tree navigation to Human Male → Skintone modal. */
+async function homepageAndSkintonePalette(page, viewport, shotName) {
+  await page.setViewportSize(viewport);
+  await gotoHomepageReady(page, BASE_URL);
+  await argosDesktop(page, shotName);
+  await openHumanMaleSkintonePalette(page);
+  await argosDesktop(page, `${shotName}-human-male-skintone`);
+}
+
 test.describe("Homepage — full page", () => {
   test("mobile viewport", async ({ page }) => {
-    await page.setViewportSize(VIEWPORTS.mobile);
-    await gotoHomepageReady(page, BASE_URL);
-    await argosDesktop(page, "index-mobile");
+    await homepageAndSkintonePalette(page, VIEWPORTS.mobile, "index-mobile");
   });
 
   test("tablet viewport", async ({ page }) => {
-    await page.setViewportSize(VIEWPORTS.tablet);
-    await gotoHomepageReady(page, BASE_URL);
-    await argosDesktop(page, "index-tablet");
+    await homepageAndSkintonePalette(page, VIEWPORTS.tablet, "index-tablet");
   });
 
   test("medium desktop viewport", async ({ page }) => {
-    await page.setViewportSize(VIEWPORTS.mediumDesktop);
-    await gotoHomepageReady(page, BASE_URL);
-    await argosDesktop(page, "index-medium-desktop");
+    await homepageAndSkintonePalette(
+      page,
+      VIEWPORTS.mediumDesktop,
+      "index-medium-desktop",
+    );
   });
 
   test("huge desktop viewport", async ({ page }) => {
-    await page.setViewportSize(VIEWPORTS.hugeDesktop);
-    await gotoHomepageReady(page, BASE_URL);
-    await argosDesktop(page, "index-huge-desktop");
+    await homepageAndSkintonePalette(
+      page,
+      VIEWPORTS.hugeDesktop,
+      "index-huge-desktop",
+    );
+  });
+
+  test("mobile long viewport", async ({ page }) => {
+    await homepageAndSkintonePalette(
+      page,
+      VIEWPORTS.mobileLong,
+      "index-mobile-long",
+    );
+  });
+
+  test("tablet long viewport", async ({ page }) => {
+    await homepageAndSkintonePalette(
+      page,
+      VIEWPORTS.tabletLong,
+      "index-tablet-long",
+    );
+  });
+
+  test("medium desktop long viewport", async ({ page }) => {
+    await homepageAndSkintonePalette(
+      page,
+      VIEWPORTS.mediumDesktopLong,
+      "index-medium-desktop-long",
+    );
+  });
+
+  test("huge desktop long viewport", async ({ page }) => {
+    await homepageAndSkintonePalette(
+      page,
+      VIEWPORTS.hugeDesktopLong,
+      "index-huge-desktop-long",
+    );
   });
 });

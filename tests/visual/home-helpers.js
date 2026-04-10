@@ -54,3 +54,33 @@ export async function gotoHomepageReady(
     });
   });
 }
+
+/**
+ * Expands Head → Heads → Human Heads → Human Male, then opens the Skintone palette modal.
+ * (The top-level "Head" row must be expanded before "Heads" is visible.)
+ *
+ * @param {import('@playwright/test').Page} page
+ */
+export async function openHumanMaleSkintonePalette(page) {
+  const tree = page.locator("#chooser-column");
+  const clickTreeLabel = async (exact) => {
+    const row = tree.locator("div.tree-label").filter({
+      has: page.getByText(exact, { exact: true }),
+    });
+    await row.first().scrollIntoViewIfNeeded();
+    await row.first().click();
+  };
+
+  await clickTreeLabel("Head");
+  await clickTreeLabel("Heads");
+  await clickTreeLabel("Human Heads");
+  await clickTreeLabel("Human Male");
+
+  const skintone = tree
+    .locator(".palette-recolor-item label")
+    .filter({ hasText: /^Skintone$/ });
+  await skintone.scrollIntoViewIfNeeded();
+  await skintone.click();
+
+  await page.locator(".palette-modal").waitFor({ state: "visible" });
+}
