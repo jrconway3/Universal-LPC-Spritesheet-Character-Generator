@@ -67,7 +67,8 @@ export const COMPUTED_STYLE_PROPS = [
 ];
 
 /**
- * Label + selector (first match). Order: page shell → columns → download → filters → preview.
+ * Label + selector (first match). Order: page shell → columns → mithril mount → download → filters →
+ * category tree → credits → advanced → preview.
  *
  * Optional per target:
  * - `omitProps`: skip listed properties when Bulma 1.x and 0.9.x report different strings for the
@@ -80,8 +81,20 @@ export const COMPUTED_STYLE_TARGETS = [
   { label: "header section", selector: "#header-left" },
   { label: "h1.title", selector: "h1.title" },
   { label: "header subtitle", selector: "#header-left span.subtitle" },
+  {
+    label: "header title row (flex wrapper)",
+    selector: "#header-left > div.is-flex",
+  },
   { label: "columns container", selector: "#columns-container" },
   { label: "chooser column", selector: "#chooser-column" },
+  {
+    label: "mithril-filters mount root",
+    selector: "#mithril-filters",
+  },
+  {
+    label: "mithril-filters app stack (Download+Filters+Credits+Advanced wrapper)",
+    selector: "#mithril-filters > div",
+  },
   {
     label: "preview column",
     selector: "#preview-column",
@@ -94,6 +107,23 @@ export const COMPUTED_STYLE_TARGETS = [
   {
     label: "download first is-info button",
     selector: "#download-buttons .button.is-info",
+  },
+  {
+    label: "download first is-link button",
+    selector: "#download-buttons .button.is-link",
+  },
+  {
+    label: "download collapsible header",
+    selector: "#mithril-filters > div > .box:nth-child(1) .collapsible-header",
+  },
+  {
+    label: "download collapsible inner (.collapsible-content)",
+    selector: "#mithril-filters > div > .box:nth-child(1) .collapsible-content",
+  },
+  {
+    label: "download section collapsible title (h3)",
+    selector:
+      "#mithril-filters > div > .box:nth-child(1) .collapsible-header h3.collapsible-title",
   },
   {
     label: "chooser download collapsible box",
@@ -194,6 +224,16 @@ export const COMPUTED_STYLE_TARGETS = [
     ],
   },
   {
+    label: "CategoryTree Body Type expanded body-type buttons (div.ml-4.mt-2)",
+    selector:
+      "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .box.has-background-light div.ml-4.mt-2",
+  },
+  {
+    label: "CategoryTree first .tree-node (scoped under filters)",
+    selector:
+      "#mithril-filters > div > .box:nth-child(2) .collapsible-content .tree-node",
+  },
+  {
     label: "CategoryTree tree wrapper (body + categories)",
     selector:
       "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .box.has-background-light > div:nth-child(3)",
@@ -222,6 +262,10 @@ export const COMPUTED_STYLE_TARGETS = [
     selector: "#credits-section .collapsible-header",
   },
   {
+    label: "credits collapsible title (h3)",
+    selector: "#credits-section .collapsible-header h3.collapsible-title",
+  },
+  {
     label: "credits collapsible inner (.collapsible-content)",
     selector: "#credits-section .collapsible-content",
   },
@@ -244,6 +288,14 @@ export const COMPUTED_STYLE_TARGETS = [
   {
     label: "chooser advanced tools box",
     selector: "#mithril-filters > div > .box:nth-child(4)",
+  },
+  {
+    label: "advanced tools collapsible header",
+    selector: "#mithril-filters > div > .box:nth-child(4) .collapsible-header",
+  },
+  {
+    label: "advanced tools collapsible inner (.collapsible-content)",
+    selector: "#mithril-filters > div > .box:nth-child(4) .collapsible-content",
   },
   {
     label: "filters panel inner box (first nested .box in filters)",
