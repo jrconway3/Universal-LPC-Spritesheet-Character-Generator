@@ -1,22 +1,16 @@
-const fs = require("fs");
-const path = require("path");
-const { debugLog, debugWarn } = require("./utils/debug.js");
+import fs from "fs";
+import path from "path";
+import { fork } from "child_process";
+import debugUtils from "./utils/debug.js";
+import { ANIMATIONS } from "../sources/state/constants.js";
 
-let ANIMATIONS = [];
+const { debugLog, debugWarn } = debugUtils;
 const SHEETS_DIR = "sheet_definitions" + path.sep;
 const PALETTES_DIR = "palette_definitions" + path.sep;
 
 const onlyIfTemplate = false; // print debugging log only if there is a template
 
-require("child_process").fork("scripts/zPositioning/parse_zpos.js");
-
-async function loadAnimations() {
-  const constants = await import("../sources/state/constants.js");
-  ANIMATIONS = constants.ANIMATIONS;
-  if (!Array.isArray(ANIMATIONS)) {
-    throw new TypeError("ANIMATIONS export is missing or invalid");
-  }
-}
+fork("scripts/zPositioning/parse_zpos.js");
 
 /**
  * Helper function to capitalize strings for display
@@ -668,7 +662,7 @@ function generateSources() {
   });
 
   const metadataJS = `// THIS FILE IS AUTO-GENERATED. PLEASE DON'T ALTER IT MANUALLY
-  // Generated from sheet_definitions/*.json by scripts/generate_sources.js
+  // Generated from sheet_definitions/*.json by scripts/generate_sources.mjs
   // Contains metadata for all customization items to avoid DOM queries at runtime
 
   window.itemMetadata = ${JSON.stringify(itemMetadata, null, 2)};
@@ -703,14 +697,4 @@ function printArray(array, label) {
   debugLog(`]${colors.reset}`);
 }
 
-async function main() {
-  try {
-    await loadAnimations();
-    generateSources();
-  } catch (error) {
-    console.error("Failed to generate sources:", error);
-    process.exitCode = 1;
-  }
-}
-
-void main();
+generateSources();

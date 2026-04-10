@@ -409,7 +409,7 @@ Edit each hair item JSON (e.g., `sheet_definitions/hair_afro.json`):
 Run the build script to update item metadata:
 
 ```bash
-node scripts/generate_sources.js
+node scripts/generate_sources.mjs
 ```
 
 This regenerates `item-metadata.js` with the new `recolors` field.
