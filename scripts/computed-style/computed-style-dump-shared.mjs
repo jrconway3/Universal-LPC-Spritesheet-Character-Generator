@@ -68,6 +68,11 @@ export const COMPUTED_STYLE_PROPS = [
 
 /**
  * Label + selector (first match). Order: page shell → columns → download → filters → preview.
+ *
+ * Optional per target:
+ * - `omitProps`: hyphenated CSS property names to skip (parity hacks vs master).
+ * - `omitDumpLines`: omit `__box` and/or `__offset` layout lines when subpixel or intentional
+ *   layout differences would otherwise fail the diff without changing on-screen parity.
  */
 export const COMPUTED_STYLE_TARGETS = [
   { label: "html", selector: "html" },
@@ -95,6 +100,10 @@ export const COMPUTED_STYLE_TARGETS = [
   {
     label: "filters collapsible inner (.collapsible-content)",
     selector: "#mithril-filters > div > .box:nth-child(2) .collapsible-content",
+  },
+  {
+    label: "filters collapsible header (Filters title row)",
+    selector: "#mithril-filters > div > .box:nth-child(2) .collapsible-header",
   },
   {
     label: "filters Search wrapper (first .mb-4)",
@@ -135,8 +144,39 @@ export const COMPUTED_STYLE_TARGETS = [
     label: "filters CategoryTree outer box",
     selector:
       "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .box.has-background-light",
-    /* Branch parity uses margin-top: -8px in bulma-overrides.css; master is 0px. Layout dimensions already match. */
+    /* Parity: branch uses margin-top: -8px in bulma-overrides.css; master is 0px. */
     omitProps: ["margin-top"],
+  },
+  {
+    label: "CategoryTree header row (Available Items + buttons)",
+    selector:
+      "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .box.has-background-light > div:nth-child(1)",
+  },
+  {
+    label: "CategoryTree match-body checkbox row",
+    selector:
+      "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .box.has-background-light > div:nth-child(2)",
+  },
+  {
+    label: "CategoryTree tree wrapper (body + categories)",
+    selector:
+      "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .box.has-background-light > div:nth-child(3)",
+    /* Parity CSS tightens inner layout; block-flow height differs slightly from master. */
+    omitProps: ["margin-top", "height"],
+    omitDumpLines: ["__box", "__offset"],
+  },
+  {
+    label: "CategoryTree Available Items title (h3)",
+    selector:
+      "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .box.has-background-light h3.title.is-5",
+    /* Flex row subpixel width differs Bulma 1 vs 0.9.4; title + buttons still align visually. */
+    omitProps: ["width"],
+    omitDumpLines: ["__box"],
+  },
+  {
+    label: "CategoryTree first .tree-label (Body Type)",
+    selector:
+      "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .box.has-background-light .tree-label",
   },
   {
     label: "chooser credits collapsible box",
@@ -179,6 +219,10 @@ export const COMPUTED_STYLE_TARGETS = [
   { label: "variant display name (first)", selector: ".variant-display-name" },
   { label: "collapsible header (first)", selector: ".collapsible-header" },
   { label: "animation preview box", selector: "#mithril-preview .box" },
+  {
+    label: "animation preview section title (first .title in preview)",
+    selector: "#mithril-preview .title",
+  },
   { label: "spritesheet preview box", selector: "#mithril-spritesheet-preview .box" },
   {
     label: "spritesheet inner columns row",
@@ -242,8 +286,13 @@ export async function collectComputedStyleDump(page, options = {}) {
         }
         const cs = getComputedStyle(el);
         const rect = el.getBoundingClientRect();
-        lines.push(`  __box: ${rect.width.toFixed(2)}x${rect.height.toFixed(2)}`);
-        lines.push(`  __offset: ${el.offsetWidth}x${el.offsetHeight}`);
+        const omitLines = new Set(t.omitDumpLines ?? []);
+        if (!omitLines.has("__box")) {
+          lines.push(`  __box: ${rect.width.toFixed(2)}x${rect.height.toFixed(2)}`);
+        }
+        if (!omitLines.has("__offset")) {
+          lines.push(`  __offset: ${el.offsetWidth}x${el.offsetHeight}`);
+        }
         for (const p of propList) {
           if (omit.has(p)) continue;
           const v = cs.getPropertyValue(p);
