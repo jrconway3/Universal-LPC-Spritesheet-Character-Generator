@@ -2,13 +2,21 @@ const fs = require("fs");
 const path = require("path");
 const { debugLog, debugWarn } = require("./utils/debug.js");
 
-const { ANIMATIONS } = require("../sources/state/constants.js");
+let ANIMATIONS = [];
 const SHEETS_DIR = "sheet_definitions" + path.sep;
 const PALETTES_DIR = "palette_definitions" + path.sep;
 
 const onlyIfTemplate = false; // print debugging log only if there is a template
 
 require("child_process").fork("scripts/zPositioning/parse_zpos.js");
+
+async function loadAnimations() {
+  const constants = await import("../sources/state/constants.js");
+  ANIMATIONS = constants.ANIMATIONS;
+  if (!Array.isArray(ANIMATIONS)) {
+    throw new TypeError("ANIMATIONS export is missing or invalid");
+  }
+}
 
 /**
  * Helper function to capitalize strings for display
@@ -462,223 +470,225 @@ function sortDirTree(a, b) {
   return pa.localeCompare(pb, ["en"]);
 }
 
-// Walk Palettes Definitions and build Metadata
-const palettes = fs
-  .readdirSync(PALETTES_DIR, {
-    recursive: true,
-    withFileTypes: true,
-  })
-  .sort(sortDirTree);
+function generateSources() {
+  // Walk Palettes Definitions and build Metadata
+  const palettes = fs
+    .readdirSync(PALETTES_DIR, {
+      recursive: true,
+      withFileTypes: true,
+    })
+    .sort(sortDirTree);
 
-// Read palette_definitions/*.json line by line
-palettes.forEach((file) => {
-  if (file.isDirectory()) {
-    return;
-  } else {
-    const fullPath = path.join(file.parentPath, file.name);
-    let json = null;
-    try {
-      json = JSON.parse(fs.readFileSync(fullPath));
-    } catch (e) {
-      console.error(`Error parsing palette file json data: ${fullPath}`, e);
-      throw e;
-    }
-
-    // Handle Meta Files for Materials and Versions
-    if (file.name.startsWith("meta_")) {
-      // Handle Palette Metadata
-      const name = file.name.replace("meta_", "").replace(".json", "");
-      if (json.type === "material") {
-        if (!paletteMetadata.materials[name]) {
-          paletteMetadata.materials[name] = json;
-          paletteMetadata.materials[name].palettes = {};
-        } else {
-          for (const [key, data] of Object.entries(json)) {
-            paletteMetadata.materials[name][key] = data;
-          }
-        }
-      } else {
-        paletteMetadata.versions[name] = json;
-      }
+  // Read palette_definitions/*.json line by line
+  palettes.forEach((file) => {
+    if (file.isDirectory()) {
       return;
     } else {
-      const [material, version] = file.name.replace(".json", "").split("_");
-      if (!paletteMetadata.materials[material]) {
-        paletteMetadata.materials[material] = { palettes: {} };
-      }
-      paletteMetadata.materials[material].palettes[version] = json;
-    }
-  }
-});
-
-// Read sheet_definitions/*.json line by line
-const files = fs
-  .readdirSync(SHEETS_DIR, {
-    recursive: true,
-    withFileTypes: true,
-  })
-  .sort(sortDirTree);
-
-// Initialize CSV
-const csvList = [];
-files.forEach((file) => {
-  if (file.isDirectory()) {
-    return;
-  } else if (file.name.startsWith("meta_")) {
-    // Handle Category Tree
-    parseTree(file.parentPath, file.name);
-    return;
-  } else {
-    let parsedResult = null;
-    try {
-      parsedResult = parseJson(file.parentPath, file.name);
-    } catch (e) {
       const fullPath = path.join(file.parentPath, file.name);
-      if (!onlyIfTemplate)
-        console.error(`Error parsing sheet file json data: ${fullPath}`, e);
+      let json = null;
+      try {
+        json = JSON.parse(fs.readFileSync(fullPath));
+      } catch (e) {
+        console.error(`Error parsing palette file json data: ${fullPath}`, e);
+        throw e;
+      }
+
+      // Handle Meta Files for Materials and Versions
+      if (file.name.startsWith("meta_")) {
+        // Handle Palette Metadata
+        const name = file.name.replace("meta_", "").replace(".json", "");
+        if (json.type === "material") {
+          if (!paletteMetadata.materials[name]) {
+            paletteMetadata.materials[name] = json;
+            paletteMetadata.materials[name].palettes = {};
+          } else {
+            for (const [key, data] of Object.entries(json)) {
+              paletteMetadata.materials[name][key] = data;
+            }
+          }
+        } else {
+          paletteMetadata.versions[name] = json;
+        }
+        return;
+      } else {
+        const [material, version] = file.name.replace(".json", "").split("_");
+        if (!paletteMetadata.materials[material]) {
+          paletteMetadata.materials[material] = { palettes: {} };
+        }
+        paletteMetadata.materials[material].palettes[version] = json;
+      }
+    }
+  });
+
+  // Read sheet_definitions/*.json line by line
+  const files = fs
+    .readdirSync(SHEETS_DIR, {
+      recursive: true,
+      withFileTypes: true,
+    })
+    .sort(sortDirTree);
+
+  // Initialize CSV
+  const csvList = [];
+  files.forEach((file) => {
+    if (file.isDirectory()) {
       return;
+    } else if (file.name.startsWith("meta_")) {
+      // Handle Category Tree
+      parseTree(file.parentPath, file.name);
+      return;
+    } else {
+      let parsedResult = null;
+      try {
+        parsedResult = parseJson(file.parentPath, file.name);
+      } catch (e) {
+        const fullPath = path.join(file.parentPath, file.name);
+        if (!onlyIfTemplate)
+          console.error(`Error parsing sheet file json data: ${fullPath}`, e);
+        return;
+      }
+      csvList.push({
+        path: file.parentPath.replace(SHEETS_DIR, ""),
+        csv: parsedResult.csv,
+      });
     }
-    csvList.push({
-      path: file.parentPath.replace(SHEETS_DIR, ""),
-      csv: parsedResult.csv,
-    });
-  }
-});
+  });
 
-// Generate item-metadata.js for runtime use
-for (const [itemId, meta] of Object.entries(itemMetadata)) {
-  const itemPath = meta.path || ["Other"];
+  // Generate item-metadata.js for runtime use
+  for (const [itemId, meta] of Object.entries(itemMetadata)) {
+    const itemPath = meta.path || ["Other"];
 
-  // Navigate/create tree structure (skip the last element which is the filename)
-  let current = categoryTree;
-  // Only use path elements except the last one (which is the filename)
-  const categoryPath = itemPath.slice(0, -1);
+    // Navigate/create tree structure (skip the last element which is the filename)
+    let current = categoryTree;
+    // Only use path elements except the last one (which is the filename)
+    const categoryPath = itemPath.slice(0, -1);
 
-  for (const segment of categoryPath) {
-    if (!current.children[segment]) {
-      current.children[segment] = { items: [], children: {} };
+    for (const segment of categoryPath) {
+      if (!current.children[segment]) {
+        current.children[segment] = { items: [], children: {} };
+      }
+      current = current.children[segment];
     }
-    current = current.children[segment];
+
+    // Add item to the category (not as a child)
+    current.items.push(itemId);
+  } // for itemMetadata
+
+  // Sort Category Tree and Subitems
+  function sortCategoryTree(node) {
+    const sortedChildren = Object.entries(node.children || {}).sort(
+      ([keyA, valA], [keyB, valB]) => {
+        const a = valA.priority ?? Number.POSITIVE_INFINITY;
+        const b = valB.priority ?? Number.POSITIVE_INFINITY;
+        if (a !== b) return a - b;
+        const labelA = valA.label ?? keyA;
+        const labelB = valB.label ?? keyB;
+        return labelA.localeCompare(labelB, ["en"]);
+      },
+    );
+
+    const reordered = {};
+    for (const [key, child] of sortedChildren) {
+      sortCategoryTree(child);
+      reordered[key] = child;
+    }
+    node.children = reordered;
+
+    if (node.items) {
+      node.items.sort((idA, idB) => {
+        const metaA = itemMetadata[idA] || {};
+        const metaB = itemMetadata[idB] || {};
+        const a = metaA.priority ?? Number.POSITIVE_INFINITY;
+        const b = metaB.priority ?? Number.POSITIVE_INFINITY;
+        if (a !== b) return a - b;
+        const nameA = metaA.name ?? idA;
+        const nameB = metaB.name ?? idB;
+        return nameA.localeCompare(nameB, ["en"]);
+      });
+    }
+
+    return node;
   }
 
-  // Add item to the category (not as a child)
-  current.items.push(itemId);
-} // for itemMetadata
+  sortCategoryTree(categoryTree);
 
-// Sort Category Tree and Subitems
-function sortCategoryTree(node) {
-  const sortedChildren = Object.entries(node.children || {}).sort(
-    ([keyA, valA], [keyB, valB]) => {
-      const a = valA.priority ?? Number.POSITIVE_INFINITY;
-      const b = valB.priority ?? Number.POSITIVE_INFINITY;
-      if (a !== b) return a - b;
-      const labelA = valA.label ?? keyA;
-      const labelB = valB.label ?? keyB;
+  // Sort csvList by category tree priorities
+  csvList.sort((a, b) => {
+    const pathA = a.path.split(path.sep).filter(Boolean);
+    const pathB = b.path.split(path.sep).filter(Boolean);
+
+    // Compare each path segment
+    const maxLen = Math.max(pathA.length, pathB.length);
+    for (let i = 0; i < maxLen; i++) {
+      if (i >= pathA.length) return -1; // a is shorter, comes first
+      if (i >= pathB.length) return 1; // b is shorter, comes first
+
+      const segA = pathA[i];
+      const segB = pathB[i];
+
+      if (segA === segB) continue;
+
+      // Navigate to parent node to get priorities
+      let nodeA = categoryTree;
+      let nodeB = categoryTree;
+      for (let j = 0; j <= i; j++) {
+        nodeA = nodeA.children?.[pathA[j]];
+        nodeB = nodeB.children?.[pathB[j]];
+        if (!nodeA || !nodeB) break;
+      }
+
+      const prioA = nodeA?.priority ?? Number.POSITIVE_INFINITY;
+      const prioB = nodeB?.priority ?? Number.POSITIVE_INFINITY;
+
+      if (prioA !== prioB) return prioA - prioB;
+
+      const labelA = nodeA?.label ?? segA;
+      const labelB = nodeB?.label ?? segB;
       return labelA.localeCompare(labelB, ["en"]);
-    },
-  );
-
-  const reordered = {};
-  for (const [key, child] of sortedChildren) {
-    sortCategoryTree(child);
-    reordered[key] = child;
-  }
-  node.children = reordered;
-
-  if (node.items) {
-    node.items.sort((idA, idB) => {
-      const metaA = itemMetadata[idA] || {};
-      const metaB = itemMetadata[idB] || {};
-      const a = metaA.priority ?? Number.POSITIVE_INFINITY;
-      const b = metaB.priority ?? Number.POSITIVE_INFINITY;
-      if (a !== b) return a - b;
-      const nameA = metaA.name ?? idA;
-      const nameB = metaB.name ?? idB;
-      return nameA.localeCompare(nameB, ["en"]);
-    });
-  }
-
-  return node;
-}
-
-sortCategoryTree(categoryTree);
-
-// Sort csvList by category tree priorities
-csvList.sort((a, b) => {
-  const pathA = a.path.split(path.sep).filter(Boolean);
-  const pathB = b.path.split(path.sep).filter(Boolean);
-
-  // Compare each path segment
-  const maxLen = Math.max(pathA.length, pathB.length);
-  for (let i = 0; i < maxLen; i++) {
-    if (i >= pathA.length) return -1; // a is shorter, comes first
-    if (i >= pathB.length) return 1; // b is shorter, comes first
-
-    const segA = pathA[i];
-    const segB = pathB[i];
-
-    if (segA === segB) continue;
-
-    // Navigate to parent node to get priorities
-    let nodeA = categoryTree;
-    let nodeB = categoryTree;
-    for (let j = 0; j <= i; j++) {
-      nodeA = nodeA.children?.[pathA[j]];
-      nodeB = nodeB.children?.[pathB[j]];
-      if (!nodeA || !nodeB) break;
     }
 
-    const prioA = nodeA?.priority ?? Number.POSITIVE_INFINITY;
-    const prioB = nodeB?.priority ?? Number.POSITIVE_INFINITY;
+    return 0;
+  });
 
-    if (prioA !== prioB) return prioA - prioB;
-
-    const labelA = nodeA?.label ?? segA;
-    const labelB = nodeB?.label ?? segB;
-    return labelA.localeCompare(labelB, ["en"]);
+  // Generate CREDITS.csv After Sorting Everything
+  let csvGenerated = "filename,notes,authors,licenses,urls\n";
+  for (const result of csvList) {
+    for (const item of result.csv) {
+      csvGenerated += item.lineText;
+    }
   }
+  fs.writeFile("CREDITS.csv", csvGenerated, function (err) {
+    if (err) {
+      return console.error(err);
+    } else {
+      // eslint-disable-next-line no-console
+      console.log("CSV Updated!");
+      printArray(licensesFound, "Found licenses");
+    }
+  });
 
-  return 0;
-});
+  const metadataJS = `// THIS FILE IS AUTO-GENERATED. PLEASE DON'T ALTER IT MANUALLY
+  // Generated from sheet_definitions/*.json by scripts/generate_sources.js
+  // Contains metadata for all customization items to avoid DOM queries at runtime
 
-// Generate CREDITS.csv After Sorting Everything
-let csvGenerated = "filename,notes,authors,licenses,urls\n";
-for (const result of csvList) {
-  for (const item of result.csv) {
-    csvGenerated += item.lineText;
-  }
+  window.itemMetadata = ${JSON.stringify(itemMetadata, null, 2)};
+
+  window.aliasMetadata = ${JSON.stringify(aliasMetadata, null, 2)};
+
+  window.categoryTree = ${JSON.stringify(categoryTree, null, 2)};
+
+  window.paletteMetadata = ${JSON.stringify(paletteMetadata, null, 2)};
+  `;
+
+  fs.writeFile("item-metadata.js", metadataJS, function (err) {
+    if (err) {
+      return console.error(err);
+    } else {
+      // eslint-disable-next-line no-console
+      console.log("Item Metadata JS Updated!");
+    }
+  });
 }
-fs.writeFile("CREDITS.csv", csvGenerated, function (err) {
-  if (err) {
-    return console.error(err);
-  } else {
-    // eslint-disable-next-line no-console
-    console.log("CSV Updated!");
-    printArray(licensesFound, "Found licenses");
-  }
-});
-
-const metadataJS = `// THIS FILE IS AUTO-GENERATED. PLEASE DON'T ALTER IT MANUALLY
-// Generated from sheet_definitions/*.json by scripts/generate_sources.js
-// Contains metadata for all customization items to avoid DOM queries at runtime
-
-window.itemMetadata = ${JSON.stringify(itemMetadata, null, 2)};
-
-window.aliasMetadata = ${JSON.stringify(aliasMetadata, null, 2)};
-
-window.categoryTree = ${JSON.stringify(categoryTree, null, 2)};
-
-window.paletteMetadata = ${JSON.stringify(paletteMetadata, null, 2)};
-`;
-
-fs.writeFile("item-metadata.js", metadataJS, function (err) {
-  if (err) {
-    return console.error(err);
-  } else {
-    // eslint-disable-next-line no-console
-    console.log("Item Metadata JS Updated!");
-  }
-});
 
 function printArray(array, label) {
   const colors = {
@@ -692,3 +702,15 @@ function printArray(array, label) {
   }
   debugLog(`]${colors.reset}`);
 }
+
+async function main() {
+  try {
+    await loadAnimations();
+    generateSources();
+  } catch (error) {
+    console.error("Failed to generate sources:", error);
+    process.exitCode = 1;
+  }
+}
+
+void main();
