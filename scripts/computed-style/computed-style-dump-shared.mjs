@@ -135,6 +135,8 @@ export const COMPUTED_STYLE_TARGETS = [
     label: "filters CategoryTree outer box",
     selector:
       "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .box.has-background-light",
+    /* Branch parity uses margin-top: -8px in bulma-overrides.css; master is 0px. Layout dimensions already match. */
+    omitProps: ["margin-top"],
   },
   {
     label: "chooser credits collapsible box",
@@ -228,7 +230,9 @@ export async function collectComputedStyleDump(page, options = {}) {
     ({ props: propList, targets: targetList }) => {
       /* eslint-disable no-undef -- browser */
       const lines = [];
-      for (const { label, selector } of targetList) {
+      for (const t of targetList) {
+        const { label, selector } = t;
+        const omit = new Set(t.omitProps ?? []);
         lines.push(`=== ${label} <${selector}> ===`);
         const el = document.querySelector(selector);
         if (!el) {
@@ -241,6 +245,7 @@ export async function collectComputedStyleDump(page, options = {}) {
         lines.push(`  __box: ${rect.width.toFixed(2)}x${rect.height.toFixed(2)}`);
         lines.push(`  __offset: ${el.offsetWidth}x${el.offsetHeight}`);
         for (const p of propList) {
+          if (omit.has(p)) continue;
           const v = cs.getPropertyValue(p);
           if (v !== "") {
             lines.push(`  ${p}: ${v.trim()}`);

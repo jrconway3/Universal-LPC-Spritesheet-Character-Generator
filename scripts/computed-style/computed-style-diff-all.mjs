@@ -3,7 +3,11 @@
  * Dump computed styles for both URLs at all Argos viewports (home.spec.js),
  * write raw dumps + unified diffs per preset, and a combined report.
  *
- * Defaults: url-a http://127.0.0.1:4174, url-b http://127.0.0.1:4175
+ * Typical workflow: master (Bulma 0.9.x, no bulma-overrides) vs update_bulma (Bulma 1.x +
+ * styles/bulma-overrides.css). Defaults map to that: url-a http://127.0.0.1:4174 (master),
+ * url-b http://127.0.0.1:4175 (branch). Unified diff lines are from a (baseline) vs b (branch);
+ * goal is empty diff when overrides match master.
+ *
  * Override with env COMPUTED_STYLE_URL_A / COMPUTED_STYLE_URL_B or --url-a / --url-b.
  *
  * Usage:
