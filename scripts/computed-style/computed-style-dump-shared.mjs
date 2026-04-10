@@ -141,6 +141,25 @@ export const COMPUTED_STYLE_TARGETS = [
       "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .mb-4:nth-child(3)",
   },
   {
+    label: "filters CurrentSelections h3 title",
+    selector:
+      "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .mb-4:nth-child(3) h3.title.is-5",
+  },
+  {
+    label: "filters CurrentSelections .tags",
+    selector:
+      "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .mb-4:nth-child(3) .tags",
+    /* Bulma 1 .tags flex: gap/centering vs 0.9.4; omit when selections exist. */
+    omitProps: [
+      "align-items",
+      "column-gap",
+      "gap",
+      "row-gap",
+      "margin-bottom",
+    ],
+    omitDumpLines: ["__box", "__offset"],
+  },
+  {
     label: "filters CategoryTree outer box",
     selector:
       "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .box.has-background-light",
@@ -156,6 +175,19 @@ export const COMPUTED_STYLE_TARGETS = [
     label: "CategoryTree match-body checkbox row",
     selector:
       "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .box.has-background-light > div:nth-child(2)",
+  },
+  {
+    label: "CategoryTree Body Type .buttons row",
+    selector:
+      "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .box.has-background-light > div:nth-child(3) > div.mb-3 .buttons",
+    /* Bulma 1 .buttons flex vs 0.9.4. */
+    omitProps: [
+      "align-items",
+      "column-gap",
+      "gap",
+      "row-gap",
+      "margin-bottom",
+    ],
   },
   {
     label: "CategoryTree tree wrapper (body + categories)",
@@ -181,6 +213,10 @@ export const COMPUTED_STYLE_TARGETS = [
   {
     label: "chooser credits collapsible box",
     selector: "#credits-section",
+  },
+  {
+    label: "credits collapsible header",
+    selector: "#credits-section .collapsible-header",
   },
   {
     label: "credits collapsible inner (.collapsible-content)",
@@ -218,15 +254,62 @@ export const COMPUTED_STYLE_TARGETS = [
   { label: "tree label (first)", selector: ".tree-label" },
   { label: "variant display name (first)", selector: ".variant-display-name" },
   { label: "collapsible header (first)", selector: ".collapsible-header" },
-  { label: "animation preview box", selector: "#mithril-preview .box" },
+  {
+    label: "animation preview section root (#mithril-preview)",
+    selector: "#mithril-preview",
+  },
+  {
+    label: "animation preview collapsible header",
+    selector: "#mithril-preview .collapsible-header",
+  },
+  {
+    label: "animation preview collapsible inner (.collapsible-content)",
+    selector: "#mithril-preview .collapsible-content",
+    omitProps: ["height", "margin-top"],
+    omitDumpLines: ["__box", "__offset"],
+  },
+  {
+    label: "animation preview controls row (.columns.is-multiline)",
+    selector: "#mithril-preview .columns.is-multiline",
+    omitProps: ["height"],
+    omitDumpLines: ["__box", "__offset"],
+  },
+  {
+    label: "animation preview zoom range input",
+    selector: "#mithril-preview input.is-fullwidth[type=range]",
+  },
+  {
+    label: "animation preview scrollable container",
+    selector: "#mithril-preview .scrollable-container",
+  },
   {
     label: "animation preview section title (first .title in preview)",
     selector: "#mithril-preview .title",
   },
-  { label: "spritesheet preview box", selector: "#mithril-spritesheet-preview .box" },
   {
-    label: "spritesheet inner columns row",
-    selector: "#mithril-spritesheet-preview .columns.is-mobile",
+    label: "spritesheet preview section root (#mithril-spritesheet-preview)",
+    selector: "#mithril-spritesheet-preview",
+  },
+  {
+    label: "spritesheet preview collapsible header",
+    selector: "#mithril-spritesheet-preview .collapsible-header",
+  },
+  {
+    label: "spritesheet preview collapsible inner (.collapsible-content)",
+    selector: "#mithril-spritesheet-preview .collapsible-content",
+  },
+  {
+    label: "spritesheet preview checkbox+zoom row (.columns.is-mobile)",
+    selector:
+      "#mithril-spritesheet-preview .columns.is-mobile.is-variable.is-1.is-multiline",
+  },
+  {
+    label: "spritesheet preview zoom range input",
+    selector: "#mithril-spritesheet-preview input.is-fullwidth[type=range]",
+  },
+  {
+    label: "spritesheet preview scrollable container",
+    selector: "#mithril-spritesheet-preview .scrollable-container",
   },
   {
     label: "spritesheet horizontal field",
