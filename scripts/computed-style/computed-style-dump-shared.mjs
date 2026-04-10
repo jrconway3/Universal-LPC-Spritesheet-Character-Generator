@@ -4,7 +4,7 @@
  */
 
 import { chromium } from "playwright";
-import { gotoHomepageReady } from "../tests/visual/home-helpers.js";
+import { gotoHomepageReady } from "../../tests/visual/home-helpers.js";
 
 /** Same dimensions as tests/visual/home.spec.js (Argos). */
 export const VIEWPORT_PRESETS = {

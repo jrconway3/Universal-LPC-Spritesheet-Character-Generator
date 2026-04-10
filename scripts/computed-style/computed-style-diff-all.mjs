@@ -3,12 +3,12 @@
  * Dump computed styles for both URLs at all Argos viewports (home.spec.js),
  * write raw dumps + unified diffs per preset, and a combined report.
  *
- * Defaults: master http://127.0.0.1:4175 vs branch http://127.0.0.1:4174
+ * Defaults: url-a http://127.0.0.1:4174, url-b http://127.0.0.1:4175
  * Override with env COMPUTED_STYLE_URL_A / COMPUTED_STYLE_URL_B or --url-a / --url-b.
  *
  * Usage:
  *   node scripts/computed-style-diff-all.mjs
- *   node scripts/computed-style-diff-all.mjs --out-dir /tmp/cmp --url-a http://127.0.0.1:4175 --url-b http://127.0.0.1:4174
+ *   node scripts/computed-style-diff-all.mjs --out-dir /tmp/cmp --url-a http://127.0.0.1:4174 --url-b http://127.0.0.1:4175
  *   node scripts/computed-style-diff-all.mjs --no-fail-on-diff   # exit 0 even when diffs exist
  */
 
@@ -24,8 +24,8 @@ const PRESET_ORDER = ["mobile", "tablet", "mediumDesktop", "hugeDesktop"];
 
 function parseArgs(argv) {
   const out = {
-    urlA: process.env.COMPUTED_STYLE_URL_A ?? "http://127.0.0.1:4175",
-    urlB: process.env.COMPUTED_STYLE_URL_B ?? "http://127.0.0.1:4174",
+    urlA: process.env.COMPUTED_STYLE_URL_A ?? "http://127.0.0.1:4174",
+    urlB: process.env.COMPUTED_STYLE_URL_B ?? "http://127.0.0.1:4175",
     outDir: path.join(process.cwd(), "computed-style-diff-output"),
     failOnDiff: true,
     help: false,
@@ -52,8 +52,8 @@ function printHelp() {
   node scripts/computed-style-diff-all.mjs [options]
 
 Options:
-  --url-a <url>     First site (default: $COMPUTED_STYLE_URL_A or http://127.0.0.1:4175)
-  --url-b <url>     Second site (default: $COMPUTED_STYLE_URL_B or http://127.0.0.1:4174)
+  --url-a <url>     First site (default: $COMPUTED_STYLE_URL_A or http://127.0.0.1:4174)
+  --url-b <url>     Second site (default: $COMPUTED_STYLE_URL_B or http://127.0.0.1:4175)
   --out-dir <dir>   Output directory (default: ./computed-style-diff-output)
   --no-fail-on-diff Exit 0 even when unified diffs are non-empty
   --help, -h
