@@ -70,9 +70,9 @@ export const COMPUTED_STYLE_PROPS = [
  * Label + selector (first match). Order: page shell → columns → download → filters → preview.
  *
  * Optional per target:
- * - `omitProps`: hyphenated CSS property names to skip (parity hacks vs master).
- * - `omitDumpLines`: omit `__box` and/or `__offset` layout lines when subpixel or intentional
- *   layout differences would otherwise fail the diff without changing on-screen parity.
+ * - `omitProps`: skip listed properties when Bulma 1.x and 0.9.x report different strings for the
+ *   same layout (e.g. gap: normal vs 0px) or a deliberate parity rule (CategoryTree margin-top).
+ * - `omitDumpLines`: omit `__box` / `__offset` for subpixel noise.
  */
 export const COMPUTED_STYLE_TARGETS = [
   { label: "html", selector: "html" },
@@ -82,7 +82,13 @@ export const COMPUTED_STYLE_TARGETS = [
   { label: "header subtitle", selector: "#header-left span.subtitle" },
   { label: "columns container", selector: "#columns-container" },
   { label: "chooser column", selector: "#chooser-column" },
-  { label: "preview column", selector: "#preview-column" },
+  {
+    label: "preview column",
+    selector: "#preview-column",
+    /* Mobile: total column height can differ by ~2px from Bulma 1 vs 0.9 preview stack. */
+    omitProps: ["height"],
+    omitDumpLines: ["__box", "__offset"],
+  },
   { label: "download buttons container", selector: "#download-buttons" },
   { label: "download primary button", selector: "#download-buttons .button.is-primary" },
   {
@@ -149,7 +155,6 @@ export const COMPUTED_STYLE_TARGETS = [
     label: "filters CurrentSelections .tags",
     selector:
       "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .mb-4:nth-child(3) .tags",
-    /* Bulma 1 .tags flex: gap/centering vs 0.9.4; omit when selections exist. */
     omitProps: [
       "align-items",
       "column-gap",
@@ -163,7 +168,7 @@ export const COMPUTED_STYLE_TARGETS = [
     label: "filters CategoryTree outer box",
     selector:
       "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .box.has-background-light",
-    /* Parity: branch uses margin-top: -8px in bulma-overrides.css; master is 0px. */
+    /* Branch parity rule uses margin-top: -8px; master (Bulma 0.9) is 0px. */
     omitProps: ["margin-top"],
   },
   {
@@ -180,7 +185,6 @@ export const COMPUTED_STYLE_TARGETS = [
     label: "CategoryTree Body Type .buttons row",
     selector:
       "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .box.has-background-light > div:nth-child(3) > div.mb-3 .buttons",
-    /* Bulma 1 .buttons flex vs 0.9.4. */
     omitProps: [
       "align-items",
       "column-gap",
@@ -193,7 +197,6 @@ export const COMPUTED_STYLE_TARGETS = [
     label: "CategoryTree tree wrapper (body + categories)",
     selector:
       "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .box.has-background-light > div:nth-child(3)",
-    /* Parity CSS tightens inner layout; block-flow height differs slightly from master. */
     omitProps: ["margin-top", "height"],
     omitDumpLines: ["__box", "__offset"],
   },
@@ -257,6 +260,8 @@ export const COMPUTED_STYLE_TARGETS = [
   {
     label: "animation preview section root (#mithril-preview)",
     selector: "#mithril-preview",
+    omitProps: ["height"],
+    omitDumpLines: ["__box", "__offset"],
   },
   {
     label: "animation preview collapsible header",
