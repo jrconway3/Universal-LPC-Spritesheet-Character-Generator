@@ -95,11 +95,12 @@ export const COMPUTED_STYLE_PROPS = [
  * category tree → credits → advanced → preview.
  *
  * Optional per target:
- * - `omitProps`: skip listed properties when Bulma 1.x and 0.9.x report different strings for the
- *   same layout (e.g. gap: normal vs 0px) or a deliberate parity rule (CategoryTree margin-top).
+ * - `omitProps`: skip listed properties for noisy or deliberate parity cases only. Avoid omitting
+ *   `gap` / `align-items` on `.buttons` / `.tags` — Argos will still show diffs when those differ.
  * - `omitDumpLines`: omit `__box` / `__offset` for subpixel noise.
- * - `includeRect`: when true, append `__rect: left,top` (rounded px) for viewport-relative
- *   position — helps correlate vertical drift with Argos even when computed longhands match.
+ * - `includeRect`: append `__rect: left,top` (rounded px). Use on section anchors (download row,
+ *   CurrentSelections, credits) to catch cumulative vertical shift that Argos highlights even when
+ *   individual boxes match.
  */
 export const COMPUTED_STYLE_TARGETS = [
   { label: "html", selector: "html" },
@@ -129,7 +130,11 @@ export const COMPUTED_STYLE_TARGETS = [
     omitProps: ["height"],
     omitDumpLines: ["__box", "__offset"],
   },
-  { label: "download buttons container", selector: "#download-buttons" },
+  {
+    label: "download buttons container",
+    selector: "#download-buttons",
+    includeRect: true,
+  },
   { label: "download primary button", selector: "#download-buttons .button.is-primary" },
   {
     label: "download first is-info button",
@@ -159,6 +164,7 @@ export const COMPUTED_STYLE_TARGETS = [
   {
     label: "chooser download collapsible box",
     selector: "#mithril-filters > div > .box:nth-child(1)",
+    includeRect: true,
   },
   {
     label: "chooser filters collapsible box",
@@ -176,6 +182,12 @@ export const COMPUTED_STYLE_TARGETS = [
     label: "filters Search wrapper (first .mb-4)",
     selector:
       "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .mb-4:nth-child(1)",
+    includeRect: true,
+  },
+  {
+    label: "filters Search field (.field in first .mb-4)",
+    selector:
+      "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .mb-4:nth-child(1) .field",
   },
   {
     label: "filters license+animation columns row",
@@ -206,6 +218,7 @@ export const COMPUTED_STYLE_TARGETS = [
     label: "filters CurrentSelections wrapper (.mb-4 after columns)",
     selector:
       "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .mb-4:nth-child(3)",
+    includeRect: true,
   },
   {
     label: "filters CurrentSelections h3 title",
@@ -216,21 +229,16 @@ export const COMPUTED_STYLE_TARGETS = [
     label: "filters CurrentSelections .tags",
     selector:
       "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .mb-4:nth-child(3) .tags",
-    omitProps: [
-      "align-items",
-      "column-gap",
-      "gap",
-      "row-gap",
-      "margin-bottom",
-    ],
-    omitDumpLines: ["__box", "__offset"],
+  },
+  {
+    label: "filters CurrentSelections first .tag.is-medium",
+    selector:
+      "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .mb-4:nth-child(3) .tags .tag.is-medium",
   },
   {
     label: "filters CategoryTree outer box",
     selector:
       "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .box.has-background-light",
-    /* Branch parity rule uses margin-top: -8px; master (Bulma 0.9) is 0px. */
-    omitProps: ["margin-top"],
     includeRect: true,
   },
   {
@@ -245,6 +253,7 @@ export const COMPUTED_STYLE_TARGETS = [
     label: "CategoryTree header row (Available Items + buttons)",
     selector:
       "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .box.has-background-light > div:nth-child(1)",
+    includeRect: true,
   },
   {
     label: "CategoryTree match-body checkbox row",
@@ -255,13 +264,7 @@ export const COMPUTED_STYLE_TARGETS = [
     label: "CategoryTree Body Type .buttons row",
     selector:
       "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .box.has-background-light > div:nth-child(3) > div.mb-3 .buttons",
-    omitProps: [
-      "align-items",
-      "column-gap",
-      "gap",
-      "row-gap",
-      "margin-bottom",
-    ],
+    includeRect: true,
   },
   {
     label: "CategoryTree Body Type expanded body-type buttons (div.ml-4.mt-2)",
@@ -358,12 +361,18 @@ export const COMPUTED_STYLE_TARGETS = [
   { label: "body type button", selector: "#mithril-filters .buttons .button" },
   { label: "tree label (first)", selector: ".tree-label" },
   { label: "variant display name (first)", selector: ".variant-display-name" },
+  {
+    label: "CategoryTree first .variant-item",
+    selector:
+      "#mithril-filters .box.has-background-light .variant-item",
+  },
   { label: "collapsible header (first)", selector: ".collapsible-header" },
   {
     label: "animation preview section root (#mithril-preview)",
     selector: "#mithril-preview",
     omitProps: ["height"],
     omitDumpLines: ["__box", "__offset"],
+    includeRect: true,
   },
   {
     label: "animation preview collapsible header",
