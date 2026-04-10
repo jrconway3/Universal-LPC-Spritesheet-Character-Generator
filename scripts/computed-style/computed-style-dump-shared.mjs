@@ -16,22 +16,30 @@ export const VIEWPORT_PRESETS = {
 
 export const DEFAULT_VIEWPORT = { width: 1440, height: 900 };
 
-/** Properties (hyphenated) for getComputedStyle — layout, flex, typography. */
+/** Properties (hyphenated) for getComputedStyle — layout, flex, typography, borders, transforms. */
 export const COMPUTED_STYLE_PROPS = [
   "align-items",
   "align-self",
   "background-color",
+  "border-bottom-color",
   "border-bottom-left-radius",
   "border-bottom-right-radius",
+  "border-bottom-style",
   "border-bottom-width",
+  "border-color",
+  "border-left-color",
   "border-left-width",
   "border-radius",
+  "border-right-color",
   "border-right-width",
+  "border-top-color",
   "border-top-left-radius",
   "border-top-right-radius",
+  "border-top-style",
   "border-top-width",
   "box-shadow",
   "box-sizing",
+  "bottom",
   "color",
   "column-gap",
   "display",
@@ -46,6 +54,7 @@ export const COMPUTED_STYLE_PROPS = [
   "gap",
   "height",
   "justify-content",
+  "left",
   "letter-spacing",
   "line-height",
   "margin-bottom",
@@ -56,14 +65,29 @@ export const COMPUTED_STYLE_PROPS = [
   "max-width",
   "min-height",
   "min-width",
+  "opacity",
+  "outline-color",
+  "outline-style",
+  "outline-width",
   "overflow-x",
   "overflow-y",
   "padding-bottom",
   "padding-left",
   "padding-right",
   "padding-top",
+  "position",
+  "right",
   "row-gap",
+  "text-align",
+  "text-decoration",
+  "text-decoration-line",
+  "top",
+  "transform",
+  "vertical-align",
+  "visibility",
+  "white-space",
   "width",
+  "z-index",
 ];
 
 /**
@@ -74,6 +98,8 @@ export const COMPUTED_STYLE_PROPS = [
  * - `omitProps`: skip listed properties when Bulma 1.x and 0.9.x report different strings for the
  *   same layout (e.g. gap: normal vs 0px) or a deliberate parity rule (CategoryTree margin-top).
  * - `omitDumpLines`: omit `__box` / `__offset` for subpixel noise.
+ * - `includeRect`: when true, append `__rect: left,top` (rounded px) for viewport-relative
+ *   position — helps correlate vertical drift with Argos even when computed longhands match.
  */
 export const COMPUTED_STYLE_TARGETS = [
   { label: "html", selector: "html" },
@@ -94,6 +120,7 @@ export const COMPUTED_STYLE_TARGETS = [
   {
     label: "mithril-filters app stack (Download+Filters+Credits+Advanced wrapper)",
     selector: "#mithril-filters > div",
+    includeRect: true,
   },
   {
     label: "preview column",
@@ -111,6 +138,10 @@ export const COMPUTED_STYLE_TARGETS = [
   {
     label: "download first is-link button",
     selector: "#download-buttons .button.is-link",
+  },
+  {
+    label: "download first button element (nth-of-type)",
+    selector: "#download-buttons button:nth-of-type(1)",
   },
   {
     label: "download collapsible header",
@@ -200,6 +231,15 @@ export const COMPUTED_STYLE_TARGETS = [
       "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .box.has-background-light",
     /* Branch parity rule uses margin-top: -8px; master (Bulma 0.9) is 0px. */
     omitProps: ["margin-top"],
+    includeRect: true,
+  },
+  {
+    label: "CategoryTree Available Items toolbar .buttons.mb-0",
+    selector:
+      "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .box.has-background-light > div:nth-child(1) .buttons.mb-0",
+    /* Flex row subpixel width / offset differs Bulma 1 vs 0.9; align-items parity is what we care about. */
+    omitProps: ["width"],
+    omitDumpLines: ["__box", "__offset"],
   },
   {
     label: "CategoryTree header row (Available Items + buttons)",
@@ -229,6 +269,15 @@ export const COMPUTED_STYLE_TARGETS = [
       "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .box.has-background-light div.ml-4.mt-2",
   },
   {
+    label: "body type first primary button (Body Type row)",
+    selector:
+      "#mithril-filters > div > .box:nth-child(2) .collapsible-content > .box.has-background-light div.buttons.ml-4 .button.is-primary",
+  },
+  {
+    label: "match body color checkbox input",
+    selector: "#match-body-color-checkbox",
+  },
+  {
     label: "CategoryTree first .tree-node (scoped under filters)",
     selector:
       "#mithril-filters > div > .box:nth-child(2) .collapsible-content .tree-node",
@@ -256,6 +305,7 @@ export const COMPUTED_STYLE_TARGETS = [
   {
     label: "chooser credits collapsible box",
     selector: "#credits-section",
+    includeRect: true,
   },
   {
     label: "credits collapsible header",
@@ -340,12 +390,17 @@ export const COMPUTED_STYLE_TARGETS = [
     selector: "#mithril-preview .scrollable-container",
   },
   {
+    label: "animation preview canvas stack wrapper (div.mt-3)",
+    selector: "#mithril-preview .collapsible-content > div.mt-3",
+  },
+  {
     label: "animation preview section title (first .title in preview)",
     selector: "#mithril-preview .title",
   },
   {
     label: "spritesheet preview section root (#mithril-spritesheet-preview)",
     selector: "#mithril-spritesheet-preview",
+    includeRect: true,
   },
   {
     label: "spritesheet preview collapsible header",
@@ -432,6 +487,11 @@ export async function collectComputedStyleDump(page, options = {}) {
         }
         if (!omitLines.has("__offset")) {
           lines.push(`  __offset: ${el.offsetWidth}x${el.offsetHeight}`);
+        }
+        if (t.includeRect) {
+          lines.push(
+            `  __rect: ${Math.round(rect.left)},${Math.round(rect.top)}`,
+          );
         }
         for (const p of propList) {
           if (omit.has(p)) continue;
