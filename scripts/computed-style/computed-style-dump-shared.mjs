@@ -16,7 +16,11 @@ export const VIEWPORT_PRESETS = {
 
 export const DEFAULT_VIEWPORT = { width: 1440, height: 900 };
 
-/** Properties (hyphenated) for getComputedStyle — layout, flex, typography, borders, transforms. */
+/**
+ * Properties (hyphenated) for getComputedStyle — layout, flex, typography, borders, transforms.
+ * Includes `font` shorthand plus rasterization / width signals (text-rendering,
+ * -webkit-font-smoothing, font-stretch, word-spacing, font-feature-settings, etc.).
+ */
 export const COMPUTED_STYLE_PROPS = [
   "align-items",
   "align-self",
@@ -48,8 +52,15 @@ export const COMPUTED_STYLE_PROPS = [
   "flex-grow",
   "flex-shrink",
   "flex-wrap",
+  "font",
   "font-family",
+  "font-feature-settings",
+  "font-optical-sizing",
   "font-size",
+  "font-size-adjust",
+  "font-stretch",
+  "font-variant",
+  "font-variation-settings",
   "font-weight",
   "gap",
   "height",
@@ -81,12 +92,17 @@ export const COMPUTED_STYLE_PROPS = [
   "text-align",
   "text-decoration",
   "text-decoration-line",
+  "text-rendering",
+  "text-size-adjust",
   "top",
   "transform",
   "vertical-align",
   "visibility",
   "white-space",
   "width",
+  "word-spacing",
+  "-moz-osx-font-smoothing",
+  "-webkit-font-smoothing",
   "z-index",
 ];
 
@@ -101,6 +117,14 @@ export const COMPUTED_STYLE_PROPS = [
  * - `includeRect`: append `__rect: left,top` (rounded px). Use on section anchors (download row,
  *   CurrentSelections, credits) to catch cumulative vertical shift that Argos highlights even when
  *   individual boxes match.
+ * - Selectors use `querySelectorAll`: every matching node is dumped. When there are 2+ matches,
+ *   each block is titled `=== label <selector> [i/N] ===`; a single match keeps the original
+ *   `=== label <selector> ===` header (stable diffs for unique nodes).
+ *
+ * Dump options (passed to `collectComputedStyleDump` / `dumpComputedStylesForUrl`):
+ * - `fontDiagnostics` (default true): append FontFace registry + canvas `measureText` probes using
+ *   each element’s resolved `font` string — surfaces real width/clarity differences when CSS strings
+ *   match but rasterization or loaded faces differ.
  */
 export const COMPUTED_STYLE_TARGETS = [
   { label: "html", selector: "html" },
@@ -134,6 +158,10 @@ export const COMPUTED_STYLE_TARGETS = [
     label: "download buttons container",
     selector: "#download-buttons",
     includeRect: true,
+  },
+  {
+    label: "download buttons (each .button)",
+    selector: "#download-buttons .button",
   },
   { label: "download primary button", selector: "#download-buttons .button.is-primary" },
   {
@@ -471,50 +499,198 @@ export function makeDumpHeader(viewport, url) {
   return `# computed-style-dump viewport=${viewport.width}x${viewport.height} url=${u}\n\n`;
 }
 
+/** Snippets for canvas `measureText` (compare width between master/branch dumps). */
+export const FONT_METRICS_SNIPPETS = [
+  "Ag",
+  "Spritesheet (PNG)",
+  "Universal LPC Spritesheet Generator",
+];
+
+/** Selectors for font shorthand + measureText probes (label for dump lines only). */
+export const FONT_METRICS_PROBES = [
+  { label: "body", selector: "body" },
+  { label: "h1.title", selector: "h1.title" },
+  { label: "download .button (first)", selector: "#download-buttons .button" },
+  { label: "filters .label (first)", selector: "#mithril-filters .label" },
+  { label: ".tree-label (first)", selector: ".tree-label" },
+];
+
 export async function collectComputedStyleDump(page, options = {}) {
   const props = options.props ?? COMPUTED_STYLE_PROPS;
   const targets = options.targets ?? COMPUTED_STYLE_TARGETS;
+  const fontDiagnostics = options.fontDiagnostics !== false;
+  const fontSnippets = options.fontMetricsSnippets ?? FONT_METRICS_SNIPPETS;
+  const fontProbes = options.fontMetricsProbes ?? FONT_METRICS_PROBES;
   return page.evaluate(
-    ({ props: propList, targets: targetList }) => {
+    async ({
+      props: propList,
+      targets: targetList,
+      fontDiagnostics: doFont,
+      fontSnippets: snippets,
+      fontProbes: probes,
+    }) => {
       /* eslint-disable no-undef -- browser */
+
+      function fontShorthandFromComputed(cs) {
+        const direct = cs.font;
+        if (direct && direct !== "initial" && direct !== "") {
+          return direct.trim();
+        }
+        const lh =
+          cs.lineHeight && cs.lineHeight !== "normal"
+            ? `/${cs.lineHeight}`
+            : "";
+        return `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize}${lh} ${cs.fontFamily}`
+          .replace(/\s+/g, " ")
+          .trim();
+      }
+
+      function canvasMeasureTextWidth(fontCss, text) {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          return NaN;
+        }
+        ctx.font = fontCss;
+        return ctx.measureText(text).width;
+      }
+
       const lines = [];
       for (const t of targetList) {
         const { label, selector } = t;
         const omit = new Set(t.omitProps ?? []);
-        lines.push(`=== ${label} <${selector}> ===`);
-        const el = document.querySelector(selector);
-        if (!el) {
+        const nodes = document.querySelectorAll(selector);
+        if (nodes.length === 0) {
+          lines.push(`=== ${label} <${selector}> ===`);
           lines.push("  <no match>");
           lines.push("");
           continue;
         }
-        const cs = getComputedStyle(el);
-        const rect = el.getBoundingClientRect();
-        const omitLines = new Set(t.omitDumpLines ?? []);
-        if (!omitLines.has("__box")) {
-          lines.push(`  __box: ${rect.width.toFixed(2)}x${rect.height.toFixed(2)}`);
+
+        for (let i = 0; i < nodes.length; i++) {
+          const el = nodes[i];
+          const header =
+            nodes.length === 1
+              ? `=== ${label} <${selector}> ===`
+              : `=== ${label} <${selector}> [${i}/${nodes.length}] ===`;
+          lines.push(header);
+          const cs = getComputedStyle(el);
+          const rect = el.getBoundingClientRect();
+          const omitLines = new Set(t.omitDumpLines ?? []);
+          if (!omitLines.has("__box")) {
+            lines.push(
+              `  __box: ${rect.width.toFixed(2)}x${rect.height.toFixed(2)}`,
+            );
+          }
+          if (!omitLines.has("__offset")) {
+            lines.push(`  __offset: ${el.offsetWidth}x${el.offsetHeight}`);
+          }
+          if (t.includeRect) {
+            lines.push(
+              `  __rect: ${Math.round(rect.left)},${Math.round(rect.top)}`,
+            );
+          }
+          for (const p of propList) {
+            if (omit.has(p)) continue;
+            const v = cs.getPropertyValue(p);
+            if (v !== "") {
+              lines.push(`  ${p}: ${v.trim()}`);
+            }
+          }
+          lines.push("");
         }
-        if (!omitLines.has("__offset")) {
-          lines.push(`  __offset: ${el.offsetWidth}x${el.offsetHeight}`);
+      }
+
+      if (doFont) {
+        lines.push("=== font diagnostics (FontFace API + canvas measureText) ===");
+        if (document.fonts && typeof document.fonts.ready?.then === "function") {
+          try {
+            await document.fonts.ready;
+          } catch {
+            /* ignore */
+          }
         }
-        if (t.includeRect) {
-          lines.push(
-            `  __rect: ${Math.round(rect.left)},${Math.round(rect.top)}`,
-          );
+        lines.push(`  document.fonts.size: ${document.fonts ? document.fonts.size : "(no document.fonts)"}`);
+
+        if (document.fonts && document.fonts.size > 0) {
+          const faces = [];
+          try {
+            for (const face of document.fonts.values()) {
+              faces.push({
+                family: face.family,
+                style: face.style,
+                weight: face.weight,
+                status: face.status,
+              });
+            }
+          } catch {
+            lines.push("  (could not iterate document.fonts.values())");
+          }
+          faces.sort((a, b) => {
+            const c = a.family.localeCompare(b.family);
+            if (c !== 0) {
+              return c;
+            }
+            const w = String(a.weight).localeCompare(String(b.weight));
+            if (w !== 0) {
+              return w;
+            }
+            return a.style.localeCompare(b.style);
+          });
+          const maxLines = 80;
+          for (let i = 0; i < Math.min(faces.length, maxLines); i++) {
+            const f = faces[i];
+            lines.push(
+              `  FontFace: ${f.family} / ${f.weight} / ${f.style} → ${f.status}`,
+            );
+          }
+          if (faces.length > maxLines) {
+            lines.push(`  … (${faces.length - maxLines} more FontFace entries omitted)`);
+          }
         }
-        for (const p of propList) {
-          if (omit.has(p)) continue;
-          const v = cs.getPropertyValue(p);
-          if (v !== "") {
-            lines.push(`  ${p}: ${v.trim()}`);
+
+        const bodyCs = getComputedStyle(document.body);
+        const bodyFont = fontShorthandFromComputed(bodyCs);
+        lines.push(`  body resolved font (shorthand): ${bodyFont}`);
+        try {
+          if (document.fonts?.check) {
+            lines.push(`  document.fonts.check(body): ${document.fonts.check(bodyFont)}`);
+          }
+        } catch {
+          lines.push("  document.fonts.check(body): (threw)");
+        }
+
+        lines.push("  --- measureText widths (2d canvas, ctx.font = resolved shorthand) ---");
+        for (const probe of probes) {
+          const node = document.querySelector(probe.selector);
+          if (!node) {
+            lines.push(`  [${probe.label}] <no match for ${probe.selector}>`);
+            continue;
+          }
+          const pcs = getComputedStyle(node);
+          const fontCss = fontShorthandFromComputed(pcs);
+          lines.push(`  [${probe.label}] font: ${fontCss}`);
+          for (const snippet of snippets) {
+            const w = canvasMeasureTextWidth(fontCss, snippet);
+            const safe = snippet.replace(/\n/g, " ");
+            lines.push(
+              `  [${probe.label}] measureText(${JSON.stringify(safe)}): ${Number.isFinite(w) ? w.toFixed(3) : String(w)}`,
+            );
           }
         }
         lines.push("");
       }
+
       return lines.join("\n");
       /* eslint-enable no-undef */
     },
-    { props, targets },
+    {
+      props,
+      targets,
+      fontDiagnostics,
+      fontSnippets,
+      fontProbes,
+    },
   );
 }
 
