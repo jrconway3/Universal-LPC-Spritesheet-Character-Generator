@@ -561,6 +561,87 @@ describe("state/zip.js", () => {
       return c;
     }
 
+    function solidColorCanvas(r, g, b, width = 8, height = 8) {
+      const c = document.createElement("canvas");
+      c.width = width;
+      c.height = height;
+      const ctx = c.getContext("2d");
+      ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+      ctx.fillRect(0, 0, width, height);
+      return c;
+    }
+
+    function readTopLeftRgb(canvas) {
+      if (!(canvas instanceof HTMLCanvasElement)) {
+        throw new TypeError("readTopLeftRgb expects an HTMLCanvasElement");
+      }
+
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        throw new Error("Failed to get 2d context from canvas");
+      }
+
+      const data = ctx.getImageData(0, 0, 1, 1).data;
+      return [data[0], data[1], data[2]];
+    }
+
+    describe("helper functions", () => {
+      it("solidColorCanvas creates an 8x8 canvas by default", () => {
+        const c = solidColorCanvas(1, 2, 3);
+        expect(c).to.be.instanceOf(HTMLCanvasElement);
+        expect(c.width).to.equal(8);
+        expect(c.height).to.equal(8);
+      });
+
+      it("solidColorCanvas paints the requested RGB color", () => {
+        const c = solidColorCanvas(12, 34, 56, 4, 4);
+        expect(readTopLeftRgb(c)).to.deep.equal([12, 34, 56]);
+      });
+
+      it("readTopLeftRgb returns RGB values for a normal filled canvas", () => {
+        const c = solidColorCanvas(200, 150, 100, 3, 3);
+        expect(readTopLeftRgb(c)).to.deep.equal([200, 150, 100]);
+      });
+
+      it("readTopLeftRgb reads the top-left pixel specifically", () => {
+        const c = document.createElement("canvas");
+        c.width = 2;
+        c.height = 2;
+        const ctx = c.getContext("2d");
+        ctx.fillStyle = "rgb(5, 10, 15)";
+        ctx.fillRect(0, 0, 1, 1);
+        ctx.fillStyle = "rgb(250, 240, 230)";
+        ctx.fillRect(1, 1, 1, 1);
+
+        expect(readTopLeftRgb(c)).to.deep.equal([5, 10, 15]);
+      });
+
+      it("readTopLeftRgb throws for null or undefined input", () => {
+        expect(() => readTopLeftRgb(null)).to.throw(
+          TypeError,
+          "readTopLeftRgb expects an HTMLCanvasElement",
+        );
+        expect(() => readTopLeftRgb(undefined)).to.throw(
+          TypeError,
+          "readTopLeftRgb expects an HTMLCanvasElement",
+        );
+      });
+
+      it("readTopLeftRgb throws for non-canvas input", () => {
+        expect(() => readTopLeftRgb({})).to.throw(
+          TypeError,
+          "readTopLeftRgb expects an HTMLCanvasElement",
+        );
+      });
+
+      it("readTopLeftRgb returns black for a blank transparent canvas", () => {
+        const c = document.createElement("canvas");
+        c.width = 2;
+        c.height = 2;
+        expect(readTopLeftRgb(c)).to.deep.equal([0, 0, 0]);
+      });
+    });
+
     beforeEach(() => {
       resetState();
       layers.length = 0;
@@ -915,6 +996,67 @@ describe("state/zip.js", () => {
       expect(swordFolder.root).to.equal("custom/walk_128/");
       expect(swordFile).to.equal(expectedFileNames["weapon"]);
       expect(swordCanvas).to.be.instanceOf(HTMLCanvasElement);
+    });
+
+    it("uses recolored images in custom animation exports instead of raw loaded images", async () => {
+      state.selections = {
+        body: {
+          itemId: "body",
+          variant: "light",
+          recolor: "light",
+          name: "Body color (light)",
+        },
+        head: {
+          itemId: "heads_human_male",
+          variant: "light",
+          recolor: "light",
+          name: "Human male (light)",
+        },
+        weapon: {
+          itemId: "longsword",
+          variant: "longsword",
+          name: "Longsword (longsword)",
+        },
+      };
+
+      const rawLoadedCanvas = solidColorCanvas(0, 0, 255);
+      const recoloredCanvas = solidColorCanvas(255, 0, 0);
+      const loadImageStub = sandbox.stub().resolves(rawLoadedCanvas);
+      const getImageToDrawStub = sandbox.stub().resolves(recoloredCanvas);
+      const addAnimationToZipFolderSpy = sinon.spy(addAnimationToZipFolder);
+      const addStandardAnimationToZipCustomFolderSpy = sinon.spy(
+        addStandardAnimationToZipCustomFolder,
+      );
+
+      await renderCharacter(state.selections, "male");
+      await exportSplitItemAnimations({
+        loadImage: loadImageStub,
+        getImageToDraw: getImageToDrawStub,
+        addAnimationToZipFolder: addAnimationToZipFolderSpy,
+        addStandardAnimationToZipCustomFolder:
+          addStandardAnimationToZipCustomFolderSpy,
+      });
+
+      const stdToCustCalls = addStandardAnimationToZipCustomFolderSpy
+        .getCalls()
+        .filter((c) => c.args[0]?.root === "custom/walk_128/");
+      const addCalls = addAnimationToZipFolderSpy
+        .getCalls()
+        .filter((c) => c.args[0]?.root === "custom/walk_128/");
+
+      expect(stdToCustCalls, "expected extracted_frames custom exports").to.not
+        .be.empty;
+      expect(addCalls, "expected custom_sprite exports").to.not.be.empty;
+
+      const extractedSourceCanvas = stdToCustCalls[0].args[2];
+      const customSpriteSourceCanvas = addCalls[0].args[2];
+      expect(readTopLeftRgb(extractedSourceCanvas)).to.deep.equal([255, 0, 0]);
+      expect(readTopLeftRgb(customSpriteSourceCanvas)).to.deep.equal([
+        255, 0, 0,
+      ]);
+
+      expect(getImageToDrawStub.called).to.be.true;
+      expect(loadImageStub.called).to.be.true;
     });
 
     describe("issue #364 (custom-animation-only items)", () => {
