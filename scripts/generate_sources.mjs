@@ -8,11 +8,14 @@ import {
 } from "./generateSources/credits.mjs";
 import { loadPaletteMetadata } from "./generateSources/palettes.mjs";
 import { parseJson } from "./generateSources/items.mjs";
-import { parseTree, sortCategoryTree, sortDirTree } from "./generateSources/tree.mjs";
+import {
+  parseTree,
+  populateAndSortCategoryTree,
+  sortDirTree,
+} from "./generateSources/tree.mjs";
 import {
   aliasMetadata,
   categoryTree,
-  csvList,
   itemMetadata,
   onlyIfTemplate,
   paletteMetadata,
@@ -61,29 +64,10 @@ export function generateSources(options = {}, deps = {}) {
     }
   });
 
-  // Generate item-metadata.js for runtime use
-  for (const [itemId, meta] of Object.entries(itemMetadata)) {
-    const itemPath = meta.path || ["Other"];
+  // Build and sort category tree for runtime metadata output.
+  populateAndSortCategoryTree();
 
-    // Navigate/create tree structure (skip the last element which is the filename)
-    let current = categoryTree;
-    // Only use path elements except the last one (which is the filename)
-    const categoryPath = itemPath.slice(0, -1);
-
-    for (const segment of categoryPath) {
-      if (!current.children[segment]) {
-        current.children[segment] = { items: [], children: {} };
-      }
-      current = current.children[segment];
-    }
-
-    // Add item to the category (not as a child)
-    current.items.push(itemId);
-  } // for itemMetadata
-
-  sortCategoryTree(categoryTree, itemMetadata);
-
-  generateCreditsCsv(csvList, categoryTree, writeFileSyncFn);
+  generateCreditsCsv(writeFileSyncFn);
 
   const metadataJS = `// THIS FILE IS AUTO-GENERATED. PLEASE DON'T ALTER IT MANUALLY
   // Generated from sheet_definitions/*.json by scripts/generate_sources.mjs

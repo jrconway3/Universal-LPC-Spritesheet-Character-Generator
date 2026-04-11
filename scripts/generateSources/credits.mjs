@@ -2,6 +2,7 @@ import path from "path";
 import debugUtils from "../utils/debug.js";
 import { ANIMATIONS } from "../../sources/state/constants.js";
 import {
+  categoryTree,
   csvList,
   itemMetadata,
   licensesFound,
@@ -294,17 +295,11 @@ export function sortCsvList(csvList, categoryTree) {
 }
 
 /**
- * Generates final CREDITS.csv content from collected row payloads and writes it to disk.
- * @param {Array<{path: string, csv: Array<{priority: (number|null|undefined), lineText: string}>}>} csvList CSV sections grouped by directory path.
- * @param {{children?: Object<string, any>}} categoryTree Category tree used for deterministic sorting.
+ * Generates final CREDITS.csv content from shared CSV/category state and writes it to disk.
  * @param {(filePath: string, data: string) => void} writeFileSyncFn File writer dependency.
  * @return {string} Full generated CSV text.
  */
-export function generateCreditsCsv(
-  csvList,
-  categoryTree,
-  writeFileSyncFn,
-) {
+export function generateCreditsCsv(writeFileSyncFn) {
   const creditsOutput = "CREDITS.csv";
   sortCsvList(csvList, categoryTree);
 

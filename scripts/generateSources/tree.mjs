@@ -1,7 +1,12 @@
 import fs from "fs";
 import path from "path";
 import debugUtils from "../utils/debug.js";
-import { categoryTree, onlyIfTemplate, SHEETS_DIR } from "./state.mjs";
+import {
+  categoryTree,
+  itemMetadata,
+  onlyIfTemplate,
+  SHEETS_DIR,
+} from "./state.mjs";
 
 const { debugLog } = debugUtils;
 
@@ -115,4 +120,44 @@ export function sortCategoryTree(node, itemMetadata) {
   }
 
   return node;
+}
+
+/**
+ * Populates category tree item lists from metadata paths and sorts the tree in place.
+ * @return {{items?: Array<string>, children: Object<string, Object>}} The shared category tree after population and sorting.
+ * @throws {TypeError} If shared tree or metadata state is invalid, or if nested sorting encounters invalid node data.
+ */
+export function populateAndSortCategoryTree() {
+  if (
+    !categoryTree ||
+    typeof categoryTree !== "object" ||
+    typeof categoryTree.children !== "object"
+  ) {
+    throw new TypeError("tree must be an object containing a children map");
+  }
+  if (!itemMetadata || typeof itemMetadata !== "object") {
+    throw new TypeError("itemMetadata must be an object map");
+  }
+
+  for (const [itemId, meta] of Object.entries(itemMetadata)) {
+    const itemPath = meta.path || ["Other"];
+
+    // Use only category segments; final segment is an item-specific leaf identifier.
+    const categoryPath = itemPath.slice(0, -1);
+
+    let current = categoryTree;
+    for (const segment of categoryPath) {
+      if (!current.children[segment]) {
+        current.children[segment] = { items: [], children: {} };
+      }
+      current = current.children[segment];
+    }
+
+    if (!Array.isArray(current.items)) {
+      current.items = [];
+    }
+    current.items.push(itemId);
+  }
+
+  return sortCategoryTree(categoryTree, itemMetadata);
 }

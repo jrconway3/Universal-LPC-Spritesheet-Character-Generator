@@ -240,20 +240,16 @@ test("generateCreditsCsv writes output and returns generated text", () => {
   resetTestState();
   licensesFound.push("GPL 3.0");
 
-  const tree = { children: {} };
+  categoryTree.children = {};
+  csvList.push({
+    path: "body",
+    csv: [{ priority: 1, lineText: '"x.png","n","a","l","u"\n' }],
+  });
+
   const writes = new Map();
-  const generated = generateCreditsCsv(
-    [
-      {
-        path: "body",
-        csv: [{ priority: 1, lineText: '"x.png","n","a","l","u"\n' }],
-      },
-    ],
-    tree,
-    (filePath, contents) => {
-      writes.set(filePath, contents);
-    },
-  );
+  const generated = generateCreditsCsv((filePath, contents) => {
+    writes.set(filePath, contents);
+  });
 
   assert.match(generated, /^filename,notes,authors,licenses,urls\n/);
   assert.match(generated, /x\.png/);
@@ -265,7 +261,7 @@ test("generateCreditsCsv handles writer exceptions without throwing", () => {
   categoryTree.children = {};
 
   assert.doesNotThrow(() => {
-    generateCreditsCsv([], categoryTree, () => {
+    generateCreditsCsv(() => {
       throw new Error("disk full");
     });
   });
