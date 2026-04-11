@@ -479,3 +479,35 @@
   line-height: 1.5;
   color: #7a7a7a;
 }
+
+/*
+ * Skintone / palette modal (.palette-modal): body + Bulma 1 change h4 line-height, close “x”
+ * metrics, and has-background-link-light / white-ter vs 0.9 (see computed-style palette modal targets).
+ */
+.palette-modal header h4 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.palette-modal header button {
+  font-family:
+    system-ui, -apple-system, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans",
+    "Droid Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #000;
+  padding: 1px 6px;
+}
+
+/*
+ * Selected/hover variant tiles: Bulma 1 uses different link-light / white-ter (and semi-transparent
+ * white-ter). Category tree (#mithril-filters) and skintone modal both use these helpers.
+ */
+#mithril-filters .variant-item.has-background-link-light,
+.palette-modal .variant-item.has-background-link-light {
+  background-color: rgb(239, 241, 250) !important;
+}
+
+#mithril-filters .variant-item.has-background-white-ter,
+.palette-modal .variant-item.has-background-white-ter {
+  background-color: rgb(245, 245, 245) !important;
+}
