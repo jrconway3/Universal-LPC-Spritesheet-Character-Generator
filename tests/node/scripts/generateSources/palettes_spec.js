@@ -75,7 +75,8 @@ test("parsePalette throws on malformed palette JSON", () => {
   resetTestState();
 
   assert.throws(
-    () => parsePalette(buildPath("build2-invalid", "palettes"), "bad_lpcr.json"),
+    () =>
+      parsePalette(buildPath("build2-invalid", "palettes"), "bad_lpcr.json"),
     /SyntaxError|Expected/,
   );
 });

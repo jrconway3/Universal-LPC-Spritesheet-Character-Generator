@@ -4,12 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const { spawnSync } = require("child_process");
 
-const moduleSpecDir = path.join(
-  "tests",
-  "node",
-  "scripts",
-  "generateSources",
-);
+const moduleSpecDir = path.join("tests", "node", "scripts", "generateSources");
 const moduleSpecs = fs
   .readdirSync(moduleSpecDir)
   .filter((fileName) => fileName.endsWith("_spec.js"))

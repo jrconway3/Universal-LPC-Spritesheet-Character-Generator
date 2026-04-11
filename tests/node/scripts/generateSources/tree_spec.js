@@ -39,7 +39,10 @@ test("parseTree does not overwrite existing node metadata", () => {
 test("parseTree throws for malformed meta JSON", () => {
   resetTestState();
   const sheetsDir = buildPath("build3-errors", "sheets");
-  const brokenMetaDir = path.join(buildPath("build3-errors", "meta-errors"), "body");
+  const brokenMetaDir = path.join(
+    buildPath("build3-errors", "meta-errors"),
+    "body",
+  );
 
   assert.throws(
     () => parseTree(brokenMetaDir, "meta_body_broken.json", { sheetsDir }),

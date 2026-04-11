@@ -40,8 +40,14 @@ test("parseCredits returns selected credit and csv line for first emit", () => {
     1,
   );
 
-  assert.equal(selectedCredit.file, "body/wheelchair/adult/background/wheelchair");
-  assert.equal(imageFileName, '"body/wheelchair/adult/background/wheelchair.png" ');
+  assert.equal(
+    selectedCredit.file,
+    "body/wheelchair/adult/background/wheelchair",
+  );
+  assert.equal(
+    imageFileName,
+    '"body/wheelchair/adult/background/wheelchair.png" ',
+  );
   assert.match(lineText, /\*\*note\*\*/);
   assert.deepEqual(licensesFound, ["CC-BY 3.0"]);
 });
@@ -143,7 +149,10 @@ test("collectCreditsCsvRows skips noExport animations and empty layer files", ()
   });
 
   assert.equal(listItemsCSV.length, 1);
-  assert.equal(listCreditToUse.file, "body/wheelchair/adult/background/wheelchair");
+  assert.equal(
+    listCreditToUse.file,
+    "body/wheelchair/adult/background/wheelchair",
+  );
 });
 
 test("appendCsvEntry strips provided sheetsDir prefix", () => {
@@ -182,7 +191,10 @@ test("processItemCredits builds csv, appends entries, and injects licenses", () 
   });
 
   assert.equal(csv.length, 2);
-  assert.equal(listCreditToUse.file, "body/wheelchair/adult/background/wheelchair");
+  assert.equal(
+    listCreditToUse.file,
+    "body/wheelchair/adult/background/wheelchair",
+  );
   assert.deepEqual(itemMetadata.wheelchair.licenses.male, ["CC-BY 3.0"]);
   assert.deepEqual(itemMetadata.wheelchair.licenses.female, ["CC-BY 3.0"]);
   assert.equal(csvList.length, 1);

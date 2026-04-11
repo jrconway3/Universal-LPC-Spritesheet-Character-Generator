@@ -48,7 +48,10 @@ test("parseJson throws for ignored fixture item", () => {
   const sheetsDir = buildPath("build2-invalid", "sheets");
 
   assert.throws(
-    () => parseJson(path.join(sheetsDir, "body"), "ignored_item.json", { sheetsDir }),
+    () =>
+      parseJson(path.join(sheetsDir, "body"), "ignored_item.json", {
+        sheetsDir,
+      }),
     /Skipping ignored item: ignored_item/,
   );
 });
@@ -58,7 +61,8 @@ test("parseJson throws for malformed JSON input", () => {
   const sheetsDir = buildPath("build3-errors", "sheets");
 
   assert.throws(
-    () => parseJson(path.join(sheetsDir, "body"), "bad_json.json", { sheetsDir }),
+    () =>
+      parseJson(path.join(sheetsDir, "body"), "bad_json.json", { sheetsDir }),
     /SyntaxError|Expected/,
   );
 });

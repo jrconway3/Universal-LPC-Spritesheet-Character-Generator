@@ -159,7 +159,9 @@ test("build4-expansive loads broad tree/palette coverage and captures fixture er
   );
   assert.ok(
     errors.some((entry) =>
-      entry.includes("missing credit inside body/wheelchair/adult/background/walk"),
+      entry.includes(
+        "missing credit inside body/wheelchair/adult/background/walk",
+      ),
     ),
   );
   assert.ok(
