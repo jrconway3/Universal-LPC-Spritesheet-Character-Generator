@@ -189,6 +189,13 @@
   padding-right: 0.5rem;
 }
 
+/* License/Animation cards only (direct .tree-label on these .box rows). main.css .tree-label is
+   height:32px for category rows; fixed height breaks flow when the count wraps on narrow widths. */
+#mithril-filters .box.has-background-light > .tree-label {
+  height: auto;
+  min-height: 32px;
+}
+
 /* License/Animation count: Bulma 1 .is-size-7 uses 24px line-height; master/tree is 12px × 1.5 (18px). */
 #mithril-filters .box.has-background-light > .tree-label .is-size-7 {
   line-height: 18px !important;
