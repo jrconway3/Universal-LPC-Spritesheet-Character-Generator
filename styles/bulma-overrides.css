@@ -189,6 +189,11 @@
   padding-right: 0.5rem;
 }
 
+/* License/Animation count: Bulma 1 .is-size-7 uses 24px line-height; master/tree is 12px × 1.5 (18px). */
+#mithril-filters .box.has-background-light > .tree-label .is-size-7 {
+  line-height: 18px !important;
+}
+
 #credits-section p.is-size-7.mb-2 {
   line-height: 18px !important;
   margin-bottom: 0.5rem !important;
@@ -208,8 +213,9 @@
   font-weight: 700 !important;
 }
 
+/* Bulma 0.9 .mb-3 is 12px here; v1 1rem (16px) shifts stacked blocks vs master dumps. */
 #credits-section .content.has-background-light .mb-3 {
-  margin-bottom: 1rem !important;
+  margin-bottom: 12px !important;
 }
 
 #credits-section .buttons.mt-3 {
@@ -481,21 +487,33 @@
 }
 
 /*
- * Skintone / palette modal (.palette-modal): body + Bulma 1 change h4 line-height, close “x”
- * metrics, and has-background-link-light / white-ter vs 0.9 (see computed-style palette modal targets).
+ * Skintone / palette modal: Bulma 1 link-light / white-ter vs 0.9 (computed-style palette modal targets).
+ * Title + close: v1 applies body line-height (24px) to h4 and restyles native button (grey, no
+ * padding); match master computed-style dumps (see mediumDesktop-a palette modal header/h4/button).
  */
 .palette-modal header h4 {
+  font-family: monospace;
   font-size: 1.2rem;
   font-weight: 700;
   line-height: 1.5;
+  margin: 0;
 }
 
 .palette-modal header button {
-  font-family:
-    system-ui, -apple-system, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans",
-    "Droid Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  box-sizing: border-box;
+  display: block;
+  margin: 0;
+  /* Header sets monospace; native button on v1 still needs the primary stack to match 0.9 glyph metrics. */
+  font-family: var(--bulma-family-primary);
+  font-size: 1.5em;
+  font-weight: 400;
+  line-height: normal;
   color: #000;
+  background-color: transparent;
+  border: none;
   padding: 1px 6px;
+  text-align: center;
+  cursor: pointer;
 }
 
 /*
