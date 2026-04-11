@@ -1,0 +1,260 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import path from "node:path";
+import {
+  appendCsvEntry,
+  collectCreditsCsvRows,
+  generateCreditsCsv,
+  parseCredits,
+  processItemCredits,
+  sortCsvList,
+} from "../../../../scripts/generateSources/credits.mjs";
+import { ANIMATIONS } from "../../../../sources/state/constants.js";
+import {
+  categoryTree,
+  csvList,
+  itemMetadata,
+  licensesFound,
+} from "../../../../scripts/generateSources/state.mjs";
+import { buildPath, resetTestState } from "./test_helpers.js";
+
+function buildCredit(file) {
+  return {
+    file,
+    notes: 'quoted "note"',
+    authors: ["Fixture Author"],
+    licenses: ["CC-BY 3.0"],
+    urls: ["https://example.invalid/asset"],
+  };
+}
+
+test("parseCredits returns selected credit and csv line for first emit", () => {
+  resetTestState();
+
+  const [selectedCredit, lineText, imageFileName] = parseCredits(
+    "body/wheelchair/adult/background/wheelchair",
+    [buildCredit("body/wheelchair/adult/background/wheelchair")],
+    null,
+    [],
+    "male",
+    1,
+  );
+
+  assert.equal(selectedCredit.file, "body/wheelchair/adult/background/wheelchair");
+  assert.equal(imageFileName, '"body/wheelchair/adult/background/wheelchair.png" ');
+  assert.match(lineText, /\*\*note\*\*/);
+  assert.deepEqual(licensesFound, ["CC-BY 3.0"]);
+});
+
+test("parseCredits returns empty csv line when image already emitted", () => {
+  resetTestState();
+
+  const fileName = "body/wheelchair/adult/background/wheelchair";
+  const [, lineText] = parseCredits(
+    fileName,
+    [buildCredit(fileName)],
+    null,
+    ['"body/wheelchair/adult/background/wheelchair.png" '],
+    "male",
+    1,
+  );
+
+  assert.equal(lineText, "");
+});
+
+test("parseCredits throws when no matching credit exists", () => {
+  resetTestState();
+
+  assert.throws(
+    () =>
+      parseCredits(
+        "body/wheelchair/adult/background/walk",
+        [buildCredit("body/wheelchair/not-a-real-path")],
+        null,
+        [],
+        "male",
+        1,
+      ),
+    /missing credit inside body\/wheelchair\/adult\/background\/walk/,
+  );
+});
+
+test("parseCredits throws for array-like credits with count=0", () => {
+  resetTestState();
+
+  const emptyCredits = [];
+  emptyCredits.count = 0;
+
+  assert.throws(
+    () =>
+      parseCredits(
+        "body/wheelchair/adult/background/wheelchair",
+        emptyCredits,
+        null,
+        [],
+        "male",
+        1,
+      ),
+    /missing credit inside body\/wheelchair\/adult\/background\/wheelchair/,
+  );
+});
+
+test("parseCredits throws for array-like credits with count=1 and wrong file", () => {
+  resetTestState();
+
+  const credits = [buildCredit("wrong/path")];
+  credits.count = 1;
+
+  assert.throws(
+    () =>
+      parseCredits(
+        "body/wheelchair/adult/background/wheelchair",
+        credits,
+        null,
+        [],
+        "male",
+        1,
+      ),
+    /missing credit inside body\/wheelchair\/adult\/background\/wheelchair/,
+  );
+});
+
+test("collectCreditsCsvRows skips noExport animations and empty layer files", () => {
+  resetTestState();
+
+  const noExportAnim = ANIMATIONS.find((anim) => anim.noExport);
+  assert.ok(noExportAnim, "Fixture expects at least one noExport animation");
+
+  const { listItemsCSV, listCreditToUse } = collectCreditsCsvRows({
+    definition: {
+      layer_1: {
+        male: "body/wheelchair/adult/background/",
+        female: "",
+      },
+      layer_2: {
+        male: null,
+        female: null,
+      },
+    },
+    animations: [noExportAnim.value, "wheelchair"],
+    requiredSexes: ["male", "female"],
+    credits: [buildCredit("body/wheelchair/adult/background/wheelchair")],
+    priority: 10,
+  });
+
+  assert.equal(listItemsCSV.length, 1);
+  assert.equal(listCreditToUse.file, "body/wheelchair/adult/background/wheelchair");
+});
+
+test("appendCsvEntry strips provided sheetsDir prefix", () => {
+  resetTestState();
+
+  appendCsvEntry(
+    path.join("sheet_definitions", "body"),
+    [{ priority: 1, lineText: "line" }],
+    { sheetsDir: "sheet_definitions" },
+  );
+
+  assert.equal(csvList[0].path, "body");
+});
+
+test("processItemCredits builds csv, appends entries, and injects licenses", () => {
+  resetTestState();
+  const sheetsDir = buildPath("build1-basic", "sheets");
+
+  itemMetadata.wheelchair = {
+    priority: 40,
+    animations: ["wheelchair"],
+    required: ["male", "female"],
+    credits: [buildCredit("body/wheelchair/adult/background/wheelchair")],
+  };
+
+  const { csv, listCreditToUse } = processItemCredits({
+    itemId: "wheelchair",
+    filePath: path.join(sheetsDir, "body"),
+    definition: {
+      layer_1: {
+        male: "body/wheelchair/adult/background/",
+        female: "body/wheelchair/adult/background/",
+      },
+    },
+    sheetsDir,
+  });
+
+  assert.equal(csv.length, 2);
+  assert.equal(listCreditToUse.file, "body/wheelchair/adult/background/wheelchair");
+  assert.deepEqual(itemMetadata.wheelchair.licenses.male, ["CC-BY 3.0"]);
+  assert.deepEqual(itemMetadata.wheelchair.licenses.female, ["CC-BY 3.0"]);
+  assert.equal(csvList.length, 1);
+});
+
+test("sortCsvList orders by category priority then label", () => {
+  resetTestState();
+
+  const entries = [
+    { path: path.join("head", "nose"), csv: [] },
+    { path: path.join("body", "torso"), csv: [] },
+    { path: path.join("body", "arms"), csv: [] },
+  ];
+
+  const tree = {
+    children: {
+      body: {
+        priority: 1,
+        label: "Body",
+        children: {
+          torso: { priority: 2, label: "Torso", children: {} },
+          arms: { priority: 1, label: "Arms", children: {} },
+        },
+      },
+      head: {
+        priority: 2,
+        label: "Head",
+        children: {
+          nose: { priority: 1, label: "Nose", children: {} },
+        },
+      },
+    },
+  };
+
+  sortCsvList(entries, tree);
+
+  assert.equal(entries[0].path, path.join("body", "arms"));
+  assert.equal(entries[1].path, path.join("body", "torso"));
+  assert.equal(entries[2].path, path.join("head", "nose"));
+});
+
+test("generateCreditsCsv writes output and returns generated text", () => {
+  resetTestState();
+  licensesFound.push("GPL 3.0");
+
+  const tree = { children: {} };
+  const writes = new Map();
+  const generated = generateCreditsCsv(
+    [
+      {
+        path: "body",
+        csv: [{ priority: 1, lineText: '"x.png","n","a","l","u"\n' }],
+      },
+    ],
+    tree,
+    (filePath, contents) => {
+      writes.set(filePath, contents);
+    },
+  );
+
+  assert.match(generated, /^filename,notes,authors,licenses,urls\n/);
+  assert.match(generated, /x\.png/);
+  assert.equal(writes.get("CREDITS.csv"), generated);
+});
+
+test("generateCreditsCsv handles writer exceptions without throwing", () => {
+  resetTestState();
+  categoryTree.children = {};
+
+  assert.doesNotThrow(() => {
+    generateCreditsCsv([], categoryTree, () => {
+      throw new Error("disk full");
+    });
+  });
+});
