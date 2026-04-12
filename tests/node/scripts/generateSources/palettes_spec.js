@@ -5,9 +5,9 @@ import os from "node:os";
 import path from "node:path";
 import {
   loadPaletteMetadata,
-  normalizeRecolors,
   parsePalette,
 } from "../../../../scripts/generateSources/palettes.mjs";
+import { normalizeRecolors } from "../../../../scripts/generateSources/item-helper.mjs";
 import { paletteMetadata } from "../../../../scripts/generateSources/state.mjs";
 import { buildPath, resetTestState } from "./test_helpers.js";
 

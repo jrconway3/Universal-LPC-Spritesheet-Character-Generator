@@ -17,7 +17,7 @@ test("build1-basic aligns all generated window global objects", async () => {
 
   assert.equal(metadata.wheelchair.name, "Wheelchair");
   assert.deepEqual(metadata.wheelchair.animations, ["wheelchair"]);
-  assert.deepEqual(metadata.wheelchair.licenses.male, [
+  assert.deepEqual(metadata.wheelchair.credits[0].licenses, [
     "CC-BY 3.0",
     "OGA-BY 3.0",
   ]);
@@ -153,9 +153,7 @@ test("build4-expansive loads broad tree/palette coverage and captures fixture er
   assert.equal(palettes.materials.all, undefined);
 
   assert.ok(
-    errors.some((entry) =>
-      entry.includes("Error parsing metadata JSON from file:"),
-    ),
+    errors.some((entry) => entry.includes("Error parsing JSON from file:")),
   );
   assert.ok(
     errors.some((entry) =>

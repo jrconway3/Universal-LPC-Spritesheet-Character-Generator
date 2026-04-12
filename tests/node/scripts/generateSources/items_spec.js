@@ -4,11 +4,17 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { ANIMATION_DEFAULTS } from "../../../../sources/state/constants.js";
-import { parseJson } from "../../../../scripts/generateSources/items.mjs";
+import {
+  parseItem,
+  getRequiredSexes,
+  buildTreePath,
+  collectLayers,
+} from "../../../../scripts/generateSources/items.mjs";
 import { loadPaletteMetadata } from "../../../../scripts/generateSources/palettes.mjs";
 import {
   aliasMetadata,
   itemMetadata,
+  parseJson,
 } from "../../../../scripts/generateSources/state.mjs";
 import { buildPath, resetTestState } from "./test_helpers.js";
 
@@ -20,13 +26,13 @@ function writeTempJson(tempRoot, fileName, jsonContent) {
   return { dir, fullPath };
 }
 
-test("parseJson parses valid fixture file and writes item metadata", () => {
+test("parseItem parses valid fixture file and writes item metadata", () => {
   resetTestState();
   const sheetsDir = buildPath("build1-basic", "sheets");
   const palettesDir = buildPath("build1-basic", "palettes");
   loadPaletteMetadata(palettesDir);
 
-  const parsed = parseJson(path.join(sheetsDir, "body"), "wheelchair.json", {
+  const parsed = parseItem(path.join(sheetsDir, "body"), "wheelchair.json", {
     sheetsDir,
   });
 
@@ -43,31 +49,31 @@ test("parseJson parses valid fixture file and writes item metadata", () => {
   assert.equal(Object.keys(itemMetadata.wheelchair.layers).length, 2);
 });
 
-test("parseJson throws for ignored fixture item", () => {
+test("parseItem throws for ignored fixture item", () => {
   resetTestState();
   const sheetsDir = buildPath("build2-invalid", "sheets");
 
   assert.throws(
     () =>
-      parseJson(path.join(sheetsDir, "body"), "ignored_item.json", {
+      parseItem(path.join(sheetsDir, "body"), "ignored_item.json", {
         sheetsDir,
       }),
     /Skipping ignored item: ignored_item/,
   );
 });
 
-test("parseJson throws for malformed JSON input", () => {
+test("parseItem throws for malformed JSON input", () => {
   resetTestState();
   const sheetsDir = buildPath("build3-errors", "sheets");
 
   assert.throws(
     () =>
-      parseJson(path.join(sheetsDir, "body"), "bad_json.json", { sheetsDir }),
+      parseItem(path.join(sheetsDir, "body"), "bad_json.json", { sheetsDir }),
     /SyntaxError|Expected/,
   );
 });
 
-test("parseJson applies animation defaults and alias mappings when fields are omitted", () => {
+test("parseItem applies animation defaults and alias mappings when fields are omitted", () => {
   resetTestState();
 
   const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "gen-items-"));
@@ -88,7 +94,7 @@ test("parseJson applies animation defaults and alias mappings when fields are om
     },
   });
 
-  const parsed = parseJson(dir, "alias_item.json", { sheetsDir });
+  const parsed = parseItem(dir, "alias_item.json", { sheetsDir });
 
   assert.equal(parsed.itemId, "alias_item");
   assert.deepEqual(itemMetadata.alias_item.animations, ANIMATION_DEFAULTS);
@@ -101,13 +107,13 @@ test("parseJson applies animation defaults and alias mappings when fields are om
   });
 });
 
-test("parseJson normalizes recolors when palette metadata is loaded", () => {
+test("parseItem normalizes recolors when palette metadata is loaded", () => {
   resetTestState();
   const sheetsDir = buildPath("build1-basic", "sheets");
   const palettesDir = buildPath("build1-basic", "palettes");
   loadPaletteMetadata(palettesDir);
 
-  parseJson(path.join(sheetsDir, "head", "nose"), "head_nose_big.json", {
+  parseItem(path.join(sheetsDir, "head", "nose"), "head_nose_big.json", {
     sheetsDir,
   });
 
@@ -119,7 +125,7 @@ test("parseJson normalizes recolors when palette metadata is loaded", () => {
   assert.ok(recolor.variants.includes("all.lpcr.indigo"));
 });
 
-test("parseJson defaults to empty recolor list when recolors are absent", () => {
+test("parseItem defaults to empty recolor list when recolors are absent", () => {
   resetTestState();
 
   const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "gen-items-"));
@@ -132,7 +138,110 @@ test("parseJson defaults to empty recolor list when recolors are absent", () => 
     type_name: "plain",
   });
 
-  parseJson(dir, "plain_item.json", { sheetsDir });
+  parseItem(dir, "plain_item.json", { sheetsDir });
 
   assert.deepEqual(itemMetadata.plain_item.recolors, []);
+});
+
+test("getRequiredSexes returns body types present in layer_1 in BODY_TYPES order", () => {
+  const definition = {
+    layer_1: { male: "body/path/", female: "body/path/", teen: "" },
+  };
+
+  const result = getRequiredSexes(definition);
+
+  assert.ok(result.includes("male"));
+  assert.ok(result.includes("female"));
+  assert.ok(!result.includes("teen"));
+  assert.ok(result.indexOf("male") < result.indexOf("female"));
+});
+
+test("getRequiredSexes returns empty array when no body types are present", () => {
+  const definition = {
+    layer_1: { male: "", female: null },
+  };
+
+  const result = getRequiredSexes(definition);
+
+  assert.deepEqual(result, []);
+});
+
+test("buildTreePath returns relative segments plus itemId", () => {
+  const sheetsDir = path.join("sheets");
+  const filePath = path.join("sheets", "body", "arms");
+
+  const result = buildTreePath(filePath, "gauntlet", sheetsDir);
+
+  assert.deepEqual(result, ["body", "arms", "gauntlet"]);
+});
+
+test("buildTreePath returns just itemId when filePath equals sheetsDir", () => {
+  const sheetsDir = path.join("sheets");
+
+  const result = buildTreePath(sheetsDir, "gauntlet", sheetsDir);
+
+  assert.deepEqual(result, ["gauntlet"]);
+});
+
+test("collectLayers collects contiguous layers starting at 1", () => {
+  const definition = {
+    layer_1: { male: "a/" },
+    layer_2: { male: "b/" },
+    layer_3: { male: "c/" },
+  };
+
+  const result = collectLayers(definition);
+
+  assert.deepEqual(Object.keys(result), ["layer_1", "layer_2", "layer_3"]);
+});
+
+test("collectLayers stops at first gap", () => {
+  const definition = {
+    layer_1: { male: "a/" },
+    layer_3: { male: "c/" },
+  };
+
+  const result = collectLayers(definition);
+
+  assert.deepEqual(Object.keys(result), ["layer_1"]);
+});
+
+test("collectLayers returns empty object when no layers present", () => {
+  const result = collectLayers({});
+
+  assert.deepEqual(result, {});
+});
+
+test("parseJson reads and parses a valid fixture JSON file", () => {
+  const fullPath = path.join(
+    buildPath("build1-basic", "sheets"),
+    "body",
+    "wheelchair.json",
+  );
+
+  const result = parseJson(fullPath);
+
+  assert.equal(result.name, "Wheelchair");
+  assert.ok(result.layer_1);
+  assert.equal(result.layer_1.male, "body/wheelchair/adult/background/");
+});
+
+test("parseJson throws SyntaxError for malformed JSON", () => {
+  const fullPath = path.join(
+    buildPath("build3-errors", "sheets"),
+    "body",
+    "bad_json.json",
+  );
+
+  assert.throws(() => parseJson(fullPath), /SyntaxError|Expected/);
+});
+
+test("parseJson throws for a non-existent file", () => {
+  const fullPath = path.join(
+    buildPath("build1-basic", "sheets"),
+    "body",
+    "does_not_exist.json",
+  );
+
+  assert.throws(() => parseJson(fullPath), /ENOENT|no such file/);
 });

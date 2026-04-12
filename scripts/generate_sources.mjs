@@ -3,22 +3,21 @@ import path from "path";
 import { fork } from "child_process";
 import { pathToFileURL } from "url";
 import {
+  CREDITS_OUTPUT,
   generateCreditsCsv,
   processItemCredits,
 } from "./generateSources/credits.mjs";
 import { loadPaletteMetadata } from "./generateSources/palettes.mjs";
-import { parseJson } from "./generateSources/items.mjs";
+import { parseItem } from "./generateSources/items.mjs";
 import {
   parseTree,
   populateAndSortCategoryTree,
   sortDirTree,
 } from "./generateSources/tree.mjs";
 import {
-  aliasMetadata,
-  categoryTree,
-  itemMetadata,
+  buildMetadataJs,
+  METADDATA_OUTPUT,
   onlyIfTemplate,
-  paletteMetadata,
   SHEETS_DIR,
 } from "./generateSources/state.mjs";
 
@@ -26,9 +25,12 @@ export function generateSources(options = {}, deps = {}) {
   const {
     sheetsDir = SHEETS_DIR,
     palettesDir = null,
-    metadataOutput = "item-metadata.js",
+    metadataOutput = METADDATA_OUTPUT,
   } = options;
   const writeFileSyncFn = deps.writeFileSync ?? fs.writeFileSync;
+  const parseTreeFn = deps.parseTreeFn ?? parseTree;
+  const parseJsonFn = deps.parseJsonFn ?? parseItem;
+  const processItemCreditsFn = deps.processItemCreditsFn ?? processItemCredits;
 
   loadPaletteMetadata(palettesDir);
 
@@ -46,17 +48,13 @@ export function generateSources(options = {}, deps = {}) {
     }
 
     if (file.name.startsWith("meta_")) {
-      parseTree(file.parentPath, file.name, { sheetsDir });
+      parseTreeFn(file.parentPath, file.name);
       return;
     }
 
     try {
-      const parsedItem = parseJson(file.parentPath, file.name, { sheetsDir });
-      processItemCredits({
-        ...parsedItem,
-        filePath: file.parentPath,
-        sheetsDir,
-      });
+      const { itemId, definition } = parseJsonFn(file.parentPath, file.name);
+      processItemCreditsFn(itemId, file.parentPath, definition);
     } catch (e) {
       const fullPath = path.join(file.parentPath, file.name);
       if (!onlyIfTemplate)
@@ -67,21 +65,17 @@ export function generateSources(options = {}, deps = {}) {
   // Build and sort category tree for runtime metadata output.
   populateAndSortCategoryTree();
 
-  generateCreditsCsv(writeFileSyncFn);
+  // Write Credits CSV Output
+  const csvGenerated = generateCreditsCsv();
+  try {
+    writeFileSyncFn(CREDITS_OUTPUT, csvGenerated);
+    process.stdout.write("CSV Updated!\n");
+  } catch (err) {
+    console.error(err);
+  }
 
-  const metadataJS = `// THIS FILE IS AUTO-GENERATED. PLEASE DON'T ALTER IT MANUALLY
-  // Generated from sheet_definitions/*.json by scripts/generate_sources.mjs
-  // Contains metadata for all customization items to avoid DOM queries at runtime
-
-  window.itemMetadata = ${JSON.stringify(itemMetadata, null, 2)};
-
-  window.aliasMetadata = ${JSON.stringify(aliasMetadata, null, 2)};
-
-  window.categoryTree = ${JSON.stringify(categoryTree, null, 2)};
-
-  window.paletteMetadata = ${JSON.stringify(paletteMetadata, null, 2)};
-  `;
-
+  // Build and Write Item Metadata Output
+  const metadataJS = buildMetadataJs();
   try {
     writeFileSyncFn(metadataOutput, metadataJS);
     process.stdout.write("Item Metadata JS Updated!\n");

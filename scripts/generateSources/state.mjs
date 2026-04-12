@@ -1,7 +1,9 @@
+import fs from "fs";
 import path from "path";
 
 export const SHEETS_DIR = "sheet_definitions" + path.sep;
 export const PALETTES_DIR = "palette_definitions" + path.sep;
+export const METADDATA_OUTPUT = "item-metadata.js";
 export const onlyIfTemplate = false;
 
 export const licensesFound = [];
@@ -10,3 +12,38 @@ export const itemMetadata = {};
 export const paletteMetadata = { versions: {}, materials: {} };
 export const aliasMetadata = {};
 export const categoryTree = { items: [], children: {} };
+
+/**
+ * Reads and parses a JSON file from disk.
+ * @param {string} fullPath Absolute file path to the JSON file.
+ * @return {Object} Parsed JSON object.
+ * @throws {SyntaxError} If file contents are not valid JSON.
+ * @throws {Error} If the file does not exist.
+ */
+export function parseJson(fullPath) {
+  try {
+    return JSON.parse(fs.readFileSync(fullPath));
+  } catch (e) {
+    console.error("Error parsing JSON from file:", fullPath);
+    throw e;
+  }
+}
+
+/**
+ * Builds browser-side metadata bootstrap JS from shared generator state.
+ * @return {string} JavaScript source that assigns metadata globals onto window.
+ */
+export function buildMetadataJs() {
+	return `// THIS FILE IS AUTO-GENERATED. PLEASE DON'T ALTER IT MANUALLY
+  // Generated from sheet_definitions/*.json by scripts/generate_sources.mjs
+  // Contains metadata for all customization items to avoid DOM queries at runtime
+
+  window.itemMetadata = ${JSON.stringify(itemMetadata, null, 2)};
+
+  window.aliasMetadata = ${JSON.stringify(aliasMetadata, null, 2)};
+
+  window.categoryTree = ${JSON.stringify(categoryTree, null, 2)};
+
+  window.paletteMetadata = ${JSON.stringify(paletteMetadata, null, 2)};
+  `;
+}

@@ -5,8 +5,12 @@ import {
   parseTree,
   sortCategoryTree,
   sortDirTree,
+  populateAndSortCategoryTree,
 } from "../../../../scripts/generateSources/tree.mjs";
-import { categoryTree } from "../../../../scripts/generateSources/state.mjs";
+import {
+  categoryTree,
+  itemMetadata,
+} from "../../../../scripts/generateSources/state.mjs";
 import { buildPath, resetTestState } from "./test_helpers.js";
 
 test("parseTree creates a category node from valid meta", () => {
@@ -113,4 +117,66 @@ test("sortCategoryTree handles missing metadata and missing child collections", 
   sortCategoryTree(root, {});
 
   assert.deepEqual(root.items, ["unknown1", "unknown2"]);
+});
+
+test("populateAndSortCategoryTree places items into correct category nodes", () => {
+  resetTestState();
+
+  itemMetadata.item_a = {
+    path: ["body", "torso", "item_a"],
+    priority: 1,
+    name: "A",
+  };
+  itemMetadata.item_b = {
+    path: ["body", "arms", "item_b"],
+    priority: 2,
+    name: "B",
+  };
+
+  populateAndSortCategoryTree();
+
+  assert.deepEqual(categoryTree.children.body.children.torso.items, ["item_a"]);
+  assert.deepEqual(categoryTree.children.body.children.arms.items, ["item_b"]);
+});
+
+test("populateAndSortCategoryTree falls back to Other for items with no path", () => {
+  resetTestState();
+
+  itemMetadata.item_no_path = { path: undefined, priority: 1, name: "No Path" };
+
+  populateAndSortCategoryTree();
+
+  // path defaults to ["Other"], categoryPath is [] (slice 0, -1), so item lands at root
+  assert.ok(categoryTree.items.includes("item_no_path"));
+});
+
+test("populateAndSortCategoryTree sorts children and items after population", () => {
+  resetTestState();
+
+  itemMetadata.item_z = { path: ["body", "item_z"], priority: 2, name: "Z" };
+  itemMetadata.item_a = { path: ["body", "item_a"], priority: 1, name: "A" };
+
+  populateAndSortCategoryTree();
+
+  assert.deepEqual(categoryTree.children.body.items, ["item_a", "item_z"]);
+});
+
+test("populateAndSortCategoryTree appends to existing node items without duplicating children", () => {
+  resetTestState();
+
+  itemMetadata.item_1 = {
+    path: ["torso", "item_1"],
+    priority: 1,
+    name: "First",
+  };
+  itemMetadata.item_2 = {
+    path: ["torso", "item_2"],
+    priority: 2,
+    name: "Second",
+  };
+
+  populateAndSortCategoryTree();
+
+  assert.equal(Object.keys(categoryTree.children).length, 1);
+  assert.deepEqual(categoryTree.children.torso.items, ["item_1", "item_2"]);
 });

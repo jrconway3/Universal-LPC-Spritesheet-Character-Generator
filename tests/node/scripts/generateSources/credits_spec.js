@@ -2,7 +2,6 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import path from "node:path";
 import {
-  appendCsvEntry,
   collectCreditsCsvRows,
   generateCreditsCsv,
   parseCredits,
@@ -36,8 +35,6 @@ test("parseCredits returns selected credit and csv line for first emit", () => {
     [buildCredit("body/wheelchair/adult/background/wheelchair")],
     null,
     [],
-    "male",
-    1,
   );
 
   assert.equal(
@@ -60,9 +57,7 @@ test("parseCredits returns empty csv line when image already emitted", () => {
     fileName,
     [buildCredit(fileName)],
     null,
-    ['"body/wheelchair/adult/background/wheelchair.png" '],
-    "male",
-    1,
+    '"body/wheelchair/adult/background/wheelchair.png" ',
   );
 
   assert.equal(lineText, "");
@@ -78,8 +73,6 @@ test("parseCredits throws when no matching credit exists", () => {
         [buildCredit("body/wheelchair/not-a-real-path")],
         null,
         [],
-        "male",
-        1,
       ),
     /missing credit inside body\/wheelchair\/adult\/background\/walk/,
   );
@@ -98,8 +91,6 @@ test("parseCredits throws for array-like credits with count=0", () => {
         emptyCredits,
         null,
         [],
-        "male",
-        1,
       ),
     /missing credit inside body\/wheelchair\/adult\/background\/wheelchair/,
   );
@@ -118,8 +109,6 @@ test("parseCredits throws for array-like credits with count=1 and wrong file", (
         credits,
         null,
         [],
-        "male",
-        1,
       ),
     /missing credit inside body\/wheelchair\/adult\/background\/wheelchair/,
   );
@@ -131,8 +120,8 @@ test("collectCreditsCsvRows skips noExport animations and empty layer files", ()
   const noExportAnim = ANIMATIONS.find((anim) => anim.noExport);
   assert.ok(noExportAnim, "Fixture expects at least one noExport animation");
 
-  const { listItemsCSV, listCreditToUse } = collectCreditsCsvRows({
-    definition: {
+  const { listItemsCSV, listCreditToUse } = collectCreditsCsvRows(
+    {
       layer_1: {
         male: "body/wheelchair/adult/background/",
         female: "",
@@ -142,29 +131,19 @@ test("collectCreditsCsvRows skips noExport animations and empty layer files", ()
         female: null,
       },
     },
-    animations: [noExportAnim.value, "wheelchair"],
-    requiredSexes: ["male", "female"],
-    credits: [buildCredit("body/wheelchair/adult/background/wheelchair")],
-    priority: 10,
-  });
+    {
+      animations: [noExportAnim.value, "wheelchair"],
+      required: ["male", "female"],
+      credits: [buildCredit("body/wheelchair/adult/background/wheelchair")],
+      priority: 10,
+    },
+  );
 
   assert.equal(listItemsCSV.length, 1);
   assert.equal(
     listCreditToUse.file,
     "body/wheelchair/adult/background/wheelchair",
   );
-});
-
-test("appendCsvEntry strips provided sheetsDir prefix", () => {
-  resetTestState();
-
-  appendCsvEntry(
-    path.join("sheet_definitions", "body"),
-    [{ priority: 1, lineText: "line" }],
-    { sheetsDir: "sheet_definitions" },
-  );
-
-  assert.equal(csvList[0].path, "body");
 });
 
 test("processItemCredits builds csv, appends entries, and injects licenses", () => {
@@ -178,17 +157,17 @@ test("processItemCredits builds csv, appends entries, and injects licenses", () 
     credits: [buildCredit("body/wheelchair/adult/background/wheelchair")],
   };
 
-  const { csv, listCreditToUse } = processItemCredits({
-    itemId: "wheelchair",
-    filePath: path.join(sheetsDir, "body"),
-    definition: {
+  const { csv, listCreditToUse } = processItemCredits(
+    "wheelchair",
+    path.join(sheetsDir, "body"),
+    {
       layer_1: {
         male: "body/wheelchair/adult/background/",
         female: "body/wheelchair/adult/background/",
       },
     },
     sheetsDir,
-  });
+  );
 
   assert.equal(csv.length, 2);
   assert.equal(
@@ -198,6 +177,7 @@ test("processItemCredits builds csv, appends entries, and injects licenses", () 
   assert.deepEqual(itemMetadata.wheelchair.licenses.male, ["CC-BY 3.0"]);
   assert.deepEqual(itemMetadata.wheelchair.licenses.female, ["CC-BY 3.0"]);
   assert.equal(csvList.length, 1);
+  assert.equal(csvList[0].path, "body");
 });
 
 test("sortCsvList orders by category priority then label", () => {
@@ -236,7 +216,7 @@ test("sortCsvList orders by category priority then label", () => {
   assert.equal(entries[2].path, path.join("head", "nose"));
 });
 
-test("generateCreditsCsv writes output and returns generated text", () => {
+test("generateCreditsCsv returns generated text", () => {
   resetTestState();
   licensesFound.push("GPL 3.0");
 
@@ -246,23 +226,17 @@ test("generateCreditsCsv writes output and returns generated text", () => {
     csv: [{ priority: 1, lineText: '"x.png","n","a","l","u"\n' }],
   });
 
-  const writes = new Map();
-  const generated = generateCreditsCsv((filePath, contents) => {
-    writes.set(filePath, contents);
-  });
+  const generated = generateCreditsCsv();
 
   assert.match(generated, /^filename,notes,authors,licenses,urls\n/);
   assert.match(generated, /x\.png/);
-  assert.equal(writes.get("CREDITS.csv"), generated);
 });
 
-test("generateCreditsCsv handles writer exceptions without throwing", () => {
+test("generateCreditsCsv returns header when csvList is empty", () => {
   resetTestState();
   categoryTree.children = {};
 
-  assert.doesNotThrow(() => {
-    generateCreditsCsv(() => {
-      throw new Error("disk full");
-    });
-  });
+  const generated = generateCreditsCsv();
+
+  assert.equal(generated, "filename,notes,authors,licenses,urls\n");
 });

@@ -9,6 +9,9 @@ import {
   licensesFound,
   paletteMetadata,
 } from "../../../../scripts/generateSources/state.mjs";
+import { parseTree } from "../../../../scripts/generateSources/tree.mjs";
+import { parseItem } from "../../../../scripts/generateSources/items.mjs";
+import { processItemCredits } from "../../../../scripts/generateSources/credits.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -94,6 +97,21 @@ export async function runBuild(buildName, palettesBuildName = buildName) {
       palettesDir: buildPath(palettesBuildName, "palettes"),
     },
     {
+      parseTreeFn: (filePath, fileName) =>
+        parseTree(filePath, fileName, {
+          sheetsDir: buildPath(buildName, "sheets"),
+        }),
+      parseJsonFn: (filePath, fileName) =>
+        parseItem(filePath, fileName, {
+          sheetsDir: buildPath(buildName, "sheets"),
+        }),
+      processItemCreditsFn: (item, filePath, definition) =>
+        processItemCredits(
+          item,
+          filePath,
+          definition,
+          buildPath(buildName, "sheets"),
+        ),
       writeFileSync: (filePath, contents) => {
         writes.set(path.basename(filePath), String(contents));
       },

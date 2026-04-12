@@ -21,9 +21,6 @@ const { debugLog } = debugUtils;
  */
 export function parseTree(filePath, fileName, options = {}) {
   const { sheetsDir = SHEETS_DIR } = options;
-  const normalizedSheetsDir = sheetsDir.endsWith(path.sep)
-    ? sheetsDir
-    : sheetsDir + path.sep;
 
   const fullPath = path.join(filePath, fileName);
   if (!onlyIfTemplate) debugLog(`Parsing tree ${fullPath}`);
@@ -39,7 +36,7 @@ export function parseTree(filePath, fileName, options = {}) {
   const { label, priority, required, animations } = meta;
 
   let current = categoryTree;
-  const categoryPath = filePath.replace(normalizedSheetsDir, "").split(path.sep);
+  const categoryPath = path.relative(sheetsDir, filePath).split(path.sep).filter(Boolean);
   const treeId = filePath.split(path.sep).pop();
 
   for (const segment of categoryPath) {
@@ -125,20 +122,8 @@ export function sortCategoryTree(node, itemMetadata) {
 /**
  * Populates category tree item lists from metadata paths and sorts the tree in place.
  * @return {{items?: Array<string>, children: Object<string, Object>}} The shared category tree after population and sorting.
- * @throws {TypeError} If shared tree or metadata state is invalid, or if nested sorting encounters invalid node data.
  */
 export function populateAndSortCategoryTree() {
-  if (
-    !categoryTree ||
-    typeof categoryTree !== "object" ||
-    typeof categoryTree.children !== "object"
-  ) {
-    throw new TypeError("tree must be an object containing a children map");
-  }
-  if (!itemMetadata || typeof itemMetadata !== "object") {
-    throw new TypeError("itemMetadata must be an object map");
-  }
-
   for (const [itemId, meta] of Object.entries(itemMetadata)) {
     const itemPath = meta.path || ["Other"];
 
