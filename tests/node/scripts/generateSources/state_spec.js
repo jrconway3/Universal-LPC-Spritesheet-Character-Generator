@@ -77,7 +77,9 @@ test("sortDirTree falls back to locale compare at same depth", () => {
   entries.sort(sortDirTree);
 
   assert.equal(entries[0].name, "a.json");
-});test("readDirTree returns sorted palette files for build1-basic", () => {
+});
+
+test("readDirTree returns sorted palette files for build1-basic", () => {
   const palettesDir = buildPath("build1-basic", "palettes");
 
   const entries = readDirTree(palettesDir);
@@ -103,7 +105,9 @@ test("readDirTree returns sorted sheet files for build1-basic", () => {
   assert.ok(names.includes("wheelchair.json"));
   assert.ok(names.includes("head_nose_big.json"));
   // wheelchair.json is at depth 3, head_nose_big.json is at depth 4 — shallower sorts first
-  const wheelchairIdx = fileEntries.findIndex((e) => e.name === "wheelchair.json");
+  const wheelchairIdx = fileEntries.findIndex(
+    (e) => e.name === "wheelchair.json",
+  );
   const noseIdx = fileEntries.findIndex((e) => e.name === "head_nose_big.json");
   assert.ok(wheelchairIdx < noseIdx);
 });

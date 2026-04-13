@@ -82,17 +82,15 @@ test(
     const { generateSources } = await loadGeneratorModule();
     assert.throws(
       () =>
-        generateSources(
-          {
-            writeFileSync: () => {
-              // no-op write override for negative-path tests
-            },
-            loadPaletteMetadataFn: () =>
-              loadPaletteMetadata({
-                palettesDir: buildPath("build2-invalid", "palettes")
-              }),
+        generateSources({
+          writeFileSync: () => {
+            // no-op write override for negative-path tests
           },
-        ),
+          loadPaletteMetadataFn: () =>
+            loadPaletteMetadata({
+              palettesDir: buildPath("build2-invalid", "palettes"),
+            }),
+        }),
       /SyntaxError|Expected/,
     );
   },

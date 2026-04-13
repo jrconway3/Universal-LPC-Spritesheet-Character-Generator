@@ -85,7 +85,7 @@ test("loadPaletteMetadata loads fixture palette tree recursively", () => {
   resetTestState();
 
   loadPaletteMetadata({
-    palettesDir: buildPath("build1-basic", "palettes")
+    palettesDir: buildPath("build1-basic", "palettes"),
   });
 
   assert.equal(paletteMetadata.materials.body.default, "ulpc");
@@ -103,7 +103,7 @@ test("normalizeRecolors returns empty list when recolors are missing", () => {
 test("normalizeRecolors expands single recolor palette entries", () => {
   resetTestState();
   loadPaletteMetadata({
-    palettesDir: buildPath("build1-basic", "palettes")
+    palettesDir: buildPath("build1-basic", "palettes"),
   });
 
   const recolors = normalizeRecolors({
@@ -125,7 +125,7 @@ test("normalizeRecolors expands single recolor palette entries", () => {
 test("normalizeRecolors supports color_n recolor blocks", () => {
   resetTestState();
   loadPaletteMetadata({
-    palettesDir: buildPath("build1-basic", "palettes")
+    palettesDir: buildPath("build1-basic", "palettes"),
   });
 
   const recolors = normalizeRecolors({

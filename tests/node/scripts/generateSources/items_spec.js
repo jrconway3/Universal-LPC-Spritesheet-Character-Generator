@@ -31,7 +31,7 @@ test("parseItem parses valid fixture file and writes item metadata", () => {
   const sheetsDir = buildPath("build1-basic", "sheets");
   const palettesDir = buildPath("build1-basic", "palettes");
   loadPaletteMetadata({
-    palettesDir: palettesDir
+    palettesDir: palettesDir,
   });
 
   const parsed = parseItem(path.join(sheetsDir, "body"), "wheelchair.json", {
@@ -114,7 +114,7 @@ test("parseItem normalizes recolors when palette metadata is loaded", () => {
   const sheetsDir = buildPath("build1-basic", "sheets");
   const palettesDir = buildPath("build1-basic", "palettes");
   loadPaletteMetadata({
-    palettesDir: palettesDir
+    palettesDir: palettesDir,
   });
 
   parseItem(path.join(sheetsDir, "head", "nose"), "head_nose_big.json", {

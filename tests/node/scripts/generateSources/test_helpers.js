@@ -93,34 +93,31 @@ export async function runBuild(buildName, palettesBuildName = buildName) {
   resetTestState();
   const writes = new Map();
 
-  generateSources(
-    {
-      readDirTreeFn: (sheetDir) =>
-        readDirTree(buildPath(buildName, "sheets")),
-      parseTreeFn: (filePath, fileName) =>
-        parseTree(filePath, fileName, {
-          sheetsDir: buildPath(buildName, "sheets"),
-        }),
-      parseJsonFn: (filePath, fileName) =>
-        parseItem(filePath, fileName, {
-          sheetsDir: buildPath(buildName, "sheets"),
-        }),
-      processItemCreditsFn: (item, filePath, definition) =>
-        processItemCredits(
-          item,
-          filePath,
-          definition,
-          buildPath(buildName, "sheets"),
-        ),
-      writeFileSync: (filePath, contents) => {
-        writes.set(path.basename(filePath), String(contents));
-      },
-      loadPaletteMetadataFn: () =>
-        loadPaletteMetadata({
-          palettesDir: buildPath(palettesBuildName, "palettes")
-        }),
+  generateSources({
+    readDirTreeFn: () => readDirTree(buildPath(buildName, "sheets")),
+    parseTreeFn: (filePath, fileName) =>
+      parseTree(filePath, fileName, {
+        sheetsDir: buildPath(buildName, "sheets"),
+      }),
+    parseJsonFn: (filePath, fileName) =>
+      parseItem(filePath, fileName, {
+        sheetsDir: buildPath(buildName, "sheets"),
+      }),
+    processItemCreditsFn: (item, filePath, definition) =>
+      processItemCredits(
+        item,
+        filePath,
+        definition,
+        buildPath(buildName, "sheets"),
+      ),
+    writeFileSync: (filePath, contents) => {
+      writes.set(path.basename(filePath), String(contents));
     },
-  );
+    loadPaletteMetadataFn: () =>
+      loadPaletteMetadata({
+        palettesDir: buildPath(palettesBuildName, "palettes"),
+      }),
+  });
 
   const csvGenerated = writes.get("CREDITS.csv") || "";
   const metadataJS = writes.get("item-metadata.js") || "";
