@@ -50,7 +50,11 @@ test("build1-basic aligns all generated window global objects", async () => {
   assert.deepEqual(parsed.paletteMetadata, palette);
 
   assert.deepEqual(metadata.wheelchair.path, ["body", "wheelchair"]);
-  assert.deepEqual(metadata.head_nose_big.path, ["head", "nose", "head_nose_big"]);
+  assert.deepEqual(metadata.head_nose_big.path, [
+    "head",
+    "nose",
+    "head_nose_big",
+  ]);
 });
 
 test("build1-basic includes expected csv rows and skips noExport animations", async () => {
@@ -107,7 +111,11 @@ test("generateSources logs sheet parse errors and still builds multiple valid sh
   assert.equal(result.globals.itemMetadata.good.name, "Wheelchair");
   assert.equal(result.globals.itemMetadata.head_nose_big.name, "Big nose");
   assert.deepEqual(result.globals.itemMetadata.good.path, ["body", "good"]);
-  assert.deepEqual(result.globals.itemMetadata.head_nose_big.path, ["head", "nose", "head_nose_big"]);
+  assert.deepEqual(result.globals.itemMetadata.head_nose_big.path, [
+    "head",
+    "nose",
+    "head_nose_big",
+  ]);
   assert.equal(result.globals.categoryTree.children.body.label, "Body");
   assert.ok(
     errors.some((entry) =>
@@ -134,9 +142,18 @@ test("build4-expansive loads broad tree/palette coverage and captures fixture er
 
   assert.ok(Object.keys(metadata).length >= 15);
   assert.equal(metadata.shoulders_mantal.name, "Mantal");
-  assert.deepEqual(metadata.shoulders_mantal.path, ["arms", "shoulders", "shoulders_mantal"]);
+  assert.deepEqual(metadata.shoulders_mantal.path, [
+    "arms",
+    "shoulders",
+    "shoulders_mantal",
+  ]);
   assert.equal(metadata.shield_two_engrailed.type_name, "shield");
-  assert.deepEqual(metadata.shield_two_engrailed.path, ["weapons", "shields", "engrailed", "shield_two_engrailed"]);
+  assert.deepEqual(metadata.shield_two_engrailed.path, [
+    "weapons",
+    "shields",
+    "engrailed",
+    "shield_two_engrailed",
+  ]);
 
   const topLevelCategories = Object.keys(tree.children || {});
   assert.ok(topLevelCategories.length >= 10);
