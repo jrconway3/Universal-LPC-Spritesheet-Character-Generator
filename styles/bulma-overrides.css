@@ -262,27 +262,35 @@
 }
 
 /*
- * Advanced Tools: v1 .field spacing vs0.9 — narrow chooser needs more gap; ≥769px needs a small bump vs raw0.75rem.
+ * Advanced Tools (.box:nth-child(4)): match Bulma 0.9 computed-style dumps — .field:not(:last-child)
+ * margin-bottom 0.75rem (12px); .help line-height 18px (0.75rem × 1.5), not v1’s tighter metrics.
  */
-@media screen and (max-width: 768px) {
-  #mithril-filters > div > .box:nth-child(4) .field:not(:last-child) {
-    margin-bottom: calc(0.75rem + 12px) !important;
-  }
-}
-
-@media screen and (min-width: 769px) {
-  #mithril-filters > div > .box:nth-child(4) .field:not(:last-child) {
-    margin-bottom: calc(0.75rem + 6px) !important;
-  }
+#mithril-filters > div > .box:nth-child(4) .field:not(:last-child) {
+  margin-bottom: 0.75rem !important;
 }
 
 #mithril-filters > div > .box:nth-child(4) .field:last-child {
   margin-bottom: 0 !important;
 }
 
-#mithril-filters > div > .box:nth-child(4) p.help {
+/* Match master computed `font: 12px / 18px monospace` on Advanced Tools help blocks. */
+#mithril-filters > div > .box:nth-child(4) .collapsible-content .help {
   margin-top: 0.25rem !important;
-  line-height: 1.25 !important;
+  font: 12px/18px monospace !important;
+}
+
+/*
+ * Z-Position help mixes text + inline `code`. Master (Bulma0.9) computes code as
+ * `10.5px / 15.75px` (0.875em × line-height 1.5 on the code font); v1 +18px strut was +2px on .help.
+ */
+#mithril-filters > div > .box:nth-child(4) .collapsible-content .help code {
+  background-color: whitesmoke;
+  border-radius: 0;
+  color: #da1039;
+  font: 10.5px/15.75px monospace !important;
+  font-weight: normal;
+  padding: 0.25em 0.5em;
+  vertical-align: baseline;
 }
 
 #mithril-filters > div > .box:nth-child(4) input.input[type="file"] {
