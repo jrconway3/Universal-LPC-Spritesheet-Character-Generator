@@ -109,7 +109,9 @@ test("parseCredits throws for array-like credits with length=1 and wrong file", 
       ),
     /missing credit inside body\/wheelchair\/adult\/background\/wheelchair/,
   );
-});test("parseCredits succeeds for single-credit array when credit file matches exactly", () => {
+});
+
+test("parseCredits succeeds for single-credit array when credit file matches exactly", () => {
   resetTestState();
 
   const fileName = "body/wheelchair/adult/background/wheelchair";
@@ -158,7 +160,13 @@ test("parseCredits logs wrong-credit error for single-credit mismatch before thr
   console.error = (...args) => errors.push(args.join(" "));
   try {
     assert.throws(
-      () => parseCredits("body/wheelchair/walk", [buildCredit("body/other")], null, []),
+      () =>
+        parseCredits(
+          "body/wheelchair/walk",
+          [buildCredit("body/other")],
+          null,
+          [],
+        ),
       /missing credit inside/,
     );
   } finally {
