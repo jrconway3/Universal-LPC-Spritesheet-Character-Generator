@@ -22,15 +22,15 @@ export const CREDITS_OUTPUT = "CREDITS.csv";
  * @throws {TypeError} If credits is not an array-like object and indexed access fails.
  */
 function searchCredit(fileName, credits, origFileName) {
-  if (credits.count <= 0) {
+  if (credits.length <= 0) {
     console.error("no credits for filename:", fileName);
     return undefined;
   }
-  if (credits.count === 1) {
-    if (!credits[0].file.includes(fileName)) {
+  if (credits.length === 1) {
+    if (!credits[0].file.includes(fileName) && !fileName.includes(credits[0].file)) {
       console.error("Wrong credit at filename:", fileName);
+      return undefined;
     }
-    return undefined;
   }
 
   for (let creditsIndex = 0; creditsIndex < credits.length; creditsIndex++) {

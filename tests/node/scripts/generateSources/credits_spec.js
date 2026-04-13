@@ -75,11 +75,11 @@ test("parseCredits throws when no matching credit exists", () => {
   );
 });
 
-test("parseCredits throws for array-like credits with count=0", () => {
+test("parseCredits throws for array-like credits with length=0", () => {
   resetTestState();
 
   const emptyCredits = [];
-  emptyCredits.count = 0;
+  emptyCredits.length = 0;
 
   assert.throws(
     () =>
@@ -93,11 +93,11 @@ test("parseCredits throws for array-like credits with count=0", () => {
   );
 });
 
-test("parseCredits throws for array-like credits with count=1 and wrong file", () => {
+test("parseCredits throws for array-like credits with length=1 and wrong file", () => {
   resetTestState();
 
   const credits = [buildCredit("wrong/path")];
-  credits.count = 1;
+  credits.length = 1;
 
   assert.throws(
     () =>
@@ -109,6 +109,63 @@ test("parseCredits throws for array-like credits with count=1 and wrong file", (
       ),
     /missing credit inside body\/wheelchair\/adult\/background\/wheelchair/,
   );
+});test("parseCredits succeeds for single-credit array when credit file matches exactly", () => {
+  resetTestState();
+
+  const fileName = "body/wheelchair/adult/background/wheelchair";
+  const credits = [buildCredit(fileName)];
+
+  const [selectedCredit] = parseCredits(fileName, credits, null, []);
+
+  assert.equal(selectedCredit.file, fileName);
+});
+
+test("parseCredits succeeds for single-credit array when fileName includes credit file", () => {
+  resetTestState();
+
+  // credit file is a parent path; fileName is a child of it
+  const credits = [buildCredit("body/wheelchair")];
+  const fileName = "body/wheelchair/adult/background/wheelchair";
+
+  const [selectedCredit] = parseCredits(fileName, credits, null, []);
+
+  assert.equal(selectedCredit.file, "body/wheelchair");
+});
+
+test("parseCredits logs no-credits error for empty credits array before throwing", () => {
+  resetTestState();
+
+  const errors = [];
+  const origError = console.error;
+  console.error = (...args) => errors.push(args.join(" "));
+  try {
+    assert.throws(
+      () => parseCredits("body/wheelchair/walk", [], null, []),
+      /missing credit inside/,
+    );
+  } finally {
+    console.error = origError;
+  }
+
+  assert.ok(errors.some((e) => e.includes("no credits for filename:")));
+});
+
+test("parseCredits logs wrong-credit error for single-credit mismatch before throwing", () => {
+  resetTestState();
+
+  const errors = [];
+  const origError = console.error;
+  console.error = (...args) => errors.push(args.join(" "));
+  try {
+    assert.throws(
+      () => parseCredits("body/wheelchair/walk", [buildCredit("body/other")], null, []),
+      /missing credit inside/,
+    );
+  } finally {
+    console.error = origError;
+  }
+
+  assert.ok(errors.some((e) => e.includes("Wrong credit at filename:")));
 });
 
 test("collectCreditsCsvRows skips noExport animations and empty layer files", () => {
