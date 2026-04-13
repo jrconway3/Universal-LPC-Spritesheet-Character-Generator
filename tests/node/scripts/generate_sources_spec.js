@@ -173,7 +173,7 @@ test("build4-expansive loads broad tree/palette coverage and captures fixture er
   assert.ok(palettes.materials.eye?.palettes?.ulpc);
   assert.ok(palettes.materials.hair?.palettes?.ulpc);
   assert.ok(palettes.materials.metal?.palettes?.ulpc);
-  assert.equal(palettes.materials.all, undefined);
+  assert.ok(palettes.materials.all?.palettes?.lpcr);
 
   assert.ok(
     errors.some((entry) => entry.includes("Error parsing JSON from file:")),

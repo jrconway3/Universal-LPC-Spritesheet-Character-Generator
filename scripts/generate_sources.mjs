@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { fork } from "child_process";
-import { pathToFileURL } from "url";
+import { fileURLToPath } from "url";
 import {
   CREDITS_OUTPUT,
   generateCreditsCsv,
@@ -77,9 +77,8 @@ export function generateSources(deps = {}) {
 }
 
 function isDirectExecution() {
-  return process.argv[1]
-    ? import.meta.url === pathToFileURL(process.argv[1]).href
-    : false;
+  if (!process.argv[1]) return false;
+  return fileURLToPath(import.meta.url) === path.resolve(process.argv[1]);
 }
 
 if (isDirectExecution()) {
