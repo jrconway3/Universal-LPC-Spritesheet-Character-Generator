@@ -53,12 +53,9 @@ test("parseCredits returns empty csv line when image already emitted", () => {
   resetTestState();
 
   const fileName = "body/wheelchair/adult/background/wheelchair";
-  const [, lineText] = parseCredits(
-    fileName,
-    [buildCredit(fileName)],
-    null,
-    ['"body/wheelchair/adult/background/wheelchair.png" '],
-  );
+  const [, lineText] = parseCredits(fileName, [buildCredit(fileName)], null, [
+    '"body/wheelchair/adult/background/wheelchair.png" ',
+  ]);
 
   assert.equal(lineText, "");
 });
