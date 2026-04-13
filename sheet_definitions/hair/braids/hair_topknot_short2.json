@@ -18,34 +18,6 @@
     "teen": "hair/extensions/ponytails/topknot_short/adult/",
     "child": "hair/extensions/ponytails/topknot_short/child/"
   },
-  "variants": [
-    "blonde",
-    "ash",
-    "sandy",
-    "platinum",
-    "strawberry",
-    "redhead",
-    "ginger",
-    "carrot",
-    "chestnut",
-    "light brown",
-    "dark brown",
-    "black",
-    "raven",
-    "dark gray",
-    "gray",
-    "white",
-    "red",
-    "orange",
-    "gold",
-    "green",
-    "blue",
-    "navy",
-    "violet",
-    "purple",
-    "pink",
-    "rose"
-  ],
   "animations": [
     "spellcast",
     "thrust",
@@ -100,11 +72,13 @@
       ]
     }
   ],
-  "path": [
-    "head",
-    "hair",
-    "braids, ponytails, updos",
-    "hair_topknot_short2"
-  ],
+    "recolors": {
+    "material": "hair",
+    "palettes": [
+      "ulpc",
+      "lpcr",
+      "all.lpcr"
+    ]
+  },
   "type_name": "hair"
 }

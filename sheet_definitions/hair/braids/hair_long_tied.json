@@ -16,34 +16,6 @@
     "pregnant": "hair/long_tied/adult/bg/",
     "teen": "hair/long_tied/adult/bg/"
   },
-  "variants": [
-    "blonde",
-    "ash",
-    "sandy",
-    "platinum",
-    "strawberry",
-    "redhead",
-    "ginger",
-    "carrot",
-    "chestnut",
-    "light brown",
-    "dark brown",
-    "black",
-    "raven",
-    "dark gray",
-    "gray",
-    "white",
-    "red",
-    "orange",
-    "gold",
-    "green",
-    "blue",
-    "navy",
-    "violet",
-    "purple",
-    "pink",
-    "rose"
-  ],
   "animations": [
     "spellcast",
     "thrust",
@@ -82,11 +54,26 @@
       ]
     }
   ],
-  "path": [
-    "head",
-    "hair",
-    "braids, ponytails, updos",
-    "hair_long_tied"
-  ],
+  "recolors": {
+    "color_1": {
+      "material": "hair",
+      "palettes": [
+        "ulpc",
+        "lpcr",
+        "all.lpcr"
+      ]
+    },
+    "color_2": {
+      "type_name": "hair_tie",
+      "label": "Hair Tie",
+      "material": "cloth",
+      "base": null,
+      "source": ["#1d131e", "#54242E", "#6C3536", "#8c288b", "#b75ea5", "#d27abc"],
+      "palettes": [
+        "ulpc",
+        "all.lpcr"
+      ]
+    }
+  },
   "type_name": "hair"
 }
