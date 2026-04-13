@@ -3,7 +3,7 @@ import path from "path";
 
 export const SHEETS_DIR = "sheet_definitions" + path.sep;
 export const PALETTES_DIR = "palette_definitions" + path.sep;
-export const METADDATA_OUTPUT = "item-metadata.js";
+export const METADATA_OUTPUT = "item-metadata.js";
 export const onlyIfTemplate = false;
 
 export const licensesFound = [];

@@ -16,7 +16,7 @@ import {
 } from "./generateSources/tree.mjs";
 import {
   buildMetadataJs,
-  METADDATA_OUTPUT,
+  METADATA_OUTPUT,
   onlyIfTemplate,
   SHEETS_DIR,
 } from "./generateSources/state.mjs";
@@ -25,7 +25,7 @@ export function generateSources(options = {}, deps = {}) {
   const {
     sheetsDir = SHEETS_DIR,
     palettesDir = null,
-    metadataOutput = METADDATA_OUTPUT,
+    metadataOutput = METADATA_OUTPUT,
   } = options;
   const writeFileSyncFn = deps.writeFileSync ?? fs.writeFileSync;
   const parseTreeFn = deps.parseTreeFn ?? parseTree;
