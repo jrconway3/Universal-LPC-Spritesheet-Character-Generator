@@ -60,24 +60,6 @@ export function parseTree(filePath, fileName, options = {}) {
 }
 
 /**
- * Sorts recursive directory entries by depth first, then locale-aware path name.
- * @param {{parentPath: string, name: string}} a First directory entry.
- * @param {{parentPath: string, name: string}} b Second directory entry.
- * @return {number} Sort comparator result compatible with Array.prototype.sort.
- * @throws {TypeError} If entry objects do not include expected path fields.
- */
-export function sortDirTree(a, b) {
-  const pa = path.join(a.parentPath, a.name);
-  const pb = path.join(b.parentPath, b.name);
-
-  const depthA = pa.split(path.sep).length;
-  const depthB = pb.split(path.sep).length;
-  if (depthA !== depthB) return depthA - depthB;
-
-  return pa.localeCompare(pb, ["en"]);
-}
-
-/**
  * Recursively sorts category tree children and item lists by priority and display name.
  * @param {{items?: Array<string>, children?: Object<string, Object>, priority?: number, label?: string}} node Tree node to sort.
  * @param {Object<string, Object>} itemMetadata Item metadata map used for item sorting.

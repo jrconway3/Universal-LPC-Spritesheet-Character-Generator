@@ -84,7 +84,9 @@ test("parsePalette throws on malformed palette JSON", () => {
 test("loadPaletteMetadata loads fixture palette tree recursively", () => {
   resetTestState();
 
-  loadPaletteMetadata(buildPath("build1-basic", "palettes"));
+  loadPaletteMetadata({
+    palettesDir: buildPath("build1-basic", "palettes")
+  });
 
   assert.equal(paletteMetadata.materials.body.default, "ulpc");
   assert.ok(paletteMetadata.materials.body.palettes.ulpc.light);
@@ -100,7 +102,9 @@ test("normalizeRecolors returns empty list when recolors are missing", () => {
 
 test("normalizeRecolors expands single recolor palette entries", () => {
   resetTestState();
-  loadPaletteMetadata(buildPath("build1-basic", "palettes"));
+  loadPaletteMetadata({
+    palettesDir: buildPath("build1-basic", "palettes")
+  });
 
   const recolors = normalizeRecolors({
     recolors: {
@@ -120,7 +124,9 @@ test("normalizeRecolors expands single recolor palette entries", () => {
 
 test("normalizeRecolors supports color_n recolor blocks", () => {
   resetTestState();
-  loadPaletteMetadata(buildPath("build1-basic", "palettes"));
+  loadPaletteMetadata({
+    palettesDir: buildPath("build1-basic", "palettes")
+  });
 
   const recolors = normalizeRecolors({
     recolors: {

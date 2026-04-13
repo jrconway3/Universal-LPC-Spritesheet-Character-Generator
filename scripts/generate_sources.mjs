@@ -12,35 +12,27 @@ import { parseItem } from "./generateSources/items.mjs";
 import {
   parseTree,
   populateAndSortCategoryTree,
-  sortDirTree,
 } from "./generateSources/tree.mjs";
 import {
   buildMetadataJs,
   METADATA_OUTPUT,
   onlyIfTemplate,
   SHEETS_DIR,
+  readDirTree,
 } from "./generateSources/state.mjs";
 
-export function generateSources(options = {}, deps = {}) {
-  const {
-    sheetsDir = SHEETS_DIR,
-    palettesDir = null,
-    metadataOutput = METADATA_OUTPUT,
-  } = options;
+export function generateSources(deps = {}) {
   const writeFileSyncFn = deps.writeFileSync ?? fs.writeFileSync;
   const parseTreeFn = deps.parseTreeFn ?? parseTree;
-  const parseJsonFn = deps.parseJsonFn ?? parseItem;
+  const parseItemFn = deps.parseItemFn ?? parseItem;
   const processItemCreditsFn = deps.processItemCreditsFn ?? processItemCredits;
+  const loadPaletteMetadataFn = deps.loadPaletteMetadataFn ?? loadPaletteMetadata;
+  const readDirTreeFn = deps.readDirTreeFn ?? readDirTree;
 
-  loadPaletteMetadata(palettesDir);
+  loadPaletteMetadataFn();
 
   // Read sheet_definitions/*.json line by line
-  const files = fs
-    .readdirSync(sheetsDir, {
-      recursive: true,
-      withFileTypes: true,
-    })
-    .sort(sortDirTree);
+  const files = readDirTreeFn(SHEETS_DIR);
 
   files.forEach((file) => {
     if (file.isDirectory()) {
@@ -53,7 +45,7 @@ export function generateSources(options = {}, deps = {}) {
     }
 
     try {
-      const { itemId, definition } = parseJsonFn(file.parentPath, file.name);
+      const { itemId, definition } = parseItemFn(file.parentPath, file.name);
       processItemCreditsFn(itemId, file.parentPath, definition);
     } catch (e) {
       const fullPath = path.join(file.parentPath, file.name);
@@ -77,7 +69,7 @@ export function generateSources(options = {}, deps = {}) {
   // Build and Write Item Metadata Output
   const metadataJS = buildMetadataJs();
   try {
-    writeFileSyncFn(metadataOutput, metadataJS);
+    writeFileSyncFn(METADATA_OUTPUT, metadataJS);
     process.stdout.write("Item Metadata JS Updated!\n");
   } catch (err) {
     console.error(err);

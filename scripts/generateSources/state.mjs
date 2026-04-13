@@ -14,6 +14,39 @@ export const aliasMetadata = {};
 export const categoryTree = { items: [], children: {} };
 
 /**
+ * Sorts recursive directory entries by depth first, then locale-aware path name.
+ * @param {{parentPath: string, name: string}} a First directory entry.
+ * @param {{parentPath: string, name: string}} b Second directory entry.
+ * @return {number} Sort comparator result compatible with Array.prototype.sort.
+ * @throws {TypeError} If entry objects do not include expected path fields.
+ */
+export function sortDirTree(a, b) {
+  const pa = path.join(a.parentPath, a.name);
+  const pb = path.join(b.parentPath, b.name);
+
+  const depthA = pa.split(path.sep).length;
+  const depthB = pb.split(path.sep).length;
+  if (depthA !== depthB) return depthA - depthB;
+
+  return pa.localeCompare(pb, ["en"]);
+}
+
+/**
+ * Reads and parses a Directory Tree and sorts it.
+ * @param {string} dirToRead Absolute path to the directory to read.
+ * @return {Array} Array of directory entries sorted by depth and name.
+ * @throws {Error} If the directory does not exist.
+ */
+export function readDirTree(dirToRead) {
+  return fs
+    .readdirSync(dirToRead, {
+      recursive: true,
+      withFileTypes: true,
+    })
+    .sort(sortDirTree);
+}
+
+/**
  * Reads and parses a JSON file from disk.
  * @param {string} fullPath Absolute file path to the JSON file.
  * @return {Object} Parsed JSON object.

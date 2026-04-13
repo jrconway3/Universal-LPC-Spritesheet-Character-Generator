@@ -1,7 +1,5 @@
-import fs from "fs";
 import path from "path";
-import { PALETTES_DIR, paletteMetadata, parseJson } from "./state.mjs";
-import { sortDirTree } from "./tree.mjs";
+import { PALETTES_DIR, paletteMetadata, parseJson, readDirTree } from "./state.mjs";
 
 /**
  * Parses one palette JSON file and merges it into shared palette metadata state.
@@ -41,17 +39,14 @@ export function parsePalette(filePath, fileName) {
 
 /**
  * Walks the palette directory tree and parses all palette definition files.
- * @param {string|null} [palettesDir] Root palette definitions directory.
+ * @param {{palettesDir?: string}} [options] Optional parser options.
+ * @param {string} [options.palettesDir] Root palette definitions directory.
  * @return {void} No return value; mutates context.paletteMetadata.
  * @throws {SyntaxError} Propagates parse errors from parsePalette for invalid palette files.
  */
-export function loadPaletteMetadata(palettesDir = null) {
-  const palettes = fs
-    .readdirSync(palettesDir ?? PALETTES_DIR, {
-      recursive: true,
-      withFileTypes: true,
-    })
-    .sort(sortDirTree);
+export function loadPaletteMetadata(options = {}) {
+  const { palettesDir = PALETTES_DIR } = options;
+  const palettes = readDirTree(palettesDir);
 
   palettes.forEach((file) => {
     if (file.isDirectory()) {

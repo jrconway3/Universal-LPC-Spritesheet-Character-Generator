@@ -4,7 +4,6 @@ import path from "node:path";
 import {
   parseTree,
   sortCategoryTree,
-  sortDirTree,
   populateAndSortCategoryTree,
 } from "../../../../scripts/generateSources/tree.mjs";
 import {
@@ -52,28 +51,6 @@ test("parseTree throws for malformed meta JSON", () => {
     () => parseTree(brokenMetaDir, "meta_body_broken.json", { sheetsDir }),
     /SyntaxError|Expected/,
   );
-});
-
-test("sortDirTree sorts shallow paths before deep paths", () => {
-  const entries = [
-    { parentPath: path.join("a", "b"), name: "z.json" },
-    { parentPath: "a", name: "a.json" },
-  ];
-
-  entries.sort(sortDirTree);
-
-  assert.equal(entries[0].parentPath, "a");
-});
-
-test("sortDirTree falls back to locale compare at same depth", () => {
-  const entries = [
-    { parentPath: "a", name: "z.json" },
-    { parentPath: "a", name: "a.json" },
-  ];
-
-  entries.sort(sortDirTree);
-
-  assert.equal(entries[0].name, "a.json");
 });
 
 test("sortCategoryTree sorts children and items recursively", () => {

@@ -7,6 +7,7 @@ import {
   runBuild,
   withCapturedConsoleError,
 } from "./generateSources/test_helpers.js";
+import { loadPaletteMetadata } from "../../../scripts/generateSources/palettes.mjs";
 
 test("build1-basic aligns all generated window global objects", async () => {
   const result = await runBuild("build1-basic");
@@ -83,13 +84,13 @@ test(
       () =>
         generateSources(
           {
-            sheetsDir: buildPath("build2-invalid", "sheets"),
-            palettesDir: buildPath("build2-invalid", "palettes"),
-          },
-          {
             writeFileSync: () => {
               // no-op write override for negative-path tests
             },
+            loadPaletteMetadataFn: () =>
+              loadPaletteMetadata({
+                palettesDir: buildPath("build2-invalid", "palettes")
+              }),
           },
         ),
       /SyntaxError|Expected/,

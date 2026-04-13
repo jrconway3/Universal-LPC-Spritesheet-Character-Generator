@@ -8,7 +8,9 @@ import {
   itemMetadata,
   licensesFound,
   paletteMetadata,
+  readDirTree,
 } from "../../../../scripts/generateSources/state.mjs";
+import { loadPaletteMetadata } from "../../../../scripts/generateSources/palettes.mjs";
 import { parseTree } from "../../../../scripts/generateSources/tree.mjs";
 import { parseItem } from "../../../../scripts/generateSources/items.mjs";
 import { processItemCredits } from "../../../../scripts/generateSources/credits.mjs";
@@ -93,10 +95,8 @@ export async function runBuild(buildName, palettesBuildName = buildName) {
 
   generateSources(
     {
-      sheetsDir: buildPath(buildName, "sheets"),
-      palettesDir: buildPath(palettesBuildName, "palettes"),
-    },
-    {
+      readDirTreeFn: (sheetDir) =>
+        readDirTree(buildPath(buildName, "sheets")),
       parseTreeFn: (filePath, fileName) =>
         parseTree(filePath, fileName, {
           sheetsDir: buildPath(buildName, "sheets"),
@@ -115,6 +115,10 @@ export async function runBuild(buildName, palettesBuildName = buildName) {
       writeFileSync: (filePath, contents) => {
         writes.set(path.basename(filePath), String(contents));
       },
+      loadPaletteMetadataFn: () =>
+        loadPaletteMetadata({
+          palettesDir: buildPath(palettesBuildName, "palettes")
+        }),
     },
   );
 
