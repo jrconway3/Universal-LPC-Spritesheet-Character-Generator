@@ -99,7 +99,7 @@ export async function runBuild(buildName, palettesBuildName = buildName) {
       parseTree(filePath, fileName, {
         sheetsDir: buildPath(buildName, "sheets"),
       }),
-    parseJsonFn: (filePath, fileName) =>
+    parseItemFn: (filePath, fileName) =>
       parseItem(filePath, fileName, {
         sheetsDir: buildPath(buildName, "sheets"),
       }),
