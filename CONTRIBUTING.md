@@ -142,7 +142,7 @@ Make sure the name starts with `div_sheet_`, and match the postfix with the name
 At this point, you will need to run a script that will generate the final `index.html`.
 In order to do that, run:
 
-`node scripts/generate_sources.js` 
+`node scripts/generate_sources.mjs` 
 
 This will generate the `index.html` from the `source_index.html`.
 
@@ -273,7 +273,7 @@ To run this script, use:
 
 This [CSV file](/scripts/zPositioning/z_positions.csv) will be regenerated each time one invokes:
 
-`node scripts/generate_sources.js`
+`node scripts/generate_sources.mjs`
 
 Therefore, before creating a PR, make sure you have committed the CSV to the repo as well.
 

@@ -46,6 +46,7 @@ const firefoxQuietPrefs = [
 let testemConfig = {
   framework: "mocha+chai",
   test_page: testPageFromEnv,
+  before_tests: "node ./tests/node/run-node-tests.js",
   parallel: 2,
   debug: true,
   disable_watching: true,

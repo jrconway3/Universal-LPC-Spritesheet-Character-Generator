@@ -5,7 +5,7 @@
     "lint:fix": "eslint . --cache --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "validate-site-sources": "node scripts/generate_sources.js",
+    "validate-site-sources": "node scripts/generate_sources.mjs",
     "z-positions": "node scripts/zPositioning/parse_zpos.js",
     "z-positions:update": "node scripts/zPositioning/update_zpos.js",
     "test": "node ./node_modules/testem/testem.js ci",

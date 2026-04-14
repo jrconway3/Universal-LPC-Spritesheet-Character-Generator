@@ -1,5 +1,6 @@
 // Body type selector component (styled as tree category)
 import { state } from "../../state/state.js";
+import { BODY_TYPES } from "../../state/constants.js";
 import { capitalize } from "../../utils/helpers.js";
 
 export const BodyTypeSelector = {
@@ -7,15 +8,6 @@ export const BodyTypeSelector = {
     vnode.state.isExpanded = true; // Start expanded by default
   },
   view: function (vnode) {
-    const bodyTypes = [
-      "male",
-      "female",
-      "teen",
-      "child",
-      "muscular",
-      "pregnant",
-    ];
-
     return m("div.mb-3", [
       m(
         "div.tree-label",
@@ -35,7 +27,7 @@ export const BodyTypeSelector = {
         ? m("div.ml-4.mt-2", [
             m(
               "div.buttons.ml-4",
-              bodyTypes.map((type) =>
+              BODY_TYPES.map((type) =>
                 m(
                   "button.button.is-small",
                   {
