@@ -86,13 +86,17 @@ export async function generateIssue382GoldenZipFixtures(inputRelativeToRepo) {
     const pageErrors = [];
     page.on("pageerror", (e) => pageErrors.push(String(e)));
 
-    await page.goto(`${BASE_URL}/issue382-golden-runner.html`, {
-      waitUntil: "networkidle",
-      timeout: 120000,
-    });
+    await page.goto(
+      `${BASE_URL}/tests/fixtures/issue-382/issue382-golden-runner.html`,
+      {
+        waitUntil: "networkidle",
+        timeout: 120000,
+      },
+    );
 
     await page.waitForFunction(
       () => window.__ISSUE382_GOLDEN_READY__ === true,
+      undefined,
       { timeout: 180000 },
     );
 
