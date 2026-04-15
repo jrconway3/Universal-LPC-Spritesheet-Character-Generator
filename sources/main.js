@@ -71,11 +71,6 @@ window.setDefaultSelections = async function () {
   await initState();
 };
 
-// Remove Netlify link if not on Netlify
-if (!window.location.hostname.includes("netlify")) {
-  document.getElementById("netlify-link")?.remove();
-}
-
 // Wait for DOM to be ready, then load Mithril app
 document.addEventListener("DOMContentLoaded", async () => {
   clearLoadingIndicators();
