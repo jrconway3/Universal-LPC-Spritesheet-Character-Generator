@@ -2,10 +2,7 @@
  * exportSplitAnimations — sorted zip paths
  *
  * Regenerate (writes this file and sibling issue-382 fixtures):
- *   node scripts/fixture-builder.js tests/fixtures/issue-382/issue-382-selections.json
- *
- * Snapshot: encodes current export behavior — review diffs; do not regenerate blindly
- * after a suspected bug without verifying output (see scripts/fixture-builder.js).
+ *   node scripts/fixture-builder.js tmp/selections.json
  *
  * @see scripts/fixture-builder.js
  * @see scripts/issue382-golden-playwright.mjs
@@ -18,6 +15,9 @@ export const paths = [
   "credits/credits.csv",
   "credits/credits.txt",
   "credits/metadata.json",
+  "custom/slash_oversize.png",
+  "custom/slash_reverse_oversize.png",
+  "custom/thrust_oversize.png",
   "standard/1h_backslash.png",
   "standard/1h_halfslash.png",
   "standard/1h_slash.png",

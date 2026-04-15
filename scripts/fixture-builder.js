@@ -73,7 +73,7 @@ const { debugLog } = require("./utils/debug.js");
 
 const REPO_ROOT = path.join(__dirname, "..");
 const ITEM_METADATA_PATH = path.join(REPO_ROOT, "item-metadata.js");
-const TESTS_FIXTURES = path.join(REPO_ROOT, "tests", "fixtures");
+const TESTS_FIXTURES = path.join(REPO_ROOT, "tests", "fixtures", "issue-382");
 
 /**
  * Collect every string value for keys named "itemId" (selections, layers, nested).

@@ -2,10 +2,7 @@
  * exportSplitItemAnimations — sorted zip paths
  *
  * Regenerate (writes this file and sibling issue-382 fixtures):
- *   node scripts/fixture-builder.js tests/fixtures/issue-382/issue-382-selections.json
- *
- * Snapshot: encodes current export behavior — review diffs; do not regenerate blindly
- * after a suspected bug without verifying output (see scripts/fixture-builder.js).
+ *   node scripts/fixture-builder.js tmp/selections.json
  *
  * @see scripts/fixture-builder.js
  * @see scripts/issue382-golden-playwright.mjs
@@ -18,6 +15,30 @@ export const paths = [
   "credits/credits.csv",
   "credits/credits.txt",
   "credits/metadata.json",
+  "custom/slash_oversize/0-1 longsword__longsword_.png",
+  "custom/slash_oversize/010 body_color__light_.png",
+  "custom/slash_oversize/015 revised_shoes__bluegray_.png",
+  "custom/slash_oversize/020 long_pants__orange_.png",
+  "custom/slash_oversize/055 iverness_cloak__black_.png",
+  "custom/slash_oversize/100 human_male__light_.png",
+  "custom/slash_oversize/120 natural__violet_.png",
+  "custom/slash_oversize/150 longsword__longsword_.png",
+  "custom/slash_reverse_oversize/0-1 longsword__longsword_.png",
+  "custom/slash_reverse_oversize/010 body_color__light_.png",
+  "custom/slash_reverse_oversize/015 revised_shoes__bluegray_.png",
+  "custom/slash_reverse_oversize/020 long_pants__orange_.png",
+  "custom/slash_reverse_oversize/055 iverness_cloak__black_.png",
+  "custom/slash_reverse_oversize/100 human_male__light_.png",
+  "custom/slash_reverse_oversize/120 natural__violet_.png",
+  "custom/slash_reverse_oversize/150 longsword__longsword_.png",
+  "custom/thrust_oversize/0-1 longsword__longsword_.png",
+  "custom/thrust_oversize/010 body_color__light_.png",
+  "custom/thrust_oversize/015 revised_shoes__bluegray_.png",
+  "custom/thrust_oversize/020 long_pants__orange_.png",
+  "custom/thrust_oversize/055 iverness_cloak__black_.png",
+  "custom/thrust_oversize/100 human_male__light_.png",
+  "custom/thrust_oversize/120 natural__violet_.png",
+  "custom/thrust_oversize/150 longsword__longsword_.png",
   "standard/1h_backslash/010 body_color__light_.png",
   "standard/1h_backslash/015 revised_shoes__bluegray_.png",
   "standard/1h_backslash/020 long_pants__orange_.png",
