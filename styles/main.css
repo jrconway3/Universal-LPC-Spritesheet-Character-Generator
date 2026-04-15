@@ -16,7 +16,7 @@ body {
 }
 
 .variant-display-name,
-#netlify-link {
+#sponsors-links {
   font-family: monospace;
 }
 
@@ -247,8 +247,13 @@ canvas {
   line-height: 1.3;
 }
 
-#netlify-link {
-  margin: -6px auto 0 0;
+#sponsors-links {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-evenly;
+  gap: 1rem;
+  margin-top: -12px;
 }
 
 .is-not-compatible.is-clickable {
