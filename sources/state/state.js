@@ -1,5 +1,5 @@
 // Global state and state operations
-import { LICENSE_CONFIG, ANIMATIONS } from "./constants.js";
+import { LICENSE_CONFIG, ANIMATIONS, BODY_TYPES } from "./constants.js";
 import { syncSelectionsToHash, loadSelectionsFromHash } from "./hash.js";
 import { renderCharacter } from "../canvas/renderer.js";
 
@@ -34,7 +34,7 @@ export function getStateDeps() {
 export const state = {
   // state that is saved in url hash
   selections: {}, // key: selectionGroup, value: { itemId, variant, name }
-  bodyType: "male", // male, female, teen, child, muscular, pregnant
+  bodyType: BODY_TYPES[0],
 
   // State that is currently not saved but could be in future
   selectedAnimation: "walk",

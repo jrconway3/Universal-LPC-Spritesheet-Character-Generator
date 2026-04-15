@@ -5,6 +5,16 @@ export const COMPACT_FRAME_SIZE = 32; // Size of compact frame preview
 /** Frames per row on the standard universal LPC animation sheet (13 × FRAME_SIZE wide per row). */
 export const STANDARD_ANIMATION_FRAMES_PER_ROW = 13;
 
+// Body types supported by sheet metadata and UI selectors
+export const BODY_TYPES = [
+  "male",
+  "female",
+  "teen",
+  "child",
+  "muscular",
+  "pregnant",
+];
+
 // License configuration - single source of truth
 export const LICENSE_CONFIG = [
   {
@@ -75,6 +85,17 @@ export const ANIMATIONS = [
     label: "1-Handed Halfslash",
     folderName: "halfslash",
   },
+];
+
+// Default animations used when a sheet definition omits an explicit animations list
+export const ANIMATION_DEFAULTS = [
+  "spellcast",
+  "thrust",
+  "walk",
+  "slash",
+  "shoot",
+  "hurt",
+  "watering",
 ];
 
 // Animation offsets (y-positions on spritesheet) - matches chargen.js base_animations

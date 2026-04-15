@@ -1,0 +1,9 @@
+{
+  "type": "material",
+  "name": "Body",
+  "label": "Body",
+  "parent": "all",
+  "material": "body",
+  "default": "ulpc",
+  "base": "skin"
+}
