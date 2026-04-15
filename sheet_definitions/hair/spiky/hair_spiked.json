@@ -8,34 +8,6 @@
     "pregnant": "hair/spiked/adult/",
     "teen": "hair/spiked/adult/"
   },
-  "variants": [
-    "blonde",
-    "ash",
-    "sandy",
-    "platinum",
-    "strawberry",
-    "redhead",
-    "ginger",
-    "carrot",
-    "chestnut",
-    "light brown",
-    "dark brown",
-    "black",
-    "raven",
-    "dark gray",
-    "gray",
-    "white",
-    "red",
-    "orange",
-    "gold",
-    "green",
-    "blue",
-    "navy",
-    "violet",
-    "purple",
-    "pink",
-    "rose"
-  ],
   "animations": [
     "spellcast",
     "thrust",
@@ -71,11 +43,13 @@
       ]
     }
   ],
-  "path": [
-    "head",
-    "hair",
-    "spiky",
-    "hair_spiked"
-  ],
+    "recolors": {
+    "material": "hair",
+    "palettes": [
+      "ulpc",
+      "lpcr",
+      "all.lpcr"
+    ]
+  },
   "type_name": "hair"
 }

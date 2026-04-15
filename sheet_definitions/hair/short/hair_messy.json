@@ -4,36 +4,6 @@
     "zPos": 120,
     "child": "hair/messy/child/"
   },
-  "variants": [
-    "black",
-    "blonde",
-    "blonde 2",
-    "blue",
-    "blue 2",
-    "brown",
-    "brown 2",
-    "brunette",
-    "brunette 2",
-    "darkblonde",
-    "darkgrey",
-    "darkred",
-    "gold",
-    "grey",
-    "green",
-    "green 2",
-    "lightblonde",
-    "lightblonde 2",
-    "pink",
-    "purple",
-    "raven",
-    "raven 2",
-    "red",
-    "red 2",
-    "ruby",
-    "whiteblonde",
-    "whiteblonde 2",
-    "whitecyan"
-  ],
   "credits": [
     {
       "file": "hair/messy",
@@ -51,11 +21,13 @@
       ]
     }
   ],
-  "path": [
-    "head",
-    "hair",
-    "short",
-    "hair_messy"
-  ],
+    "recolors": {
+    "material": "hair",
+    "palettes": [
+      "ulpc",
+      "lpcr",
+      "all.lpcr"
+    ]
+  },
   "type_name": "hair"
 }

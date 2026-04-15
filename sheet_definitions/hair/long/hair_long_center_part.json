@@ -16,34 +16,6 @@
     "pregnant": "hair/long_center_part/adult/bg/",
     "teen": "hair/long_center_part/adult/bg/"
   },
-  "variants": [
-    "blonde",
-    "ash",
-    "sandy",
-    "platinum",
-    "strawberry",
-    "redhead",
-    "ginger",
-    "carrot",
-    "chestnut",
-    "light brown",
-    "dark brown",
-    "black",
-    "raven",
-    "dark gray",
-    "gray",
-    "white",
-    "red",
-    "orange",
-    "gold",
-    "green",
-    "blue",
-    "navy",
-    "violet",
-    "purple",
-    "pink",
-    "rose"
-  ],
   "animations": [
     "spellcast",
     "thrust",
@@ -80,11 +52,13 @@
       ]
     }
   ],
-  "path": [
-    "head",
-    "hair",
-    "long",
-    "hair_long_center_part"
-  ],
+    "recolors": {
+    "material": "hair",
+    "palettes": [
+      "ulpc",
+      "lpcr",
+      "all.lpcr"
+    ]
+  },
   "type_name": "hair"
 }

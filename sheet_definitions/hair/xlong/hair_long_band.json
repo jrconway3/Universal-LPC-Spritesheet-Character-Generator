@@ -16,34 +16,6 @@
     "pregnant": "hair/long_band/adult/bg/",
     "teen": "hair/long_band/adult/bg/"
   },
-  "variants": [
-    "blonde",
-    "ash",
-    "sandy",
-    "platinum",
-    "strawberry",
-    "redhead",
-    "ginger",
-    "carrot",
-    "chestnut",
-    "light brown",
-    "dark brown",
-    "black",
-    "raven",
-    "dark gray",
-    "gray",
-    "white",
-    "red",
-    "orange",
-    "gold",
-    "green",
-    "blue",
-    "navy",
-    "violet",
-    "purple",
-    "pink",
-    "rose"
-  ],
   "animations": [
     "spellcast",
     "thrust",
@@ -80,11 +52,26 @@
       ]
     }
   ],
-  "path": [
-    "head",
-    "hair",
-    "very long",
-    "hair_long_band"
-  ],
+  "recolors": {
+    "color_1": {
+      "material": "hair",
+      "palettes": [
+        "ulpc",
+        "lpcr",
+        "all.lpcr"
+      ]
+    },
+    "color_2": {
+      "type_name": "hair_tie",
+      "label": "Hair Band",
+      "material": "cloth",
+      "base": null,
+      "source": ["#281820", "#676767", "#958080", "#c4b59f", "#b7b7b7", "#efefef"],
+      "palettes": [
+        "ulpc",
+        "all.lpcr"
+      ]
+    }
+  },
   "type_name": "hair"
 }

@@ -8,34 +8,6 @@
     "pregnant": "hair/extensions/ties/high_bun/adult/",
     "teen": "hair/extensions/ties/high_bun/adult/"
   },
-  "variants": [
-    "blonde",
-    "ash",
-    "sandy",
-    "platinum",
-    "strawberry",
-    "redhead",
-    "ginger",
-    "carrot",
-    "chestnut",
-    "light brown",
-    "dark brown",
-    "black",
-    "raven",
-    "dark gray",
-    "gray",
-    "white",
-    "red",
-    "orange",
-    "gold",
-    "green",
-    "blue",
-    "navy",
-    "violet",
-    "purple",
-    "pink",
-    "rose"
-  ],
   "animations": [
     "spellcast",
     "thrust",
@@ -70,12 +42,13 @@
       ]
     }
   ],
-  "path": [
-    "head",
-    "hair",
-    "hair extensions",
-    "knot / ties",
-    "hairext_high_bun"
-  ],
+    "recolors": {
+    "material": "hair",
+    "palettes": [
+      "ulpc",
+      "lpcr",
+      "all.lpcr"
+    ]
+  },
   "type_name": "updo"
 }
