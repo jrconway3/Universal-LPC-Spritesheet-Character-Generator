@@ -1,0 +1,69 @@
+{
+  "name": "Angry Alt",
+  "tags": [
+    "expression"
+  ],
+  "required_tags": [
+    "human"
+  ],
+  "layer_1": {
+    "zPos": 106,
+    "male": "head/faces/global/angry2/",
+    "muscular": "head/faces/global/angry2/",
+    "female": "head/faces/global/angry2/",
+    "teen": "head/faces/global/angry2/",
+    "pregnant": "head/faces/global/angry2/"
+  },
+  "match_body_color": true,
+  "animations": [
+    "spellcast",
+    "thrust",
+    "walk",
+    "slash",
+    "shoot",
+    "watering",
+    "idle",
+    "jump",
+    "run",
+    "sit",
+    "emote",
+    "combat",
+    "1h_slash",
+    "1h_backslash",
+    "1h_halfslash"
+  ],
+  "credits": [
+    {
+      "file": "head/faces/global/angry2",
+      "notes": "Original Bases by Redshrike, Alt Angry Expression by Laetissima and Pennomi, mapped to all frames by JaidynReiman",
+      "authors": [
+        "JaidynReiman",
+        "Thane Brimhall (pennomi)",
+        "laetissima",
+        "Stephen Challener (Redshrike)"
+      ],
+      "licenses": [
+        "CC-BY-SA 3.0",
+        "GPL 3.0"
+      ],
+      "urls": [
+        "https://opengameart.org/content/lpc-base-character-expressions",
+        "https://opengameart.org/content/ulpc-expanded-expressions"
+      ]
+    }
+  ],
+  "recolors": {
+    "material": "body",
+    "palettes": [
+      "ulpc",
+      "lpcr",
+      "all.lpcr"
+    ]
+  },
+  "path": [
+    "head",
+    "face",
+    "face_angry2"
+  ],
+  "type_name": "expression"
+}

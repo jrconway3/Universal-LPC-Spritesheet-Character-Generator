@@ -1,5 +1,5 @@
 // THIS FILE IS AUTO-GENERATED. PLEASE DON'T ALTER IT MANUALLY
-  // Generated from sheet_definitions/*.json by scripts/generate_sources.js
+  // Generated from sheet_definitions/*.json by scripts/generate_sources.mjs
   // Contains metadata for all customization items to avoid DOM queries at runtime
 
   window.itemMetadata = {
