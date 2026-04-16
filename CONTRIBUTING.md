@@ -154,8 +154,14 @@ npm ci
 # or, for everyday work: npm install
 ```
 
-**rsync 3.x**  
-**`npm run build`** runs **`rsync`** to copy the large **`spritesheets/`** tree into **`dist/`** (see `vite.config.js`). You need **rsync 3.x** on your **`PATH`**.
+**Copying `spritesheets/` into `dist/` (build)**  
+**`npm run build`** copies the large **`spritesheets/`** tree into **`dist/`** as part of the Vite build (see `vite.config.js`). Which tool runs depends on the OS:
+
+- **Windows:** The build invokes **`robocopy`** (built into Windows). You do **not** need **rsync** or any separate copy utility for this step.
+- **macOS and Linux:** The build invokes **`rsync` 3.x** on your **`PATH`**, with options that update files incrementally (for example **`-u` / `--update`**: skip overwriting when the destination file is newer).
+
+**rsync 3.x (macOS and Linux only)**  
+If you develop on **macOS** or **Linux**, install **rsync 3.x** and ensure it is what runs when you type **`rsync`**:
 
 - **macOS:** The system **`/usr/bin/rsync`** is often **2.x** (Apple’s build). This project needs **3.x**. Check what runs by default:
 
@@ -171,30 +177,13 @@ npm ci
   ```
 
   Homebrew puts the binary at **`/opt/homebrew/bin/rsync`** (Apple Silicon) or **`/usr/local/bin/rsync`** (Intel). Ensure that directory appears **before** **`/usr/bin`** in your **`PATH`** (the installer normally documents this; `which rsync` should not print **`/usr/bin/rsync`**). Run **`rsync --version`** again to confirm **3.x**.
+
 - **Linux:** Install via your package manager, for example:
   - Debian / Ubuntu: `sudo apt update && sudo apt install rsync`
   - Fedora: `sudo dnf install rsync`
   - Arch: `sudo pacman -S rsync`
-- **Windows:** There is no **rsync** in a stock install. Use one of the following so **`rsync`** is on your **`PATH`** when you run **`npm run build`** (from PowerShell, cmd, or Git Bash).
 
-  **WSL (simplest if you already use it)**  
-  In your Linux distro (for example Ubuntu): `sudo apt update && sudo apt install rsync`, then run **`npm run build`** from that same environment.
-
-  **Git Bash (add rsync via MSYS2)**  
-  [Git for Windows](https://gitforwindows.org/) does not ship **rsync**. Install it from [MSYS2](https://www.msys2.org/) (a separate install), which provides **`rsync` 3.x** under **`usr\bin`**:
-
-  1. Install MSYS2 and open the **MSYS2 MSYS** terminal (from the Start Menu).
-  2. Update package databases and install rsync:
-
-     ```bash
-     pacman -Syu
-     pacman -S rsync
-     ```
-
-  3. Add MSYS2’s **`usr\bin`** directory to your **Windows user PATH** (default install: **`C:\msys64\usr\bin`**; adjust if you chose another root). Sign out or restart terminals so **Git Bash** and **Node** pick it up.
-  4. In **Git Bash**, run **`rsync --version`** and confirm **`rsync  version 3.`** and **`which rsync`** pointing at the MSYS2 path (not a missing command).
-
-  Then run **`npm run build`** from **Git Bash** (or any shell where **`where rsync`** / **`which rsync`** resolves to that binary).
+**Windows note:** If you run **`npm run build`** inside **WSL** or another **Linux** environment, that environment uses the **rsync** path above, not **robocopy**. Native **Windows** shells (**cmd**, **PowerShell**, **Git Bash** with Node for Windows) use **robocopy**.
 
 **Browsers**
 
