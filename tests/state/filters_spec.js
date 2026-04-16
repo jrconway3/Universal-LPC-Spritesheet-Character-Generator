@@ -13,7 +13,7 @@ import {
   setCustomAnimationBase,
 } from "../../sources/state/filters.js";
 import { expect } from "chai";
-import { describe, it, beforeEach, afterEach } from "vitest";
+import { describe, it, beforeEach, afterEach } from "mocha-globals";
 
 describe("state/filters.js", () => {
   beforeEach(() => {

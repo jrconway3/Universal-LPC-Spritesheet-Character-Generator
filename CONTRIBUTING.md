@@ -196,14 +196,17 @@ npm ci
 
   Then run **`npm run build`** from **Git Bash** (or any shell where **`where rsync`** / **`which rsync`** resolves to that binary).
 
-**Playwright browsers (for tests)**  
-**`npm test`** and **`npm run test:visual`** use Playwright. After `npm ci`, install the browser binaries at least once (or after upgrading `@playwright/test`):
+**Browsers**
+
+- **`npm test`** (browser suite via [Testem](https://github.com/testem/testem) + [Vite](https://vitejs.dev/)) uses **Chrome** and **Firefox** as configured in [`testem.js`](testem.js). CI installs them with **`browser-actions/setup-chrome`** and **`browser-actions/setup-firefox`** (see [`.github/workflows/ci.yml`](.github/workflows/ci.yml)).
+
+- **`npm run test:visual`** uses Playwright. After `npm ci`, install the browser binaries at least once (or after upgrading `@playwright/test`):
 
 ```bash
 npx playwright install --with-deps chromium firefox webkit
 ```
 
-For visual tests only, **`npx playwright install chromium`** is enough. The main CI job installs **Chromium, Firefox, and WebKit** with **`npx playwright install --with-deps chromium firefox webkit`** on Ubuntu; elsewhere run **`npx playwright install chromium firefox webkit`** and add any system libraries Playwright’s installer or error output asks for if a browser fails to launch.
+For visual tests only, **`npx playwright install chromium`** is enough. The Argos / visual workflow installs browsers as needed; elsewhere run **`npx playwright install chromium`** (or the full set) and add any system libraries Playwright’s installer or error output asks for if a browser fails to launch.
 
 #### File Generation
 
@@ -231,7 +234,7 @@ The **Validate site sources** workflow (`.github/workflows/validate-site-sources
 
 #### Running Tests
 
-Browser specs use [Vitest](https://vitest.dev/) in **browser** mode with the [Playwright](https://playwright.dev/) provider (see [`vitest.config.js`](vitest.config.js)). **Chromium, Firefox, and WebKit** each run the suite headlessly by default. Node-based tests under [`tests/node/`](tests/node/) cover the `generate_sources` pipeline and related scripts.
+Browser specs run in real browsers via [Testem](https://github.com/testem/testem). Vite is embedded in middleware mode (see [`vite/vite-plugin-testem/`](vite/vite-plugin-testem/) and [`testem.js`](testem.js)) so specs can `import` ESM from `sources/`. **`testem.js`** runs **Node** checks first (`before_tests`), then loads **[`tests_run.html`](tests_run.html)** with Mocha and [`tests/tests.js`](tests/tests.js).
 
 **Run the full suite**
 
@@ -241,9 +244,9 @@ From the project root:
 npm test
 ```
 
-This runs **`npm run test:node`** then **`npm run test:vitest`**.
+This runs **`node ./node_modules/testem/testem.js ci`**, which executes **`before_tests`** (`node ./tests/node/run-node-tests.js`) then the browser suite (**Chrome** and **Firefox** in CI).
 
-**`DEBUG` environment variable (optional):** When `DEBUG` is `1` or `true`, Vitest exposes `import.meta.env.VITEST_DEBUG === "true"` (see `vitest.config.js`), and [`tests/vitest-setup.js`](tests/vitest-setup.js) turns on test-friendly verbose behavior aligned with `sources/utils/debug.js`.
+**`DEBUG` environment variable (optional):** When `DEBUG` is `1` or `true`, the Vite middleware used by Testem defines `import.meta.env.VITEST_DEBUG === "true"`, and [`tests/vitest-setup.js`](tests/vitest-setup.js) turns on test-friendly verbose behavior aligned with `sources/utils/debug.js`.
 
 ```bash
 DEBUG=1 npm test
@@ -257,13 +260,13 @@ DEBUG=true npm test
 npm run test:server
 ```
 
-This runs **`vitest --browser --ui`** so you can drive tests from Vitest’s UI.
+This runs Testem in dev mode (browser picker / watch) against the same **[`tests_run.html`](tests_run.html)** harness.
 
-**CI:** [`.github/workflows/ci.yml`](.github/workflows/ci.yml) installs Playwright browsers (**Chromium, Firefox, WebKit**), starts **Xvfb**, and runs **`npm test`** on pushes and pull requests to **`master`**. That workflow uses `npm ci --ignore-scripts`; for local development, `npm ci` or `npm install` without `--ignore-scripts` is typical.
+**CI:** [`.github/workflows/ci.yml`](.github/workflows/ci.yml) installs **Chrome** and **Firefox**, starts **Xvfb**, and runs **`npm test`** on pushes and pull requests to **`master`**. That workflow uses `npm ci --ignore-scripts`; for local development, `npm ci` or `npm install` without `--ignore-scripts` is typical.
 
 #### Visual regression tests (Playwright + Argos)
 
-Full-page screenshots live under [`tests/visual/`](tests/visual/) and use [`playwright.config.js`](playwright.config.js) (separate from Vitest’s browser config). [Argos](https://argos-ci.com/) uploads run only when **`ARGOS_TOKEN`** is set (a repository secret in CI).
+Full-page screenshots live under [`tests/visual/`](tests/visual/) and use [`playwright.config.js`](playwright.config.js) (separate from the Testem browser suite). [Argos](https://argos-ci.com/) uploads run only when **`ARGOS_TOKEN`** is set (a repository secret in CI).
 
 **Run locally**
 
@@ -286,15 +289,15 @@ Full-page screenshots live under [`tests/visual/`](tests/visual/) and use [`play
 
    [`tests/visual/home-helpers.js`](tests/visual/home-helpers.js) waits for the preview canvas, for `.loading` to disappear on the preview panels, and for paint frames before Argos screenshots (with a best-effort **`networkidle`** wait). Without **`ARGOS_TOKEN`**, navigation and layout still run but Argos capture/upload is skipped. Override the origin with **`PLAYWRIGHT_TEST_BASE_URL`** (see [`tests/visual/home.spec.js`](tests/visual/home.spec.js)).
 
-**Unit and component specs (Vitest + Chai)**
+**Unit and component specs (Mocha + Chai)**
 
-Vitest picks up **`tests/**/*_spec.js`**, excluding **`tests/visual/**`** and **`tests/node/**`**.
+[`tests/tests.js`](tests/tests.js) imports every **`tests/**/*_spec.js`** file (except files only used from **`tests/node/`**). **`tests/node/`** is exercised by **`before_tests`** and by **`npm run test:node`** directly.
 
-[`tests/vitest-setup.js`](tests/vitest-setup.js) assigns **`globalThis.m`** (Mithril), sets test flags on `window`, and exposes exports from **`item-metadata.js`** on **`window`** so tests see the same catalog data as the app.
+[`tests/vitest-setup.js`](tests/vitest-setup.js) loads **`sources/vendor-globals.js`**, sets test flags on **`window`**, and exposes exports from **`item-metadata.js`** on **`window`** so tests see the same catalog data as the app.
 
 Typical patterns:
 
-- Import **`describe`**, **`it`**, **`beforeEach`**, **`afterEach`** from **`"vitest"`** and **`assert`** or **`expect`** from **`"chai"`** (Vitest’s **`expect`** is fine too if you prefer it).
+- Import **`describe`**, **`it`**, **`beforeEach`**, **`afterEach`** (and suite-level **`before`** / **`after`** when needed) from **`"mocha-globals"`** (re-exported in [`tests/bdd-globals.js`](tests/bdd-globals.js)) and **`assert`** or **`expect`** from **`"chai"`**.
 - Render with **`m.render(…)`** using the global **`m`**.
 - Use **`beforeEach` / `afterEach`** to create and remove DOM containers.
 
@@ -303,7 +306,7 @@ Example:
 ```javascript
 import { MyComponent } from "../sources/components/MyComponent.js";
 import { assert } from "chai";
-import { describe, it, beforeEach, afterEach } from "vitest";
+import { describe, it, beforeEach, afterEach } from "mocha-globals";
 
 describe("MyComponent", () => {
   let container;

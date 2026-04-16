@@ -1,13 +1,11 @@
 import "chai";
-import m from "mithril";
+import "../sources/vendor-globals.js";
 import {
   itemMetadata,
   aliasMetadata,
   categoryTree,
   paletteMetadata,
 } from "../item-metadata.js";
-
-globalThis.m = m;
 
 window.__TEST_DEBUG_LOCKED__ = true;
 window.DEBUG = import.meta.env.VITEST_DEBUG === "true";

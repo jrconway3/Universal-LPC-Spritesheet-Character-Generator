@@ -1,6 +1,10 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
 import { DynamicPublicDirectory } from "vite-multiple-assets";
 import { run } from "vite-plugin-run";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /**
  * Vite injects the extracted entry CSS after module scripts in built HTML.
@@ -53,6 +57,11 @@ export default defineConfig(({ command }) => ({
   base: "./",
   publicDir: false,
   logLevel: "info",
+  resolve: {
+    alias: {
+      "mocha-globals": path.resolve(__dirname, "tests/bdd-globals.js"),
+    },
+  },
   build: {
     rolldownOptions: {
       input: {

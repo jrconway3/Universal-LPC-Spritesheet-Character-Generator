@@ -14,7 +14,7 @@
 
 import { expect } from "chai";
 import sinon from "sinon";
-import { describe, it, beforeEach, afterEach } from "vitest";
+import { describe, it, beforeEach, afterEach } from "mocha-globals";
 import {
   initCanvas,
   canvas as rendererCanvas,

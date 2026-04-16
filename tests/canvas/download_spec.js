@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { describe, it, beforeEach, afterEach } from "vitest";
+import { describe, it, beforeEach, afterEach } from "mocha-globals";
 import sinon from "sinon";
 import { downloadFile, downloadAsPNG } from "../../sources/canvas/download.js";
 

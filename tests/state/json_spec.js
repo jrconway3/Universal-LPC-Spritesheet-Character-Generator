@@ -6,7 +6,7 @@ import {
 } from "../../sources/state/json.js";
 import { expect } from "chai";
 import sinon from "sinon";
-import { describe, it, beforeEach, afterEach } from "vitest";
+import { describe, it, beforeEach, afterEach } from "mocha-globals";
 
 describe("state/json.js", () => {
   beforeEach(() => {

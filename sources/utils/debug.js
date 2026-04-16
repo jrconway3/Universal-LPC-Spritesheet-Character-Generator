@@ -33,7 +33,7 @@ export function getDebugParam() {
 
 if (typeof window !== "undefined") {
   if (window.__TEST_DEBUG_LOCKED__) {
-    // Vitest setup (tests/vitest-setup.js) sets window.DEBUG from import.meta.env.VITEST_DEBUG
+    // Browser test harness (tests/vitest-setup.js) sets window.DEBUG from import.meta.env.VITEST_DEBUG
   } else {
     window.DEBUG = getDebugParam();
   }

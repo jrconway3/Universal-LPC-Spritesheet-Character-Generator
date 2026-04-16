@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { describe, it, beforeAll } from "vitest";
+import { describe, it, before } from "mocha-globals";
 import {
   es6DynamicTemplate,
   variantToFilename,
@@ -83,7 +83,7 @@ describe("utils/helpers.js", () => {
   });
 
   describe("nodeHasMatches", () => {
-    beforeAll(() => {
+    before(() => {
       window.itemMetadata = {
         1: { name: "Sword" },
         2: { name: "Shield" },
