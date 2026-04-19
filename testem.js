@@ -1,7 +1,7 @@
 "use strict";
 
 const path = require("path");
-const { createTestemViteMiddleware } = require("./vite/vite-plugin-testem");
+const { createTestemViteMiddleware } = require("vite-plugin-testem");
 
 // Suppress app debug logs during tests by default (?debug=false), so localhost does not
 // enable window.DEBUG via getDebugParam(). Set DEBUG=true or DEBUG=1 in the environment
@@ -69,7 +69,6 @@ let testemConfig = {
     "tests/**/*.js",
     "sources/**/*.js",
     "vite.config.js",
-    "vite/vite-plugin-testem/**/*.js",
     "tests_run.html",
   ],
   browser_args: {
