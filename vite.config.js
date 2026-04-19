@@ -8,6 +8,10 @@ import { vitePluginItemMetadata } from "./vite/vite-plugin-item-metadata.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+/** Resolved path imports use for `../item-metadata.js` from `sources/` and `tests/`. */
+const itemMetadataAlias = path.resolve(__dirname, "item-metadata.js");
+const itemMetadataDist = path.resolve(__dirname, "dist", "item-metadata.js");
+
 /** @returns {string[]} Command and args for vite-plugin-run (first element is the executable). */
 function copySpritesheetsRsyncRun() {
   return [
@@ -148,6 +152,7 @@ export default defineConfig(({ command }) => ({
   resolve: {
     alias: {
       "mocha-globals": path.resolve(__dirname, "tests/bdd-globals.js"),
+      [itemMetadataAlias]: itemMetadataDist,
     },
   },
   build: {
