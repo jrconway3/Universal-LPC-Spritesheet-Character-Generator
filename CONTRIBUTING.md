@@ -223,7 +223,7 @@ The **Validate site sources** workflow (`.github/workflows/validate-site-sources
 
 #### Running Tests
 
-Browser specs run in real browsers via [Testem](https://github.com/testem/testem). Vite is embedded in middleware mode (see [`vite/vite-plugin-testem/`](vite/vite-plugin-testem/) and [`testem.js`](testem.js)) so specs can `import` ESM from `sources/`. **`testem.js`** runs **Node** checks first (`before_tests`), then loads **[`tests_run.html`](tests_run.html)** with Mocha and [`tests/tests.js`](tests/tests.js).
+Browser specs run in real browsers via [Testem](https://github.com/testem/testem). Vite is embedded in middleware mode via [`vite-plugin-testem`](https://www.npmjs.com/package/vite-plugin-testem) (see [`testem.js`](testem.js)) so specs can `import` ESM from `sources/`. **`testem.js`** runs **Node** checks first (`before_tests`), then loads **[`tests_run.html`](tests_run.html)** with Mocha and [`tests/tests.js`](tests/tests.js).
 
 **Run the full suite**
 
