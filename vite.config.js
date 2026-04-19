@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
 import { DynamicPublicDirectory } from "vite-multiple-assets";
 import { run } from "vite-plugin-run";
+import { vitePluginItemMetadata } from "./vite/vite-plugin-item-metadata.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -184,5 +185,9 @@ export default defineConfig(({ command }) => ({
   css: {
     target: false,
   },
-  plugins: [vitePluginBundledCssAfterBulma(), getSpritesheetsPlugin(command)],
+  plugins: [
+    vitePluginItemMetadata(),
+    vitePluginBundledCssAfterBulma(),
+    getSpritesheetsPlugin(command),
+  ],
 }));

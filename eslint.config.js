@@ -100,7 +100,7 @@ module.exports = [
     },
   },
   {
-    files: ["playwright.config.js", "vite.config.js"],
+    files: ["playwright.config.js", "vite.config.js", "vite/**/*.js"],
     languageOptions: {
       parser: babelParser,
       parserOptions: {
