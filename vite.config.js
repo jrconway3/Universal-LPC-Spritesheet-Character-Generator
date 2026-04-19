@@ -4,13 +4,18 @@ import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
 import { DynamicPublicDirectory } from "vite-multiple-assets";
 import { run } from "vite-plugin-run";
-import { vitePluginItemMetadata } from "./vite/vite-plugin-item-metadata.js";
+import {
+  itemMetadataPlugins,
+  itemMetadataResolveAliases,
+} from "./vite/wiring.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-/** Resolved path imports use for `../item-metadata.js` from `sources/` and `tests/`. */
-const itemMetadataAlias = path.resolve(__dirname, "item-metadata.js");
-const itemMetadataDist = path.resolve(__dirname, "dist", "item-metadata.js");
+/**
+ * Item-metadata pipeline (plan step 4): `vite/wiring.mjs` registers the pre-plugin and
+ * `resolve.alias` for both **serve** and **build**. Testem’s Vite middleware loads this file
+ * via `configFile` so browser tests get the same behavior. Other plugins stay below.
+ */
 
 /** @returns {string[]} Command and args for vite-plugin-run (first element is the executable). */
 function copySpritesheetsRsyncRun() {
@@ -152,7 +157,7 @@ export default defineConfig(({ command }) => ({
   resolve: {
     alias: {
       "mocha-globals": path.resolve(__dirname, "tests/bdd-globals.js"),
-      [itemMetadataAlias]: itemMetadataDist,
+      ...itemMetadataResolveAliases(),
     },
   },
   build: {
@@ -191,7 +196,7 @@ export default defineConfig(({ command }) => ({
     target: false,
   },
   plugins: [
-    vitePluginItemMetadata(),
+    ...itemMetadataPlugins(),
     vitePluginBundledCssAfterBulma(),
     getSpritesheetsPlugin(command),
   ],
