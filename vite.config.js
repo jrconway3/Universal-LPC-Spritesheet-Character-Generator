@@ -21,10 +21,13 @@ export default defineConfig(({ command }) => ({
   publicDir: false,
   logLevel: "info",
   resolve: {
-    alias: {
-      "mocha-globals": path.resolve(__dirname, "tests/bdd-globals.js"),
+    alias: [
+      {
+        find: "mocha-globals",
+        replacement: path.resolve(__dirname, "tests/bdd-globals.js"),
+      },
       ...itemMetadataResolveAliases(),
-    },
+    ],
   },
   build: {
     rolldownOptions: {
