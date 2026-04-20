@@ -2,6 +2,7 @@ import {
   ANIMATION_CONFIGS,
   FRAME_SIZE,
   STANDARD_ANIMATION_FRAMES_PER_ROW,
+  DIRECTIONS,
 } from "../state/constants.js";
 import { drawFramesToCustomAnimation } from "../canvas/draw-frames.js";
 import { customAnimationSize } from "../custom-animations.js";
@@ -17,13 +18,14 @@ import { exportStateAsJSON } from "../state/json.js";
 /**
  * Maps direction names to row indices on a custom-animation grid (LPC order:
  * up, left, down, right).
+ * Should match DIRECTIONS from constants.js
  */
-export const CUSTOM_ANIM_DIRECTION_TO_ROW = Object.freeze({
-  up: 0,
-  left: 1,
-  down: 2,
-  right: 3,
-});
+export const CUSTOM_ANIM_DIRECTION_TO_ROW = Object.freeze(
+  DIRECTIONS.reduce((acc, dir, index) => {
+    acc[dir] = index;
+    return acc;
+  }, {}),
+);
 
 function createFrameCanvasPool(poolSize, frameWidth, frameHeight) {
   const canvasPool = [];
@@ -279,7 +281,7 @@ export async function addStandardAnimationToZipCustomFolder(
 export function extractFramesFromAnimation(
   animationCanvas,
   animationName,
-  directions = ["up", "down", "left", "right"],
+  directions = DIRECTIONS,
 ) {
   const frames = {};
   const config = ANIMATION_CONFIGS[animationName];
@@ -385,7 +387,7 @@ export function checkFrameContentFromImageData(
 export function extractFramesFromCustomAnimation(
   animationCanvas,
   customAnimationDef,
-  directions = ["up", "down", "left", "right"],
+  directions = DIRECTIONS,
 ) {
   const frames = {};
   const frameSize = customAnimationDef.frameSize;
