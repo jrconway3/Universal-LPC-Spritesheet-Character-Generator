@@ -1,4 +1,9 @@
-import { ANIMATIONS, ANIMATION_CONFIGS, FRAME_SIZE } from "./constants.js";
+import {
+  ANIMATIONS,
+  ANIMATION_CONFIGS,
+  FRAME_SIZE,
+  DIRECTIONS,
+} from "./constants.js";
 import {
   extractAnimationFromCanvas,
   renderSingleItem,
@@ -593,7 +598,7 @@ export const exportIndividualFrames = async (deps = {}) => {
 
     const exportedAnimations = [];
     const failedAnimations = [];
-    const directions = ["up", "down", "left", "right"];
+    const directions = DIRECTIONS;
 
     // Pre-extract, slice to per-frame canvases, and queue PNG encodes (render path)
     const animationCanvases = new Map();

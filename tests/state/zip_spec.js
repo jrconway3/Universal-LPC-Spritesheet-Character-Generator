@@ -23,7 +23,7 @@ import {
 } from "../../sources/state/zip.js";
 import { resetState } from "../../sources/state/hash.js";
 import { state } from "../../sources/state/state.js";
-import { ANIMATIONS } from "../../sources/state/constants.js";
+import { ANIMATIONS, DIRECTIONS } from "../../sources/state/constants.js";
 import { createFakeJSZip } from "../helpers/fake-jszip.js";
 
 /**
@@ -1103,7 +1103,7 @@ describe("state/zip.js", () => {
     let fakeZip;
     let alertStub;
 
-    const directions = ["up", "down", "left", "right"];
+    const directions = DIRECTIONS;
 
     function smallAnimCanvas() {
       const c = document.createElement("canvas");

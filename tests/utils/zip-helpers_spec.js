@@ -20,6 +20,7 @@ import {
   zipExportTimestamp,
   zipGenerateBlobWithProfiler,
 } from "../../sources/utils/zip-helpers.js";
+import { DIRECTIONS } from "../../sources/state/constants.js";
 
 function createCanvas(width, height) {
   const canvas = document.createElement("canvas");
@@ -366,8 +367,8 @@ describe("utils/zip-helpers.js", () => {
 
       const out = extractFramesFromAnimation(canvas, "walk");
 
-      expect(out.down).to.have.length(1);
-      expect(out.down[0].frameNumber).to.equal(1);
+      expect(out.left).to.have.length(1);
+      expect(out.left[0].frameNumber).to.equal(1);
       expect(out.up).to.deep.equal([]);
     });
 
@@ -481,7 +482,7 @@ describe("utils/zip-helpers.js", () => {
         "right",
         "up",
       ]);
-      for (const dir of ["up", "down", "left", "right"]) {
+      for (const dir of DIRECTIONS) {
         expect(out[dir]).to.have.length(2);
         expect(out[dir][0].frameNumber).to.equal(1);
         expect(out[dir][1].frameNumber).to.equal(2);

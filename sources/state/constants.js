@@ -15,6 +15,9 @@ export const BODY_TYPES = [
   "pregnant",
 ];
 
+// LPC sheet row order: should match ANIMATION_CONFIGS rows
+export const DIRECTIONS = ["up", "left", "down", "right"];
+
 // License configuration - single source of truth
 export const LICENSE_CONFIG = [
   {
