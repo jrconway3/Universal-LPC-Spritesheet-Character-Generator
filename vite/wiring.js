@@ -27,6 +27,7 @@ export function itemMetadataResolveAliases() {
  * Runs on **serve** and **build** (no `apply` filter).
  * @returns {import("vite").Plugin[]}
  */
-export function itemMetadataPlugins() {
-  return [vitePluginItemMetadata()];
+export function itemMetadataPlugins(command) {
+  const env = command === "build" ? "production" : "development";
+  return [vitePluginItemMetadata(env)];
 }

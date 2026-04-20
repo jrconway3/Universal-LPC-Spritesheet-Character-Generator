@@ -157,7 +157,7 @@ If an engine is not listed above, try Google. However, it is very likely that yo
 - **Format:** `npm run format:check` (verify) or `npm run format` (apply)
 - **Tests:** `npm test` (Node checks plus browser tests). Visual regression: `npm run test:visual`. Details are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
-**Generated files:** [CREDITS.csv](CREDITS.csv) is updated by **`node scripts/generate_sources.mjs`** (also **`npm run validate-site-sources`**), together with z-position CSV under **`scripts/zPositioning/`**. The runtime catalog bundle **`dist/item-metadata.js`** is produced by **Vite** (`npm run dev`, `npm run build`); it is gitignored—do not edit it by hand. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full workflow.
+**Generated files:** [CREDITS.csv](CREDITS.csv) is updated by **`node scripts/generate_sources.mjs`** (also **`npm run validate-site-sources`**), together with z-position CSV under **`scripts/zPositioning/`**. The runtime catalog bundle **`dist/item-metadata.js`** is produced by **Vite** (`npm run dev`, `npm run build`); it is gitignored—do not edit it by hand. **`npm run dev`** writes that bundle with pretty-printed embedded JSON; **`npm run build`** writes compact JSON. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full workflow.
 
 #### Performance Profiling
 
