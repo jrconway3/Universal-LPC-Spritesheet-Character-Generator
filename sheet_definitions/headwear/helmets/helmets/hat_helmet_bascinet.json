@@ -49,12 +49,6 @@
       ]
     }
   ],
-  "path": [
-    "head",
-    "helmets",
-    "helmets",
-    "hat_helmet_bascinet"
-  ],
   "recolors": {
     "material": "metal",
     "palettes": [

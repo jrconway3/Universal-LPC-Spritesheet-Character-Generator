@@ -50,12 +50,6 @@
       ]
     }
   ],
-  "path": [
-    "head",
-    "helmets",
-    "helmets",
-    "hat_helmet_legion"
-  ],
   "recolors": {
     "material": "metal",
     "palettes": [

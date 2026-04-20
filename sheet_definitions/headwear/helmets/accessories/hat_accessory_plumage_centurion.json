@@ -46,12 +46,6 @@
       ]
     }
   ],
-  "path": [
-    "head",
-    "helmets",
-    "helmet accessories",
-    "hat_accessory_plumage_centurion"
-  ],
   "recolors": {
     "color_1": {
       "material": "cloth",

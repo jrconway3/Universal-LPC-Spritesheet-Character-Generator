@@ -49,12 +49,6 @@
       ]
     }
   ],
-  "path": [
-    "head",
-    "helmets",
-    "helmets",
-    "hat_helmet_barbarian"
-  ],
   "recolors": {
     "color_1": {
       "material": "metal",

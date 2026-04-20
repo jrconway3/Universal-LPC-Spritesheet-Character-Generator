@@ -51,12 +51,6 @@
       ]
     }
   ],
-  "path": [
-    "head",
-    "helmets",
-    "helmets",
-    "hat_helmet_horned"
-  ],
   "recolors": {
     "material": "metal",
     "palettes": [

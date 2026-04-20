@@ -43,11 +43,6 @@
       ]
     }
   ],
-  "path": [
-    "legs",
-    "skirts",
-    "legs_skirts_legion"
-  ],
   "recolors": {
     "material": "cloth",
     "palettes": [

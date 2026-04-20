@@ -47,12 +47,6 @@
       ]
     }
   ],
-  "path": [
-    "head",
-    "helmets",
-    "helmets",
-    "hat_helmet_flattop"
-  ],
   "recolors": {
     "material": "metal",
     "palettes": [

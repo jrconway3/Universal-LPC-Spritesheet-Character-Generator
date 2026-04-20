@@ -39,11 +39,6 @@
       ]
     }
   ],
-  "path": [
-    "legs",
-    "skirts",
-    "legs_skirt_belle"
-  ],
   "recolors": {
     "material": "cloth",
     "palettes": [

@@ -48,12 +48,6 @@
       ]
     }
   ],
-  "path": [
-    "head",
-    "helmets",
-    "helmets",
-    "hat_helmet_pointed"
-  ],
   "recolors": {
     "material": "metal",
     "palettes": [

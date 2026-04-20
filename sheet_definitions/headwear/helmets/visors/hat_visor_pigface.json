@@ -49,12 +49,6 @@
       ]
     }
   ],
-  "path": [
-    "head",
-    "helmets",
-    "visors",
-    "hat_visor_pigface"
-  ],
   "recolors": {
     "material": "metal",
     "palettes": [
