@@ -56,6 +56,11 @@ export function matchesSearch(text, query) {
 export function nodeHasMatches(node, query) {
   if (!query || query.length < 2) return true;
 
+  // Until lite metadata is registered we cannot match item names; keep nodes visible
+  if (node.items && node.items.length > 0 && !catalog.isLiteReady()) {
+    return true;
+  }
+
   // Check if any items in this node match
   if (
     node.items &&

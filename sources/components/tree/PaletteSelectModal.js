@@ -18,6 +18,17 @@ export const PaletteSelectModal = {
       onSelect,
     } = vnode.attrs;
 
+    if (!catalog.isPaletteReady()) {
+      return [
+        m("div.palette-modal-overlay", { onclick: onClose }),
+        m(
+          "div.palette-modal",
+          { onclick: (e) => e.stopPropagation() },
+          m("p.has-text-grey", "Loading palette data…"),
+        ),
+      ];
+    }
+
     // Selection Group
     const meta = catalog.getItemLite(itemId);
     const selectionGroup = opt.type_name ?? getSelectionGroup(itemId);

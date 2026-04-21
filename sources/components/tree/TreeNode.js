@@ -87,125 +87,148 @@ export const TreeNode = {
                 pathPrefix: nodePath,
               }),
             ),
-            // Render items in this category
-            (node.items || [])
-              .filter((itemId) => {
-                const meta = catalog.getItemMerged(itemId);
-                // Filter: Only show items compatible with current body type
-                if (!meta || !meta.required.includes(state.bodyType))
-                  return false;
-                if (!isItemAnimationCompatible(itemId) || !isNodeAnimCompatible)
-                  return false;
+            // Render items in this category (skeletons until lite chunk registers)
+            !catalog.isLiteReady()
+              ? (node.items || []).map((itemId) =>
+                  m(
+                    "div.skeleton-row",
+                    {
+                      key: `sk-${itemId}`,
+                      "aria-hidden": "true",
+                    },
+                    m("span.skeleton-row__bar.skeleton-row__bar--long"),
+                  ),
+                )
+              : (node.items || [])
+                  .filter((itemId) => {
+                    const lite = catalog.getItemLite(itemId);
+                    // Filter: Only show items compatible with current body type
+                    if (!lite || !lite.required.includes(state.bodyType))
+                      return false;
+                    if (
+                      !isItemAnimationCompatible(itemId) ||
+                      !isNodeAnimCompatible
+                    )
+                      return false;
 
-                // Filter: Only show items matching search query
-                if (
-                  searchQuery &&
-                  searchQuery.length >= 2 &&
-                  !matchesSearch(meta.name, searchQuery)
-                ) {
-                  return false;
-                }
+                    // Filter: Only show items matching search query
+                    if (
+                      searchQuery &&
+                      searchQuery.length >= 2 &&
+                      !matchesSearch(lite.name, searchQuery)
+                    ) {
+                      return false;
+                    }
 
-                return true;
-              })
-              .map((itemId) => {
-                const meta = catalog.getItemMerged(itemId);
-                const displayName = meta.name;
-                const hasVariants = meta.variants && meta.variants.length > 0;
-                const hasRecolors =
-                  !hasVariants && meta.recolors && meta.recolors.length > 0;
-                const isSearchMatch =
-                  searchQuery &&
-                  searchQuery.length >= 2 &&
-                  matchesSearch(meta.name, searchQuery);
+                    return true;
+                  })
+                  .map((itemId) => {
+                    const meta = catalog.getItemMerged(itemId);
+                    if (!meta) return null;
+                    const displayName = meta.name;
+                    const hasVariants =
+                      meta.variants && meta.variants.length > 0;
+                    const hasRecolors =
+                      !hasVariants && meta.recolors && meta.recolors.length > 0;
+                    const isSearchMatch =
+                      searchQuery &&
+                      searchQuery.length >= 2 &&
+                      matchesSearch(meta.name, searchQuery);
 
-                const isLicenseCompatibleFlag = isItemLicenseCompatible(itemId);
-                const isAnimCompatibleFlag =
-                  isItemAnimationCompatible(itemId) && isNodeAnimCompatible;
-                const isCompatible =
-                  isLicenseCompatibleFlag && isAnimCompatibleFlag;
+                    const isLicenseCompatibleFlag =
+                      isItemLicenseCompatible(itemId);
+                    const isAnimCompatibleFlag =
+                      isItemAnimationCompatible(itemId) && isNodeAnimCompatible;
+                    const isCompatible =
+                      isLicenseCompatibleFlag && isAnimCompatibleFlag;
 
-                // Build tooltip text
-                const allLicenses = new Set();
-                if (meta?.credits) {
-                  meta.credits.forEach((credit) => {
-                    if (credit.licenses) {
-                      credit.licenses.forEach((lic) =>
-                        allLicenses.add(lic.trim()),
+                    // Build tooltip text (license list needs credits chunk)
+                    let licensesText;
+                    if (!catalog.isCreditsReady()) {
+                      licensesText = "License info loading…";
+                    } else {
+                      const allLicenses = new Set();
+                      for (const credit of catalog.getItemCredits(itemId)) {
+                        if (credit.licenses) {
+                          credit.licenses.forEach((lic) =>
+                            allLicenses.add(lic.trim()),
+                          );
+                        }
+                      }
+                      licensesText =
+                        allLicenses.size > 0
+                          ? `Licenses: ${Array.from(allLicenses).join(", ")}`
+                          : "No license info";
+                    }
+
+                    const supportedAnims = meta?.animations || [];
+                    const animsText =
+                      supportedAnims.length > 0
+                        ? `Animations: ${supportedAnims.join(", ")}`
+                        : "No animation info";
+
+                    let tooltipText = "";
+                    if (!isCompatible) {
+                      const issues = [];
+                      if (!isLicenseCompatibleFlag) issues.push("licenses");
+                      if (!isAnimCompatibleFlag) issues.push("animations");
+                      tooltipText = `⚠️ Incompatible with selected ${issues.join(" and ")}\n`;
+                    }
+                    tooltipText += `${licensesText}\n${animsText}`;
+
+                    if (!hasVariants && !hasRecolors) {
+                      // Simple item with no variants or recolors
+                      const selectionGroup = getSelectionGroup(itemId);
+                      const isSelected =
+                        state.selections[selectionGroup]?.itemId === itemId;
+                      return m(
+                        "div.tree-node",
+                        {
+                          key: itemId,
+                          class: `${isSearchMatch ? "search-result" : ""} ${!isCompatible ? "has-text-grey" : ""}`,
+                          style: isSelected
+                            ? " font-weight: bold; color: #3273dc;"
+                            : "",
+                          title: tooltipText,
+                          onclick: () => {
+                            if (!isCompatible) return; // Prevent selecting incompatible
+                            if (isSelected) {
+                              delete state.selections[selectionGroup];
+                            } else {
+                              state.selections[selectionGroup] = {
+                                itemId,
+                                name: displayName,
+                              };
+                            }
+                          },
+                        },
+                        [
+                          displayName,
+                          !isCompatible ? m("span.ml-1", "⚠️") : null,
+                        ],
                       );
                     }
-                  });
-                }
-                const licensesText =
-                  allLicenses.size > 0
-                    ? `Licenses: ${Array.from(allLicenses).join(", ")}`
-                    : "No license info";
 
-                const supportedAnims = meta?.animations || [];
-                const animsText =
-                  supportedAnims.length > 0
-                    ? `Animations: ${supportedAnims.join(", ")}`
-                    : "No animation info";
-
-                let tooltipText = "";
-                if (!isCompatible) {
-                  const issues = [];
-                  if (!isLicenseCompatibleFlag) issues.push("licenses");
-                  if (!isAnimCompatibleFlag) issues.push("animations");
-                  tooltipText = `⚠️ Incompatible with selected ${issues.join(" and ")}\n`;
-                }
-                tooltipText += `${licensesText}\n${animsText}`;
-
-                if (!hasVariants && !hasRecolors) {
-                  // Simple item with no variants or recolors
-                  const selectionGroup = getSelectionGroup(itemId);
-                  const isSelected =
-                    state.selections[selectionGroup]?.itemId === itemId;
-                  return m(
-                    "div.tree-node",
-                    {
+                    // Item with variants or recolors - create a sub-component
+                    if (hasRecolors) {
+                      return m(ItemWithRecolors, {
+                        key: itemId,
+                        itemId,
+                        meta,
+                        isSearchMatch,
+                        isCompatible,
+                        tooltipText,
+                      });
+                    }
+                    return m(ItemWithVariants, {
                       key: itemId,
-                      class: `${isSearchMatch ? "search-result" : ""} ${!isCompatible ? "has-text-grey" : ""}`,
-                      style: isSelected
-                        ? " font-weight: bold; color: #3273dc;"
-                        : "",
-                      title: tooltipText,
-                      onclick: () => {
-                        if (!isCompatible) return; // Prevent selecting incompatible
-                        if (isSelected) {
-                          delete state.selections[selectionGroup];
-                        } else {
-                          state.selections[selectionGroup] = {
-                            itemId,
-                            name: displayName,
-                          };
-                        }
-                      },
-                    },
-                    [displayName, !isCompatible ? m("span.ml-1", "⚠️") : null],
-                  );
-                }
-
-                // Item with variants or recolors - create a sub-component
-                if (hasRecolors) {
-                  return m(ItemWithRecolors, {
-                    key: itemId,
-                    itemId,
-                    meta,
-                    isSearchMatch,
-                    isCompatible,
-                    tooltipText,
-                  });
-                }
-                return m(ItemWithVariants, {
-                  key: itemId,
-                  itemId,
-                  meta,
-                  isSearchMatch,
-                  isCompatible,
-                  tooltipText,
-                });
-              }),
+                      itemId,
+                      meta,
+                      isSearchMatch,
+                      isCompatible,
+                      tooltipText,
+                    });
+                  }),
           ])
         : null,
     );

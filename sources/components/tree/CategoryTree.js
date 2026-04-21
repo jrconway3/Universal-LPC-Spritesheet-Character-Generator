@@ -11,17 +11,51 @@ import { TreeNode } from "./TreeNode.js";
 
 export const CategoryTree = {
   view: function () {
-    const categoryTree = catalog.getCategoryTree();
-    if (!categoryTree) {
-      return m("div.loading");
+    if (!catalog.isIndexReady()) {
+      return m(
+        "div.box.has-background-light.category-tree-panel",
+        {
+          style: "min-height: 14rem;",
+        },
+        [
+          m(
+            "div.category-tree-loading-overlay",
+            { "aria-busy": "true", "aria-live": "polite" },
+            m("span.loading", { "aria-label": "Loading category index" }),
+          ),
+          m("h3.title.is-5.mb-3", "Available Items"),
+          m("p.has-text-grey.is-size-7", "Loading category index…"),
+        ],
+      );
     }
 
-    return m("div.box.has-background-light", [
+    const categoryTree = catalog.getCategoryTree();
+    if (!categoryTree) {
+      return m(
+        "div.box.has-background-light.category-tree-panel",
+        {
+          style: "min-height: 14rem;",
+        },
+        [
+          m(
+            "div.category-tree-loading-overlay",
+            { "aria-busy": "true" },
+            m("span.loading", { "aria-label": "Loading category index" }),
+          ),
+          m("h3.title.is-5.mb-3", "Available Items"),
+          m("p.has-text-grey.is-size-7", "Loading category index…"),
+        ],
+      );
+    }
+
+    const liteReady = catalog.isLiteReady();
+
+    return m("div.box.has-background-light.category-tree-panel", [
       m(
         "div.is-flex.is-justify-content-space-between.is-align-items-center.mb-3",
         [
           m("h3.title.is-5.mb-0", "Available Items"),
-          m("div.buttons.mb-0", [
+          m("div.buttons.mb-0.is-relative", [
             m(
               "button.button.is-danger.is-small",
               {
@@ -41,7 +75,10 @@ export const CategoryTree = {
             m(
               "button.button.is-small",
               {
+                disabled: !liteReady,
+                title: liteReady ? undefined : "Loading item list…",
                 onclick: () => {
+                  if (!liteReady) return;
                   for (const [, selection] of Object.entries(
                     state.selections,
                   )) {
