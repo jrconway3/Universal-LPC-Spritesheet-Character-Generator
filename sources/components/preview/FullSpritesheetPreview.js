@@ -4,6 +4,7 @@ import { CollapsibleSection } from "../CollapsibleSection.js";
 import PinchToZoom from "./PinchToZoom.js";
 import { copyToPreviewCanvas } from "../../canvas/preview-canvas.js";
 import { ScrollableContainer } from "./ScrollableContainer.js";
+import { PreviewMetadataLoadingOverlay } from "./PreviewMetadataLoadingOverlay.js";
 
 // Canvas wrapper component with its own lifecycle
 const SpritesheetCanvas = {
@@ -159,16 +160,18 @@ export const FullSpritesheetPreview = {
           ]),
         ]),
         m("div", { class: state.isRenderingCharacter ? "loading" : "" }),
-        // Render preview canvas with drag-to-scroll
-        m(ScrollableContainer, { classes: "spritesheet-preview" }, [
-          m("div", {
-            class: state.renderCharacter.isRendering ? "loading" : "",
-          }),
-          m(SpritesheetCanvas, {
-            showTransparencyGrid: state.showTransparencyGrid,
-            applyTransparencyMask: state.applyTransparencyMask,
-            zoomLevel: vnode.state.zoomLevel,
-          }),
+        m("div.preview-canvas-area", [
+          m(ScrollableContainer, { classes: "spritesheet-preview" }, [
+            m("div", {
+              class: state.renderCharacter.isRendering ? "loading" : "",
+            }),
+            m(SpritesheetCanvas, {
+              showTransparencyGrid: state.showTransparencyGrid,
+              applyTransparencyMask: state.applyTransparencyMask,
+              zoomLevel: vnode.state.zoomLevel,
+            }),
+          ]),
+          m(PreviewMetadataLoadingOverlay),
         ]),
       ],
     );

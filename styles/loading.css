@@ -100,3 +100,30 @@
 .category-tree-loading-overlay .loading {
   margin: 0 auto;
 }
+
+/* Animation / full spritesheet preview: canvas shell for absolute loading overlay */
+.preview-canvas-area {
+  position: relative;
+}
+
+/* Min height only while the overlay is shown — avoids a large empty band after load */
+.preview-canvas-area:has(.preview-canvas-loading-overlay) {
+  min-height: 12rem;
+}
+
+.preview-canvas-loading-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(245, 245, 245, 0.88);
+  border-radius: 4px;
+  pointer-events: auto;
+}
+
+.preview-canvas-loading-inner {
+  max-width: 20rem;
+  padding: 0.5rem 1rem;
+}

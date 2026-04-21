@@ -56,13 +56,15 @@ export const TreeNode = {
       false;
     const displayName = node.label ?? capitalize(name);
 
+    const categoryTitle = catalog.isLiteReady() ? tooltipText : undefined;
+
     return m(
       "div",
       m(
         "div.tree-label",
         {
           class: `${!isNodeAnimCompatible ? "has-text-grey" : ""}`,
-          title: tooltipText,
+          title: categoryTitle,
           onclick: () => {
             if (!isNodeAnimCompatible) return; // Prevent selecting incompatible
             state.expandedNodes[nodePath] = !isExpanded;
@@ -176,6 +178,8 @@ export const TreeNode = {
                     }
                     tooltipText += `${licensesText}\n${animsText}`;
 
+                    const showItemTooltips = catalog.isCreditsReady();
+
                     if (!hasVariants && !hasRecolors) {
                       // Simple item with no variants or recolors
                       const selectionGroup = getSelectionGroup(itemId);
@@ -189,7 +193,7 @@ export const TreeNode = {
                           style: isSelected
                             ? " font-weight: bold; color: #3273dc;"
                             : "",
-                          title: tooltipText,
+                          title: showItemTooltips ? tooltipText : undefined,
                           onclick: () => {
                             if (!isCompatible) return; // Prevent selecting incompatible
                             if (isSelected) {
@@ -218,6 +222,7 @@ export const TreeNode = {
                         isSearchMatch,
                         isCompatible,
                         tooltipText,
+                        showItemTooltips,
                       });
                     }
                     return m(ItemWithVariants, {
@@ -227,6 +232,7 @@ export const TreeNode = {
                       isSearchMatch,
                       isCompatible,
                       tooltipText,
+                      showItemTooltips,
                     });
                   }),
           ])

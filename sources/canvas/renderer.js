@@ -19,6 +19,7 @@ import {
   setCustomAnimYPositions,
 } from "./preview-animation.js";
 import { getSortedLayersByAnim } from "../state/meta.js";
+import { catalogReady } from "../state/catalog.js";
 import * as catalog from "../state/catalog.js";
 import { debugWarn } from "../utils/debug.js";
 
@@ -56,6 +57,8 @@ let layers = [];
 let itemsToDraw = [];
 let addedCustomAnimations = new Set();
 let customAreaItems = {};
+/** True after `initCanvas()` — offscreen buffer exists (main bootstrap runs this after S1∧S2). */
+let offscreenCanvasInitialized = false;
 
 /**
  * Initialize the canvas (creates offscreen canvas)
@@ -65,6 +68,23 @@ export function initCanvas() {
   ctx = get2DContext(canvas);
   canvas.width = SHEET_WIDTH;
   canvas.height = SHEET_HEIGHT;
+  offscreenCanvasInitialized = true;
+}
+
+export function isOffscreenCanvasInitialized() {
+  return offscreenCanvasInitialized;
+}
+
+/** @internal Test helper */
+export function resetOffscreenCanvasStateForTests() {
+  offscreenCanvasInitialized = false;
+  canvas = null;
+  ctx = null;
+}
+
+/** @internal Test helper (e.g. Node without a DOM) */
+export function setOffscreenCanvasInitializedForTests(value) {
+  offscreenCanvasInitialized = value;
 }
 
 export {
@@ -76,8 +96,17 @@ export {
   customAreaItems,
 };
 
+/** Commit 10: one render at a time; new calls wait behind the in-flight one. */
+let renderCharacterSerial = Promise.resolve();
+
+/** @internal */
+export function resetRenderCharacterQueueForTests() {
+  renderCharacterSerial = Promise.resolve();
+}
+
 /**
- * Render character based on selections
+ * Render character based on selections. Waits for layers metadata (S5), then runs serialized so
+ * hash, defaults, and App updates cannot overlap expensive full renders.
  * @param {Object} selections - Selected items
  * @param {string} bodyType - Body type
  * @param {HTMLCanvasElement} targetCanvas - Canvas to render to (defaults to main canvas)
@@ -87,6 +116,19 @@ export async function renderCharacter(
   bodyType,
   targetCanvas = null,
 ) {
+  await catalogReady.onLayersReady;
+
+  const p = renderCharacterSerial.then(() =>
+    runRenderCharacter(selections, bodyType, targetCanvas),
+  );
+  renderCharacterSerial = p.then(
+    () => {},
+    () => {},
+  );
+  return p;
+}
+
+async function runRenderCharacter(selections, bodyType, targetCanvas) {
   // Mark start for profiling
   const profiler = window.profiler;
   if (profiler) {

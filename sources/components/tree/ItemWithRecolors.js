@@ -9,8 +9,15 @@ import { COMPACT_FRAME_SIZE, FRAME_SIZE } from "../../state/constants.js";
 
 export const ItemWithRecolors = {
   view: function (vnode) {
-    const { itemId, meta, isSearchMatch, isCompatible, tooltipText } =
-      vnode.attrs;
+    const {
+      itemId,
+      meta,
+      isSearchMatch,
+      isCompatible,
+      tooltipText,
+      showItemTooltips = true,
+    } = vnode.attrs;
+    const rowTitle = showItemTooltips ? tooltipText : undefined;
     const compactDisplay = state.compactDisplay;
     const displayName = meta.name;
     const rootViewNode = vnode;
@@ -74,7 +81,7 @@ export const ItemWithRecolors = {
         m(
           "div.tree-label",
           {
-            title: tooltipText,
+            title: rowTitle,
             onclick: () => {
               state.expandedNodes[nodePath] = !isExpanded;
             },
@@ -193,7 +200,7 @@ export const ItemWithRecolors = {
                 m(
                   "div.is-flex.is-align-items-center",
                   {
-                    title: tooltipText,
+                    title: rowTitle,
                     onmouseover: (e) => {
                       if (!isCompatible) return;
                       const div = e.currentTarget;

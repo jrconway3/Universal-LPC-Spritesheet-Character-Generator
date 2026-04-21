@@ -8,6 +8,13 @@ import {
 
 export const CurrentSelections = {
   view: function () {
+    if (!catalog.isLiteReady()) {
+      return m("div", [
+        m("h3.title.is-5", "Current Selections"),
+        m("p.is-size-7.has-text-grey", "Loading item list…"),
+      ]);
+    }
+
     const selectionCount = Object.keys(state.selections).length;
 
     if (selectionCount === 0) {
@@ -36,8 +43,9 @@ export const CurrentSelections = {
               }
             });
           }
-          const licensesText =
-            allLicenses.size > 0
+          const licensesText = !catalog.isCreditsReady()
+            ? "License info loading…"
+            : allLicenses.size > 0
               ? `Licenses: ${Array.from(allLicenses).join(", ")}`
               : "No license info";
 
@@ -63,7 +71,7 @@ export const CurrentSelections = {
             {
               key: selectionKey,
               class: isCompatible ? "is-info" : "is-warning",
-              title: tooltipText,
+              title: catalog.isCreditsReady() ? tooltipText : undefined,
             },
             [
               m("span", selection.name),

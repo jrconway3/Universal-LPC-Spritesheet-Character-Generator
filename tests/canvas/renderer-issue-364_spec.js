@@ -15,6 +15,7 @@ import { describe, it, beforeEach, afterEach } from "mocha-globals";
 import {
   initCanvas,
   renderCharacter,
+  resetRenderCharacterQueueForTests,
   addedCustomAnimations,
   layers as rendererLayers,
   itemsToDraw,
@@ -68,6 +69,7 @@ describe("canvas/renderer.js issue #364 (addedCustomAnimations export)", () => {
   });
 
   function resetRendererModuleState() {
+    resetRenderCharacterQueueForTests();
     rendererLayers.length = 0;
     itemsToDraw.length = 0;
     for (const k of Object.keys(customAreaItems)) {

@@ -29,6 +29,8 @@ export const LicenseFilters = {
     vnode.state.isExpanded = false; // Start collapsed by default
   },
   view: function (vnode) {
+    const liteReady = catalog.isLiteReady();
+
     // Function to remove incompatible items from selections
     const removeIncompatibleItems = () => {
       const toRemove = [];
@@ -86,6 +88,9 @@ export const LicenseFilters = {
       ),
       vnode.state.isExpanded
         ? m("div.content.mt-3", [
+            !liteReady
+              ? m("p.is-size-7.has-text-grey.mb-3", "Loading item list…")
+              : null,
             !creditsReady
               ? m(
                   "p.is-size-7.has-text-grey.mb-3",
@@ -99,6 +104,7 @@ export const LicenseFilters = {
                   m("label.checkbox", [
                     m("input[type=checkbox]", {
                       checked: state.enabledLicenses[license.key],
+                      disabled: !liteReady,
                       onchange: (e) => {
                         state.enabledLicenses[license.key] = e.target.checked;
                       },
