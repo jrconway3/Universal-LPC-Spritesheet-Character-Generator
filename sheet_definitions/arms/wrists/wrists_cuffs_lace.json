@@ -2,7 +2,7 @@
   "name": "Lace Cuffs",
   "layer_1": {
     "zPos": 70,
-    "male": "wrists/lace/male/"
+    "male": "arms/wrists/lace/male/"
   },
   "variants": [
     "bronze",
@@ -24,7 +24,7 @@
   ],
   "credits": [
     {
-      "file": "wrists/lace",
+      "file": "arms/wrists/lace",
       "notes": "",
       "authors": [
         "bluecarrot16"

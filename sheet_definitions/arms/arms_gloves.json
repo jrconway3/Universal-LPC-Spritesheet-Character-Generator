@@ -2,11 +2,11 @@
   "name": "Gloves",
   "layer_1": {
     "zPos": 70,
-    "male": "arms/gloves/male/",
-    "muscular": "arms/gloves/male/",
-    "female": "arms/gloves/thin/",
-    "teen": "arms/gloves/thin/",
-    "pregnant": "arms/gloves/thin/"
+    "male": "arms/hands/gloves/male/",
+    "muscular": "arms/hands/gloves/male/",
+    "female": "arms/hands/gloves/thin/",
+    "teen": "arms/hands/gloves/thin/",
+    "pregnant": "arms/hands/gloves/thin/"
   },
   "animations": [
     "spellcast",
@@ -29,7 +29,7 @@
   ],
   "credits": [
     {
-      "file": "arms/gloves/male",
+      "file": "arms/hands/gloves/male",
       "notes": "metal gloves by wulax, recolors by bigbeargames, adapted to v3 bases by bluecarrot16, added to expanded animations by JaidynReiman",
       "authors": [
         "Michael Whitlock (bigbeargames)",
@@ -49,7 +49,7 @@
       ]
     },
     {
-      "file": "arms/gloves/female",
+      "file": "arms/hands/gloves/female",
       "notes": "metal gloves by wulax, extended to female base by makrohn, recolors by bigbeargames, adapted to v3 bases by bluecarrot16, added to expanded animations by JaidynReiman",
       "authors": [
         "Michael Whitlock (bigbeargames)",

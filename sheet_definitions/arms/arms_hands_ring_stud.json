@@ -4,18 +4,10 @@
     "zPos": 75,
     "male": "arms/hands/ring/stud/male/",
     "muscular": "arms/hands/ring/stud/male/",
-    "female": "arms/hands/ring/stud/female/",
-    "teen": "arms/hands/ring/stud/female/",
-    "pregnant": "arms/hands/ring/stud/female/"
+    "female": "arms/hands/ring/stud/thin/",
+    "teen": "arms/hands/ring/stud/thin/",
+    "pregnant": "arms/hands/ring/stud/thin/"
   },
-  "variants": [
-    "blue",
-    "green",
-    "orange",
-    "purple",
-    "red",
-    "yellow"
-  ],
   "animations": [
     "spellcast",
     "thrust",
@@ -23,14 +15,21 @@
     "slash",
     "shoot",
     "hurt",
-    "idle"
+    "watering",
+    "climb",
+    "idle",
+    "jump",
+    "sit",
+    "emote",
+    "run"
   ],
   "credits": [
     {
       "file": "arms/hands/ring/stud",
-      "notes": "",
+      "notes": "original by bluecarrot16, climb/jump/sit/emote/run by JaidynReiman",
       "authors": [
-        "bluecarrot16"
+        "bluecarrot16",
+        "JaidynReiman"
       ],
       "licenses": [
         "CC0"
@@ -40,5 +39,14 @@
       ]
     }
   ],
+  "recolors": {
+    "material": "cloth",
+    "base": "teal",
+    "palettes": [
+      "ulpc",
+      "metal.ulpc",
+      "all.lpcr"
+    ]
+  },
   "type_name": "ring"
 }
