@@ -46,45 +46,47 @@ export const Credits = {
           ),
         ]),
 
-        allCredits.length > 0
-          ? [
-              m(
-                "div.content.has-background-light.p-3",
-                allCredits.map((credit) =>
-                  m("div.mb-3", { key: credit.file }, [
-                    m("strong.is-size-6", credit.fileName),
-                    credit.notes ? m("p.is-size-7", credit.notes) : null,
-                    m("p.is-size-7", [
-                      m("strong", "Licenses: "),
-                      credit.licenses.join(", "),
-                    ]),
-                    m("p.is-size-7", [
-                      m("strong", "Authors: "),
-                      credit.authors.join(", "),
-                    ]),
-                  ]),
-                ),
-              ),
-              m("div.buttons.mt-3", [
+        !state.previewBootstrapRenderDone
+          ? m("p.has-text-grey", "Loading selections…")
+          : allCredits.length > 0
+            ? [
                 m(
-                  "button.button.is-small",
-                  {
-                    onclick: () =>
-                      downloadFile(creditsToTxt(allCredits), "credits.txt"),
-                  },
-                  "Download TXT",
+                  "div.content.has-background-light.p-3",
+                  allCredits.map((credit) =>
+                    m("div.mb-3", { key: credit.file }, [
+                      m("strong.is-size-6", credit.fileName),
+                      credit.notes ? m("p.is-size-7", credit.notes) : null,
+                      m("p.is-size-7", [
+                        m("strong", "Licenses: "),
+                        credit.licenses.join(", "),
+                      ]),
+                      m("p.is-size-7", [
+                        m("strong", "Authors: "),
+                        credit.authors.join(", "),
+                      ]),
+                    ]),
+                  ),
                 ),
-                m(
-                  "button.button.is-small",
-                  {
-                    onclick: () =>
-                      downloadFile(creditsToCsv(allCredits), "credits.csv"),
-                  },
-                  "Download CSV",
-                ),
-              ]),
-            ]
-          : m("p.has-text-grey", "No items selected"),
+                m("div.buttons.mt-3", [
+                  m(
+                    "button.button.is-small",
+                    {
+                      onclick: () =>
+                        downloadFile(creditsToTxt(allCredits), "credits.txt"),
+                    },
+                    "Download TXT",
+                  ),
+                  m(
+                    "button.button.is-small",
+                    {
+                      onclick: () =>
+                        downloadFile(creditsToCsv(allCredits), "credits.csv"),
+                    },
+                    "Download CSV",
+                  ),
+                ]),
+              ]
+            : m("p.has-text-grey", "No items selected"),
       ],
     );
   },

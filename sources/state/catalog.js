@@ -3,7 +3,10 @@
  * Loaders call `registerFrom*Module` after each dynamic import; consumers use getters and `is*Ready`.
  */
 
-import { buildItemsByTypeNameLite } from "./resolve-hash-param.js";
+import {
+  buildItemsByTypeNameLite,
+  expandMetadataIndexesWithInternedArrays,
+} from "./resolve-hash-param.js";
 
 function makeStage() {
   let resolveFn;
@@ -203,7 +206,9 @@ export function buildItemsByTypeNameFromRegisteredLite() {
 export function registerFromIndexModule(exports_) {
   aliasMetadataStore = exports_.aliasMetadata;
   categoryTreeStore = exports_.categoryTree;
-  metadataIndexesStore = exports_.metadataIndexes;
+  metadataIndexesStore = expandMetadataIndexesWithInternedArrays(
+    exports_.metadataIndexes,
+  );
   indexStage.resolve();
 }
 

@@ -7,6 +7,7 @@ import {
   resetGeneratorState,
 } from "../../../../scripts/generateSources/state.mjs";
 import { loadPaletteMetadata } from "../../../../scripts/generateSources/palettes.mjs";
+import { expandMetadataIndexesWithInternedArrays } from "../../../../sources/state/resolve-hash-param.js";
 import { parseTree } from "../../../../scripts/generateSources/tree.mjs";
 import { parseItem } from "../../../../scripts/generateSources/items.mjs";
 import { processItemCredits } from "../../../../scripts/generateSources/credits.mjs";
@@ -32,16 +33,21 @@ export function resetTestState() {
   resetGeneratorState();
 }
 
-function extractTopLevelConstJson(outputText, constName) {
+/**
+ * Parses `const name =` followed by a JSON object or array (balanced `{` `[` with strings).
+ * @param {string} outputText
+ * @param {string} constName
+ * @returns {object|Array}
+ */
+function extractTopLevelJsonLiteral(outputText, constName) {
   const marker = `const ${constName} = `;
   const start = outputText.indexOf(marker);
   assert.ok(start >= 0, `Expected const ${constName} in generated metadata`);
   let i = start + marker.length;
   while (/\s/.test(outputText[i])) i += 1;
-  assert.equal(
-    outputText[i],
-    "{",
-    `const ${constName} should be an object literal`,
+  assert.ok(
+    outputText[i] === "{" || outputText[i] === "[",
+    `const ${constName} should be an object or array literal`,
   );
   let depth = 0;
   let inString = false;
@@ -67,15 +73,19 @@ function extractTopLevelConstJson(outputText, constName) {
       inString = true;
       continue;
     }
-    if (c === "{") depth += 1;
-    else if (c === "}") {
+    if (c === "{" || c === "[") depth += 1;
+    else if (c === "}" || c === "]") {
       depth -= 1;
       if (depth === 0) {
         return JSON.parse(outputText.slice(i, j + 1));
       }
     }
   }
-  throw new Error(`Unclosed object for const ${constName}`);
+  throw new Error(`Unclosed JSON for const ${constName}`);
+}
+
+function extractTopLevelConstJson(outputText, constName) {
+  return extractTopLevelJsonLiteral(outputText, constName);
 }
 
 /**
@@ -113,11 +123,24 @@ export function mergeMetadataForTests(writes) {
  */
 export function extractMetadataGlobalsFromWrites(writes) {
   const indexSrc = writes.get("index-metadata.js") ?? "";
-  const byTypeName = extractTopLevelConstJson(indexSrc, "byTypeName");
-  const metadataIndexes = {
-    byTypeName,
-    hashMatch: { itemsByTypeName: byTypeName },
-  };
+  const byTypeName = /** @type {Record<string, object[]>} */ (
+    extractTopLevelJsonLiteral(indexSrc, "byTypeName")
+  );
+  const metadataIndexes = indexSrc.includes("const variantArrays = ")
+    ? expandMetadataIndexesWithInternedArrays({
+        variantArrays: /** @type {string[][]} */ (
+          extractTopLevelJsonLiteral(indexSrc, "variantArrays")
+        ),
+        recolorVariantArrays: /** @type {string[][]} */ (
+          extractTopLevelJsonLiteral(indexSrc, "recolorVariantArrays")
+        ),
+        byTypeName,
+        hashMatch: { itemsByTypeName: byTypeName },
+      })
+    : {
+        byTypeName,
+        hashMatch: { itemsByTypeName: byTypeName },
+      };
   return {
     itemMetadata: mergeMetadataForTests(writes),
     aliasMetadata: extractTopLevelConstJson(indexSrc, "aliasMetadata"),

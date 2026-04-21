@@ -4,9 +4,11 @@ import {
   aliasMetadata,
   buildIndexMetadataJs,
   buildMetadataIndexes,
+  internSlimByTypeNameRows,
   categoryTree,
   itemMetadata,
 } from "../../../../scripts/generateSources/state.mjs";
+import { expandMetadataIndexesWithInternedArrays } from "../../../../sources/state/resolve-hash-param.js";
 import { resetTestState } from "./test_helpers.js";
 
 test("buildMetadataIndexes rows are slim: itemId, name, type_name, variants, recolors", () => {
@@ -86,7 +88,38 @@ test("buildIndexMetadataJs serializes non-empty aliasMetadata from shared state"
     oldkey: { typeName: "itype", name: "I", variant: "v" },
   };
   const js = buildIndexMetadataJs(aliasMetadata, categoryTree, itemMetadata);
+  assert.match(js, /const variantArrays = /);
+  assert.match(js, /const recolorVariantArrays = /);
   assert.match(js, /const aliasMetadata = /);
   assert.match(js, /"origin"/);
   assert.match(js, /"oldkey"/);
+});
+
+test("internSlimByTypeNameRows + expand round-trips to buildMetadataIndexes rows", () => {
+  resetTestState();
+  itemMetadata.a = {
+    name: "A",
+    type_name: "t1",
+    layers: {},
+    credits: [],
+    variants: ["x", "y"],
+    recolors: [],
+  };
+  itemMetadata.b = {
+    name: "B",
+    type_name: "t1",
+    layers: {},
+    credits: [],
+    variants: ["x", "y"],
+    recolors: [],
+  };
+  const full = buildMetadataIndexes(itemMetadata, {});
+  const interned = internSlimByTypeNameRows(full.byTypeName);
+  const back = expandMetadataIndexesWithInternedArrays({
+    variantArrays: interned.variantArrays,
+    recolorVariantArrays: interned.recolorVariantArrays,
+    byTypeName: interned.byTypeName,
+    hashMatch: { itemsByTypeName: interned.byTypeName },
+  });
+  assert.deepEqual(back?.byTypeName, full.byTypeName);
 });

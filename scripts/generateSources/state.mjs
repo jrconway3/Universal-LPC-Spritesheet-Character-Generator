@@ -145,6 +145,51 @@ export function buildMetadataIndexes(fullItemMetadata, _aliasMetadata) {
   return { byTypeName };
 }
 
+/**
+ * Deduplicate repeated `variants` and `recolor[0].variants` across slim rows (smaller `index-metadata.js`).
+ * Rows become `{ itemId, name, type_name, v, r }` indexing into the two parallel tables.
+ * @param {Record<string, object[]>} byTypeNameFull  Slim rows from `buildSlimByTypeNameRow`
+ * @returns {{ variantArrays: string[][], recolorVariantArrays: string[][], byTypeName: Record<string, Array<{ itemId: string, name: unknown, type_name: unknown, v: number, r: number }>> }}
+ */
+export function internSlimByTypeNameRows(byTypeNameFull) {
+  const vKey = new Map();
+  const rKey = new Map();
+  const variantArrays = [];
+  const recolorVariantArrays = [];
+
+  function internVariants(variants) {
+    const k = JSON.stringify(variants);
+    if (!vKey.has(k)) {
+      vKey.set(k, variantArrays.length);
+      variantArrays.push(Array.isArray(variants) ? [...variants] : []);
+    }
+    return vKey.get(k);
+  }
+
+  function internRecolorVariants(recolors) {
+    const v0 = recolors?.[0]?.variants;
+    const arr = Array.isArray(v0) && v0.length > 0 ? [...v0] : [];
+    const k = JSON.stringify(arr);
+    if (!rKey.has(k)) {
+      rKey.set(k, recolorVariantArrays.length);
+      recolorVariantArrays.push(arr);
+    }
+    return rKey.get(k);
+  }
+
+  const byTypeName = {};
+  for (const [t, rows] of Object.entries(byTypeNameFull)) {
+    byTypeName[t] = rows.map((row) => ({
+      itemId: row.itemId,
+      name: row.name,
+      type_name: row.type_name,
+      v: internVariants(row.variants),
+      r: internRecolorVariants(row.recolors),
+    }));
+  }
+  return { variantArrays, recolorVariantArrays, byTypeName };
+}
+
 function buildNamedConstModule(constName, valueJson, exportNames) {
   const exports = exportNames.join(", ");
   return `${METADATA_FILE_BANNER}
@@ -168,15 +213,32 @@ export function buildIndexMetadataJs(
   env = "production",
 ) {
   const indent = getMetadataJsonIndent(env);
-  const { byTypeName } = buildMetadataIndexes(fullItemMetadata, aliasMetadata);
+  const { byTypeName: byTypeNameFull } = buildMetadataIndexes(
+    fullItemMetadata,
+    aliasMetadata,
+  );
+  const { variantArrays, recolorVariantArrays, byTypeName } =
+    internSlimByTypeNameRows(byTypeNameFull);
+  const variantArraysJson = JSON.stringify(variantArrays, null, indent);
+  const recolorVariantArraysJson = JSON.stringify(
+    recolorVariantArrays,
+    null,
+    indent,
+  );
   const byTypeJson = JSON.stringify(byTypeName, null, indent);
   const aliasJson = JSON.stringify(aliasMetadata, null, indent);
   const treeJson = JSON.stringify(categoryTree, null, indent);
 
   return `${METADATA_FILE_BANNER}
+const variantArrays = ${variantArraysJson};
+
+const recolorVariantArrays = ${recolorVariantArraysJson};
+
 const byTypeName = ${byTypeJson};
 
 const metadataIndexes = {
+  variantArrays,
+  recolorVariantArrays,
   byTypeName,
   hashMatch: { itemsByTypeName: byTypeName },
 };
@@ -196,7 +258,9 @@ export { aliasMetadata, categoryTree, metadataIndexes };
 export function buildPaletteMetadataJs(env = "production") {
   const indent = getMetadataJsonIndent(env);
   const paletteJson = JSON.stringify(paletteMetadata, null, indent);
-  return buildNamedConstModule("paletteMetadata", paletteJson, ["paletteMetadata"]);
+  return buildNamedConstModule("paletteMetadata", paletteJson, [
+    "paletteMetadata",
+  ]);
 }
 
 /**
