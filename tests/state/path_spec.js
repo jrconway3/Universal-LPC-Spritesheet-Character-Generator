@@ -5,6 +5,7 @@ import {
   setPathDeps,
   resetPathDeps,
 } from "../../sources/state/path.js";
+import { resetCatalogForTests } from "../../sources/state/catalog.js";
 import { es6DynamicTemplate } from "../../sources/utils/helpers.js";
 import { expect } from "chai";
 import sinon from "sinon";
@@ -12,11 +13,13 @@ import { describe, it, beforeEach, afterEach } from "mocha-globals";
 
 describe("state/path.js", () => {
   beforeEach(() => {
+    resetCatalogForTests();
     resetPathDeps();
   });
 
   afterEach(() => {
     resetPathDeps();
+    resetCatalogForTests();
   });
 
   describe("getNameWithoutVariant", () => {

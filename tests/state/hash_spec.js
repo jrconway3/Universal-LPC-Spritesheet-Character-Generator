@@ -17,12 +17,16 @@ import {
   initHashChangeListener,
   getSetHashCalledTimes,
   resetHashCalledTimes,
+  resetHashDeps,
 } from "../../sources/state/hash.js";
+import { resetCatalogForTests } from "../../sources/state/catalog.js";
 
 describe("state/hash.js", () => {
   let sandbox;
 
   beforeEach(() => {
+    resetCatalogForTests();
+    window.aliasMetadata = {};
     sandbox = sinon.createSandbox();
     sandbox.stub(window, "addEventListener").callsFake(() => {});
     sandbox.stub(window, "itemMetadata").value({});
@@ -31,7 +35,9 @@ describe("state/hash.js", () => {
 
   afterEach(() => {
     resetState();
+    resetHashDeps();
     resetHashCalledTimes();
+    resetCatalogForTests();
     sandbox.restore();
     delete window.isTesting;
   });

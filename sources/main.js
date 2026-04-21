@@ -1,7 +1,7 @@
 // Main entry point - initializes and mounts the Mithril application
 
 import "./vendor-globals.js";
-import "./install-item-metadata.js";
+import { loadAllMetadata } from "./install-item-metadata.js";
 
 // Import debug first so `window.DEBUG` is set before other modules run.
 import { debugLog, getDebugParam } from "./utils/debug.js";
@@ -76,6 +76,8 @@ window.setDefaultSelections = async function () {
 
 // Wait for DOM to be ready, then load Mithril app
 document.addEventListener("DOMContentLoaded", async () => {
+  await loadAllMetadata();
+
   clearLoadingIndicators();
 
   // Initialize offscreen canvas
