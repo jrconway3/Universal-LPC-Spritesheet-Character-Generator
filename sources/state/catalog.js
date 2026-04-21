@@ -182,9 +182,8 @@ export function getItemMerged(itemId) {
 }
 
 /**
- * `byTypeName` rows for hash resolution when index metadata is not registered yet
- * (same shape as `buildMetadataIndexes` / `resolveHashParamFromHashMatch`).
- * @returns {Record<string, Array<{ itemId: string } & Record<string, unknown>>>}
+ * `byTypeName` for hash resolution when the index module is not registered yet. Rows match
+ * `buildSlimByTypeNameRow` (itemId, name, type_name, variants, recolors minimal array).
  */
 export function buildItemsByTypeNameFromRegisteredLite() {
   if (!itemLiteStore) {

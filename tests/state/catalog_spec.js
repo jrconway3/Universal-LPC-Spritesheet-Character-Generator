@@ -95,6 +95,17 @@ describe("state/catalog.js", () => {
   });
 
   it("loadCatalogFromFixtures: split merged itemMetadata, getters, onAllReady", async () => {
+    const byTypeName = {
+      feet: [
+        {
+          itemId: "boots1",
+          name: "Boots",
+          type_name: "feet",
+          variants: [],
+          recolors: [],
+        },
+      ],
+    };
     const fixtureGlobals = {
       itemMetadata: {
         boots1: {
@@ -109,8 +120,8 @@ describe("state/catalog.js", () => {
       aliasMetadata: {},
       categoryTree: { items: ["boots1"], children: {} },
       metadataIndexes: {
-        byTypeName: { feet: [{ itemId: "boots1", name: "Boots" }] },
-        hashMatch: { itemsByTypeName: {} },
+        byTypeName,
+        hashMatch: { itemsByTypeName: byTypeName },
       },
       paletteMetadata: { versions: {}, materials: {} },
     };

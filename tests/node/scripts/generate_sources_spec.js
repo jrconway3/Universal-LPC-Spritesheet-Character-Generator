@@ -224,4 +224,7 @@ test("build5-aliases emits non-empty aliasMetadata and pretty index when env is 
   assert.equal(rows[0].itemId, "alias_build_item");
   assert.ok(!Object.prototype.hasOwnProperty.call(rows[0], "layers"));
   assert.ok(!Object.prototype.hasOwnProperty.call(rows[0], "credits"));
+  assert.ok(!Object.prototype.hasOwnProperty.call(rows[0], "path"));
+  assert.ok(Array.isArray(rows[0].variants));
+  assert.ok(Array.isArray(rows[0].recolors));
 });

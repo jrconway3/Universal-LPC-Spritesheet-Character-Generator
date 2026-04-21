@@ -106,6 +106,7 @@ describe("state/path.js", () => {
                 type_name: "head",
                 name: "Human",
                 variants: ["head", "red"],
+                recolors: [],
               },
             ],
           },

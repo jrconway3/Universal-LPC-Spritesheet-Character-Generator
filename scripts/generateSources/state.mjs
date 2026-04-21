@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { buildSlimByTypeNameRow } from "../../sources/state/resolve-hash-param.js";
 
 export const SHEETS_DIR = "sheet_definitions" + path.sep;
 export const PALETTES_DIR = "palette_definitions" + path.sep;
@@ -124,7 +125,9 @@ export function splitItemMetadataMaps(fullItemMetadata) {
 }
 
 /**
- * Builds metadata index structures for path/hash helpers. `hashMatch.itemsByTypeName` shares
+ * Builds `metadataIndexes.byTypeName` for path/hash helpers: `itemId`, `name`, `type_name`,
+ * `variants`, and a minimal `recolors` (only `recolors[0].variants` for matching). The full
+ * lite item map is emitted separately in `item-metadata.js`. `hashMatch.itemsByTypeName` shares
  * the same ordered lists as `byTypeName` (emitted as one JSON blob + shared references in JS).
  *
  * @param {Record<string, object>} fullItemMetadata
@@ -137,8 +140,7 @@ export function buildMetadataIndexes(fullItemMetadata, _aliasMetadata) {
     const meta = fullItemMetadata[itemId];
     const t = meta.type_name;
     if (!byTypeName[t]) byTypeName[t] = [];
-    const { layers: _layers, credits: _credits, ...lite } = meta;
-    byTypeName[t].push({ itemId, ...lite });
+    byTypeName[t].push(buildSlimByTypeNameRow(itemId, meta));
   }
   return { byTypeName };
 }

@@ -2,11 +2,41 @@
  * Indexed hash param resolution: same tie-breaking as legacy `Object.entries(itemMetadata)` scans
  * when `itemsByTypeName[typeName]` lists rows in `Object.keys(itemMetadata)` order (see
  * `buildMetadataIndexes` in `scripts/generateSources/state.mjs`).
+ *
+ * `byTypeName` / `buildItemsByTypeNameLite` store only the fields used by
+ * `resolveHashParamFromHashMatch` and `path.getNameWithoutVariant` (plus `itemId`); the full
+ * item record lives in the lite item map.
+ *
+ * @param {string} itemId
+ * @param {object} meta Full or lite item metadata (may include `layers` / `credits`).
+ * @returns {{ itemId: string, name: unknown, type_name: unknown, variants: Array, recolors: Array<{ variants: string[] }> }}
  */
+export function buildSlimByTypeNameRow(itemId, meta) {
+  if (!meta) {
+    return {
+      itemId,
+      name: undefined,
+      type_name: undefined,
+      variants: [],
+      recolors: [],
+    };
+  }
+  const variants = Array.isArray(meta.variants) ? meta.variants : [];
+  const v0 = meta.recolors?.[0]?.variants;
+  const recolors =
+    Array.isArray(v0) && v0.length > 0 ? [{ variants: [...v0] }] : [];
+  return {
+    itemId,
+    name: meta.name,
+    type_name: meta.type_name,
+    variants,
+    recolors,
+  };
+}
 
 /**
  * @param {Record<string, object>|null|undefined} itemMetadata
- * @returns {Record<string, Array<{ itemId: string } & Record<string, unknown>>>}
+ * @returns {Record<string, Array<ReturnType<typeof buildSlimByTypeNameRow>>>}
  */
 export function buildItemsByTypeNameLite(itemMetadata) {
   const byType = {};
@@ -15,8 +45,7 @@ export function buildItemsByTypeNameLite(itemMetadata) {
     if (!meta) continue;
     const t = meta.type_name;
     if (!byType[t]) byType[t] = [];
-    const { layers: _layers, credits: _credits, ...lite } = meta;
-    byType[t].push({ itemId, ...lite });
+    byType[t].push(buildSlimByTypeNameRow(itemId, meta));
   }
   return byType;
 }
@@ -25,7 +54,7 @@ export function buildItemsByTypeNameLite(itemMetadata) {
  * @param {object} opts
  * @param {string} opts.typeName
  * @param {string} opts.nameAndVariant
- * @param {Record<string, Array<{ itemId: string, type_name?: string } & Record<string, unknown>>>} opts.itemsByTypeName
+ * @param {Record<string, Array<{ itemId: string, name: string, type_name: string, variants: string[], recolors: Array<{ variants: string[] }> }>>} opts.itemsByTypeName
  * @returns {{ foundItemId: string|null, matchedVariant: string, matchedRecolor: string }}
  */
 export function resolveHashParamFromHashMatch({

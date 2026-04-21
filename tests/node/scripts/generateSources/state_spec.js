@@ -80,8 +80,20 @@ test("buildMetadataIndexes groups lite rows by type_name in key order", () => {
   };
   const { byTypeName } = buildMetadataIndexes(itemMetadata, {});
   assert.equal(byTypeName.body.length, 2);
-  assert.equal(byTypeName.body[0].itemId, "z");
-  assert.equal(byTypeName.body[1].itemId, "a");
+  assert.deepEqual(byTypeName.body[0], {
+    itemId: "z",
+    name: "Z",
+    type_name: "body",
+    variants: [],
+    recolors: [],
+  });
+  assert.deepEqual(byTypeName.body[1], {
+    itemId: "a",
+    name: "A",
+    type_name: "body",
+    variants: [],
+    recolors: [],
+  });
 });
 
 test("buildIndexMetadataJs shares byTypeName between metadataIndexes fields", () => {

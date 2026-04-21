@@ -9,7 +9,7 @@ import {
 } from "../../../../scripts/generateSources/state.mjs";
 import { resetTestState } from "./test_helpers.js";
 
-test("buildMetadataIndexes lite rows omit layers and credits", () => {
+test("buildMetadataIndexes rows are slim: itemId, name, type_name, variants, recolors", () => {
   resetTestState();
   itemMetadata.one = {
     name: "One",
@@ -17,14 +17,20 @@ test("buildMetadataIndexes lite rows omit layers and credits", () => {
     layers: { layer_1: { male: "p" } },
     credits: [{ file: "x", licenses: ["L"] }],
     variants: [],
-    recolors: [],
+    recolors: [{ material: "m", variants: ["indigo", "ash"], other: 1 }],
   };
   const { byTypeName } = buildMetadataIndexes(itemMetadata, {});
   const row = byTypeName.t1[0];
-  assert.equal(row.itemId, "one");
-  assert.equal(row.name, "One");
+  assert.deepEqual(row, {
+    itemId: "one",
+    name: "One",
+    type_name: "t1",
+    variants: [],
+    recolors: [{ variants: ["indigo", "ash"] }],
+  });
   assert.ok(!Object.prototype.hasOwnProperty.call(row, "layers"));
   assert.ok(!Object.prototype.hasOwnProperty.call(row, "credits"));
+  assert.ok(!Object.prototype.hasOwnProperty.call(row, "path"));
 });
 
 test("buildMetadataIndexes second arg is reserved; aliasMetadata does not change byTypeName", () => {
@@ -46,7 +52,7 @@ test("buildMetadataIndexes second arg is reserved; aliasMetadata does not change
   assert.deepEqual(emptyAliases.byTypeName, fakeAliases.byTypeName);
 });
 
-test("buildMetadataIndexes preserves itemId on each lite row", () => {
+test("buildMetadataIndexes preserves itemId, variants, and empty recolors on slim row", () => {
   resetTestState();
   itemMetadata.x = {
     name: "X",
@@ -57,7 +63,13 @@ test("buildMetadataIndexes preserves itemId on each lite row", () => {
     recolors: [],
   };
   const { byTypeName } = buildMetadataIndexes(itemMetadata, {});
-  assert.equal(byTypeName.tx[0].itemId, "x");
+  assert.deepEqual(byTypeName.tx[0], {
+    itemId: "x",
+    name: "X",
+    type_name: "tx",
+    variants: ["v"],
+    recolors: [],
+  });
 });
 
 test("buildIndexMetadataJs serializes non-empty aliasMetadata from shared state", () => {
