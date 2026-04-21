@@ -70,7 +70,7 @@ If you add this animations list, users can filter the results based on the anima
 
 As such, if you wish to include less than this list, such as only walk and slash, you should still include the animations definition to restrict it to just those assets. Users will still be able to access your asset, but it won't appear if the animations filter is used and you did not include that animation in your sheet definition.
 
-The category tree and items in the app come from generated metadata, not from HTML. After you add or change definitions, run **File Generation** (below) and commit the updated **`CREDITS.csv`**, **`scripts/zPositioning/z_positions.csv`**, and any other tracked outputs that changed. The app’s **`dist/item-metadata.js`** is built by **Vite** (`npm run dev` / `npm run build`); it is not committed (**`/dist/`** is gitignored).
+The category tree and items in the app come from generated metadata, not from HTML. After you add or change definitions, run **File Generation** (below) and commit the updated **`CREDITS.csv`**, **`scripts/zPositioning/z_positions.csv`**, and any other tracked outputs that changed. The app’s **five** `dist/*-metadata.js` modules (see [File Generation](#file-generation)) are built by **Vite** when you run **`npm run dev`** or **`npm run build`**; they are not committed (**`/dist/`** is gitignored).
 
 #### Renaming an Asset
 
@@ -204,11 +204,23 @@ For visual tests only, **`npx playwright install chromium`** is enough. The Argo
 
 #### File Generation
 
-The runtime UI loads **`dist/item-metadata.js`**, which Vite generates from the sheet JSON under **`sheet_definitions/`** (and related inputs) when you run **`npm run dev`** or **`npm run build`**. Do not edit that file by hand.
+**Generated metadata modules (`dist/`, gitignored)** — The Vite metadata plugin (see [`vite/vite-plugin-item-metadata.js`](vite/vite-plugin-item-metadata.js)) runs **`generateSources`** on dev/build and writes **five** ES modules under **`dist/`** from the sheet JSON under **`sheet_definitions/`** (and related inputs). Do not edit them by hand.
 
-The JSON embedded in each `const` assignment is **pretty-printed** when Vite runs in development (**`npm run dev`**) and **compact** (no indentation inside those objects) when Vite runs a production build (**`npm run build`**). Inspecting **`dist/item-metadata.js`** after a dev run is easier; CI and release artifacts use the compact form.
+| File                      | Main exports (named)                                                                                    |
+| ------------------------- | ------------------------------------------------------------------------------------------------------- |
+| **`index-metadata.js`**   | `aliasMetadata`, `categoryTree`, `metadataIndexes` (path/hash indexes: `byTypeName`, `hashMatch`, etc.) |
+| **`palette-metadata.js`** | `paletteMetadata`                                                                                       |
+| **`item-metadata.js`**    | `itemMetadata` — per-item **lite** records (no `layers`, no `credits`)                                  |
+| **`credits-metadata.js`** | `itemCredits` — map `itemId → credits[]`                                                                |
+| **`layers-metadata.js`**  | `itemLayers` — map `itemId → layer objects`                                                             |
 
-**Credits and z-positions (committed files)** — From the project root:
+The app loads them with **parallel `import()`** and registers each chunk in **[`sources/state/catalog.js`](sources/state/catalog.js)** (entry: [`sources/install-item-metadata.js`](sources/install-item-metadata.js)). Production code should use the **catalog getters** (`getCategoryTree`, `getItemLite`, `getItemLayers`, `getItemCredits`, `getPaletteMetadata`, `getMetadataIndexes`, …), not ad hoc globals.
+
+**Staged loading** — The catalog exposes **`isIndexReady`**, **`isLiteReady`**, **`isCreditsReady`**, **`isPaletteReady`**, **`isLayersReady`**, and helpers like **`isHashHydrationReady`**. The export **`catalogReady`** provides **`onIndexReady`**, **`onLiteReady`**, …, and **`onAllReady`** (each a **`Promise<void>`** that resolves once). The UI and bootstrap can treat **index** (tree skeleton), **lite** (item rows, hash), **credits** (license text), **palette**, and **layers** (canvas, sprite paths) as separate readiness stages. Browser tests await **`catalogReady.onAllReady`** in [`tests/vitest-setup.js`](tests/vitest-setup.js) after the metadata imports.
+
+**Dev vs production JSON in generated files ([PR #432](https://github.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/pull/432))** — Payloads are embedded with `JSON.stringify(..., null, indent)`: **pretty-printed** when Vite runs in development (**`npm run dev`**) and **compact** when you run a production build (**`npm run build`**). The same rule applies to **all five** metadata modules, not only `item-metadata.js`. Inspect any of the files under **`dist/`** after a dev run to read structured JSON; CI and release builds use the compact form.
+
+**Credits, z-positions, and when `dist/` is written** — From the project root:
 
 ```bash
 node scripts/generate_sources.mjs
@@ -220,9 +232,9 @@ or:
 npm run validate-site-sources
 ```
 
-This updates **[CREDITS.csv](/CREDITS.csv)** and runs **`scripts/zPositioning/parse_zpos.js`** in the background so **[scripts/zPositioning/z_positions.csv](/scripts/zPositioning/z_positions.csv)** stays aligned with z-positions in the JSON files. It does **not** write a root-level `item-metadata.js` (removed in favor of the Vite-built **`dist/`** output).
+These commands update **[CREDITS.csv](/CREDITS.csv)** and run **`scripts/zPositioning/parse_zpos.js`** in the background so **[scripts/zPositioning/z_positions.csv](/scripts/zPositioning/z_positions.csv)** stays aligned with the JSON. By default the script uses **`writeMetadata: false`**, so it does **not** emit the five `dist/*-metadata.js` files. To **regenerate** those modules locally (for example after changing sheet definitions), run **`npm run dev`** once or **`npm run build`**. The Vite plugin passes **`env`** (`development` vs `production`) into **`generateSources`** and controls indentation for all metadata outputs.
 
-**`index.html`** is the Vite entry shell (layout, stylesheets, `sources/main.js`). It is not emitted by this script. Change it only when you mean to adjust the page structure or global assets.
+**`index.html`** is the Vite entry shell (layout, stylesheets, `sources/main.js`). It is not emitted by `generate_sources.mjs`. Change it only when you mean to adjust the page structure or global assets.
 
 The **Validate site sources** workflow (`.github/workflows/validate-site-sources.yml`) runs the same **`generate_sources`** command and fails if the working tree is dirty afterward. PRs that touch definitions must include regenerated **`CREDITS.csv`** and **`scripts/zPositioning/z_positions.csv`** whenever those files change.
 
@@ -285,7 +297,7 @@ Full-page screenshots live under [`tests/visual/`](tests/visual/) and use [`play
 
 **Unit and component specs (Mocha + Chai)**
 
-[`tests/tests.js`](tests/tests.js) imports every **`tests/**/\*\_spec.js`** file (except files only used from **`tests/node/`**). **`tests/node/`** is exercised by **`before_tests`** and by **`npm run test:node`\*\* directly.
+[`tests/tests.js`](tests/tests.js) imports every `tests/**/*_spec.js` file (except files only used from **`tests/node/`**). **`tests/node/`** is exercised by **`before_tests`** and by **`npm run test:node`** directly.
 
 [`tests/vitest-setup.js`](tests/vitest-setup.js) loads **`sources/vendor-globals.js`**, sets test flags on **`window`**, imports [`sources/install-item-metadata.js`](sources/install-item-metadata.js) (which **dynamic-imports** the five `dist/*-metadata.js` modules on the test runner page and **registers** them with [`sources/state/catalog.js`](sources/state/catalog.js)), and **`await`s** **`catalogReady.onAllReady`** so the browser suite runs with the same **catalog** state as the app. Specs that need isolation use **`resetCatalogForTests`**, [`seedBrowserCatalog`](tests/browser-catalog-fixture.js), or **`restoreAppCatalogAfterTest`**.
 
