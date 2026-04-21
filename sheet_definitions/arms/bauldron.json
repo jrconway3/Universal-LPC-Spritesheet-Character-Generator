@@ -2,11 +2,11 @@
   "name": "Bauldron",
   "layer_1": {
     "zPos": 65,
-    "male": "bauldron/male/",
-    "muscular": "bauldron/male/",
-    "teen": "bauldron/thin/",
-    "female": "bauldron/thin/",
-    "pregnant": "bauldron/thin/"
+    "male": "shoulders/bauldron/male/",
+    "muscular": "shoulders/bauldron/male/",
+    "teen": "shoulders/bauldron/thin/",
+    "female": "shoulders/bauldron/thin/",
+    "pregnant": "shoulders/bauldron/thin/"
   },
   "animations": [
     "spellcast",
@@ -22,7 +22,7 @@
   ],
   "credits": [
     {
-      "file": "bauldron",
+      "file": "shoulders/bauldron",
       "notes": "Original by Nilla122, climb/emote by JaidynReiman",
       "authors": [
         "Nila122",
