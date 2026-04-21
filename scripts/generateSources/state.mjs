@@ -87,13 +87,24 @@ export function parseJson(fullPath) {
  * Builds browser-side metadata bootstrap JS from shared generator state.
  * Emits an ES module (named exports) so Vite/Vitest can import it; also assigns
  * onto `window` when running in a browser so plain script or VM-style eval still works.
+ * @param {"development"|"production"} [env="production"] Vite passes `development` for
+ *   `npm run dev` (pretty-printed embedded JSON) and `production` for `npm run build`
+ *   (compact JSON).
  * @return {string} JavaScript module source for item-metadata.js.
  */
-export function buildMetadataJs() {
-  const itemJson = JSON.stringify(itemMetadata, null, 2);
-  const aliasJson = JSON.stringify(aliasMetadata, null, 2);
-  const treeJson = JSON.stringify(categoryTree, null, 2);
-  const paletteJson = JSON.stringify(paletteMetadata, null, 2);
+export function buildMetadataJs(env = "production") {
+  let itemJson, aliasJson, treeJson, paletteJson;
+  if (env === "development") {
+    itemJson = JSON.stringify(itemMetadata, null, 2);
+    aliasJson = JSON.stringify(aliasMetadata, null, 2);
+    treeJson = JSON.stringify(categoryTree, null, 2);
+    paletteJson = JSON.stringify(paletteMetadata, null, 2);
+  } else {
+    itemJson = JSON.stringify(itemMetadata);
+    aliasJson = JSON.stringify(aliasMetadata);
+    treeJson = JSON.stringify(categoryTree);
+    paletteJson = JSON.stringify(paletteMetadata);
+  }
   return `// THIS FILE IS AUTO-GENERATED. PLEASE DON'T ALTER IT MANUALLY
   // Generated from sheet_definitions/*.json by scripts/generate_sources.mjs
   // Contains metadata for all customization items to avoid DOM queries at runtime

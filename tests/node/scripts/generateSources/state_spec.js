@@ -59,6 +59,28 @@ test("buildMetadataJs returns valid output with empty state", () => {
   assert.match(js, /const aliasMetadata = \{\}/);
 });
 
+test("buildMetadataJs pretty-prints embedded JSON in development only", () => {
+  resetTestState();
+  itemMetadata.nested = { bar: 1 };
+
+  const production = buildMetadataJs("production");
+  const development = buildMetadataJs("development");
+
+  assert.ok(
+    production.includes('"bar":1'),
+    "production should emit compact JSON (no space after colon in numbers)",
+  );
+  assert.ok(
+    development.includes('"bar": 1'),
+    "development should emit pretty-printed JSON",
+  );
+  assert.ok(
+    development.includes("\n"),
+    "development output should include newlines inside embedded JSON",
+  );
+  assert.equal(buildMetadataJs(), production);
+});
+
 test("sortDirTree sorts shallow paths before deep paths", () => {
   const entries = [
     { parentPath: path.join("a", "b"), name: "z.json" },

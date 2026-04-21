@@ -128,36 +128,38 @@ export const ItemWithRecolors = {
                           ? COMPACT_FRAME_SIZE
                           : FRAME_SIZE,
                         class: compactDisplay ? " compact-display" : "",
-                        oncreate: async (canvasVnode) => {
-                          const imagesLoaded = drawRecolorPreview(
+                        oncreate: (canvasVnode) => {
+                          const renderId =
+                            (canvasVnode.dom._recolorRenderId || 0) + 1;
+                          canvasVnode.dom._recolorRenderId = renderId;
+                          canvasVnode.state.lastColorsKey =
+                            JSON.stringify(selectedColors);
+                          drawRecolorPreview(
                             itemId,
                             meta,
                             canvasVnode.dom,
                             selectedColors,
+                            renderId,
                           );
-                          if (imagesLoaded > 0) {
-                            rootViewNode.state.imagesLoaded += imagesLoaded;
-                            rootViewNode.state.oldSelectedColors =
-                              JSON.stringify(selectedColors);
-                          }
                         },
-                        onupdate: async (canvasVnode) => {
-                          if (
-                            rootViewNode.state.oldSelectedColors ===
-                            JSON.stringify(selectedColors)
-                          ) {
-                            return;
-                          }
-                          const imagesLoaded = drawRecolorPreview(
+                        onupdate: (canvasVnode) => {
+                          const key = JSON.stringify(selectedColors);
+                          if (canvasVnode.state.lastColorsKey === key) return;
+                          canvasVnode.state.lastColorsKey = key;
+                          const renderId =
+                            (canvasVnode.dom._recolorRenderId || 0) + 1;
+                          canvasVnode.dom._recolorRenderId = renderId;
+                          drawRecolorPreview(
                             itemId,
                             meta,
                             canvasVnode.dom,
                             selectedColors,
+                            renderId,
                           );
-                          if (imagesLoaded > 0) {
-                            rootViewNode.state.oldSelectedColors =
-                              JSON.stringify(selectedColors);
-                          }
+                        },
+                        onremove: (canvasVnode) => {
+                          canvasVnode.dom._recolorRenderId =
+                            (canvasVnode.dom._recolorRenderId || 0) + 1;
                         },
                       }),
                     ],

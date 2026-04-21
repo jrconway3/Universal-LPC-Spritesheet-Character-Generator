@@ -11,3 +11,4 @@ computed-style-diff-output/
 /dist/
 **/__screenshots__/
 /.vitest-attachments/
+.tool-versions

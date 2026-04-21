@@ -21,9 +21,11 @@ function isPathInside(filePath, dirPath) {
  * `palette_definitions/` before bundling. Does not fork z-position tooling (CLI only).
  * Skips writing `CREDITS.csv` so dev/build do not dirty the repo.
  *
+ * @param {"development"|"production"} [env="production"] Passed through to
+ *   `buildMetadataJs`: development pretty-prints embedded JSON; production does not.
  * @returns {import("vite").Plugin}
  */
-export function vitePluginItemMetadata() {
+export function vitePluginItemMetadata(env = "production") {
   let root = process.cwd();
   let debounceTimer = null;
 
@@ -39,6 +41,7 @@ export function vitePluginItemMetadata() {
         }
         fs.writeFileSync(filePath, contents);
       },
+      env,
     });
   }
 

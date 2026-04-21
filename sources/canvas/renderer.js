@@ -343,6 +343,7 @@ export async function renderCharacter(
           img,
           item.itemId,
           item.recolors,
+          item.spritePath,
         );
         renderCtx.drawImage(imageToDraw, 0, item.yPos);
       }
@@ -416,6 +417,7 @@ export async function renderCharacter(
               img,
               areaItem.itemId,
               areaItem.recolors,
+              areaItem.spritePath,
             );
 
             if (areaItem.type === "custom_sprite") {
@@ -600,7 +602,12 @@ export async function renderSingleItem(
       async () => {
         for (const { item: sprite, img, success } of loadedSprites) {
           if (success && img) {
-            const imageToDraw = await getImageToDraw(img, itemId, recolors);
+            const imageToDraw = await getImageToDraw(
+              img,
+              itemId,
+              recolors,
+              sprite.spritePath,
+            );
             itemCtx.drawImage(imageToDraw, 0, sprite.yPos);
           }
         }
@@ -686,6 +693,7 @@ export async function renderSingleItem(
               img,
               itemId,
               sprite.recolors,
+              sprite.spritePath,
             );
             itemCtx.drawImage(imageToDraw, 0, sprite.yPos);
           }
@@ -820,6 +828,7 @@ export async function renderSingleItemAnimation(
             img,
             itemId,
             sprite.recolors,
+            sprite.spritePath,
           );
           animCtx.drawImage(
             imageToDraw,
