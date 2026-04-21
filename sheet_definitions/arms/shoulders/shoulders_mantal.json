@@ -4,32 +4,6 @@
     "zPos": 75,
     "male": "shoulders/mantal/male/"
   },
-  "variants": [
-    "black",
-    "blue",
-    "bluegray",
-    "brown",
-    "charcoal",
-    "forest",
-    "gray",
-    "green",
-    "lavender",
-    "leather",
-    "maroon",
-    "navy",
-    "orange",
-    "pink",
-    "purple",
-    "red",
-    "rose",
-    "sky",
-    "slate",
-    "tan",
-    "teal",
-    "walnut",
-    "white",
-    "yellow"
-  ],
   "animations": [
     "spellcast",
     "thrust",
@@ -37,14 +11,21 @@
     "slash",
     "shoot",
     "hurt",
-    "idle"
+    "watering",
+    "climb",
+    "idle",
+    "jump",
+    "sit",
+    "emote",
+    "run"
   ],
   "credits": [
     {
       "file": "shoulders/mantal",
-      "notes": "",
+      "notes": "Original by bluecarrot16, climb/jump/sit/emote/run by JaidynReiman",
       "authors": [
-        "bluecarrot16"
+        "bluecarrot16",
+        "JaidynReiman"
       ],
       "licenses": [
         "CC-BY-SA 3.0"
@@ -54,5 +35,12 @@
       ]
     }
   ],
+  "recolors": {
+    "material": "cloth",
+    "palettes": [
+      "ulpc",
+      "all.lpcr"
+    ]
+  },
   "type_name": "shoulders"
 }

@@ -7,16 +7,6 @@
     "pregnant": "arms/bracers/female/",
     "muscular": "arms/bracers/male/"
   },
-  "variants": [
-    "steel",
-    "iron",
-    "ceramic",
-    "brass",
-    "copper",
-    "bronze",
-    "silver",
-    "gold"
-  ],
   "animations": [
     "spellcast",
     "thrust",
@@ -24,15 +14,19 @@
     "slash",
     "shoot",
     "hurt",
-    "idle"
+    "watering",
+    "climb",
+    "idle",
+    "emote"
   ],
   "credits": [
     {
       "file": "arms/bracers",
-      "notes": "",
+      "notes": "original by wulax, adjustments by Makrohn, climb/emote by JaidynReiman",
       "authors": [
         "Matthew Krohn (makrohn)",
-        "Johannes Sjölund (wulax)"
+        "Johannes Sjölund (wulax)",
+        "JaidynReiman"
       ],
       "licenses": [
         "OGA-BY 3.0",
@@ -44,5 +38,14 @@
       ]
     }
   ],
+  "recolors": {
+    "material": "metal",
+    "palettes": [
+      "ulpc",
+      "cloth.ulpc",
+      "lpcr",
+      "all.lpcr"
+    ]
+  },
   "type_name": "bracers"
 }

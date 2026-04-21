@@ -4,44 +4,10 @@
     "zPos": 70,
     "male": "arms/gloves/male/",
     "muscular": "arms/gloves/male/",
-    "female": "arms/gloves/female/",
-    "teen": "arms/gloves/female/",
-    "pregnant": "arms/gloves/female/"
+    "female": "arms/gloves/thin/",
+    "teen": "arms/gloves/thin/",
+    "pregnant": "arms/gloves/thin/"
   },
-  "variants": [
-    "brass",
-    "bronze",
-    "ceramic",
-    "copper",
-    "gold",
-    "iron",
-    "silver",
-    "steel",
-    "black",
-    "blue",
-    "bluegray",
-    "brown",
-    "charcoal",
-    "forest",
-    "gray",
-    "green",
-    "lavender",
-    "leather",
-    "maroon",
-    "navy",
-    "orange",
-    "pink",
-    "purple",
-    "red",
-    "rose",
-    "sky",
-    "slate",
-    "tan",
-    "teal",
-    "walnut",
-    "white",
-    "yellow"
-  ],
   "animations": [
     "spellcast",
     "thrust",
@@ -89,7 +55,8 @@
         "Michael Whitlock (bigbeargames)",
         "Matthew Krohn (makrohn)",
         "Johannes Sjölund (wulax)",
-        "bluecarrot16"
+        "bluecarrot16",
+        "JaidynReiman"
       ],
       "licenses": [
         "OGA-BY 3.0",
@@ -102,5 +69,14 @@
       ]
     }
   ],
+  "recolors": {
+    "material": "metal",
+    "palettes": [
+      "ulpc",
+      "cloth.ulpc",
+      "lpcr",
+      "all.lpcr"
+    ]
+  },
   "type_name": "gloves"
 }

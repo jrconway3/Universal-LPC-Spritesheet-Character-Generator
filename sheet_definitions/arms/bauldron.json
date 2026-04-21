@@ -4,25 +4,29 @@
     "zPos": 65,
     "male": "bauldron/male/",
     "muscular": "bauldron/male/",
-    "teen": "bauldron/female/",
-    "female": "bauldron/female/",
-    "pregnant": "bauldron/female/"
+    "teen": "bauldron/thin/",
+    "female": "bauldron/thin/",
+    "pregnant": "bauldron/thin/"
   },
-  "variants": [
-    "brown",
-    "charcoal",
-    "leather",
-    "slate",
-    "tan",
-    "walnut",
-    "white"
+  "animations": [
+    "spellcast",
+    "thrust",
+    "walk",
+    "slash",
+    "shoot",
+    "hurt",
+    "watering",
+    "climb",
+    "idle",
+    "emote"
   ],
   "credits": [
     {
       "file": "bauldron",
-      "notes": "",
+      "notes": "Original by Nilla122, climb/emote by JaidynReiman",
       "authors": [
-        "Nila122"
+        "Nila122",
+        "JaidynReiman"
       ],
       "licenses": [
         "GPL 2.0",
@@ -35,5 +39,13 @@
       ]
     }
   ],
+  "recolors": {
+    "material": "cloth",
+    "palettes": [
+      "ulpc",
+      "metal.ulpc",
+      "all.lpcr"
+    ]
+  },
   "type_name": "bauldron"
 }
