@@ -19,7 +19,10 @@ import {
   resetHashCalledTimes,
   resetHashDeps,
 } from "../../sources/state/hash.js";
-import { resetCatalogForTests } from "../../sources/state/catalog.js";
+import {
+  loadCatalogFromFixtures,
+  resetCatalogForTests,
+} from "../../sources/state/catalog.js";
 
 describe("state/hash.js", () => {
   let sandbox;
@@ -470,6 +473,47 @@ describe("state/hash.js", () => {
       expect(getHash()).to.equal(
         "#sex=male&body=Body_Color_light&wrinkles=Wrinkles_light",
       );
+    });
+
+    it("loads selections from catalog indexes when window.itemMetadata is empty", () => {
+      loadCatalogFromFixtures({
+        itemMetadata: {
+          1: {
+            type_name: "body",
+            name: "Body",
+            variants: ["light"],
+            layers: {},
+            credits: [],
+          },
+        },
+        aliasMetadata: {},
+        categoryTree: { items: [], children: {} },
+        metadataIndexes: {
+          byTypeName: {
+            body: [
+              {
+                itemId: "1",
+                type_name: "body",
+                name: "Body",
+                variants: ["light"],
+              },
+            ],
+          },
+        },
+        paletteMetadata: { versions: {}, materials: {} },
+      });
+
+      setHash("#body=Body_light");
+      loadSelectionsFromHash();
+      expect(getState().selections).to.deep.equal({
+        body: {
+          itemId: "1",
+          subId: null,
+          variant: "light",
+          name: "Body (light)",
+          recolor: "",
+        },
+      });
     });
   });
 
