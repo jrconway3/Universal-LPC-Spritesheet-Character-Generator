@@ -8,12 +8,13 @@ import {
 } from "./generateSources/test_helpers.js";
 import { loadPaletteMetadata } from "../../../scripts/generateSources/palettes.mjs";
 
-test("build1-basic aligns all generated window global objects", async () => {
+test("build1-basic aligns merged metadata and index-metadata.js indexes", async () => {
   const result = await runBuild("build1-basic");
   const metadata = result.globals.itemMetadata;
   const alias = result.globals.aliasMetadata;
   const category = result.globals.categoryTree;
   const palette = result.globals.paletteMetadata;
+  const { metadataIndexes } = result.globals;
 
   assert.equal(metadata.wheelchair.name, "Wheelchair");
   assert.deepEqual(metadata.wheelchair.animations, ["wheelchair"]);
@@ -48,6 +49,18 @@ test("build1-basic aligns all generated window global objects", async () => {
     "nose",
     "head_nose_big",
   ]);
+
+  const wheelchairTypeRows = metadataIndexes.byTypeName.wheelchair;
+  assert.ok(Array.isArray(wheelchairTypeRows));
+  const wheelchairRow = wheelchairTypeRows.find(
+    (row) => row.itemId === "wheelchair",
+  );
+  assert.ok(wheelchairRow);
+  assert.equal(wheelchairRow.name, "Wheelchair");
+  assert.strictEqual(
+    metadataIndexes.hashMatch.itemsByTypeName,
+    metadataIndexes.byTypeName,
+  );
 });
 
 test("build1-basic includes expected csv rows and skips noExport animations", async () => {
@@ -67,6 +80,7 @@ test("ignored-only sheets build can produce empty item metadata", async () => {
   );
 
   assert.deepEqual(result.globals.itemMetadata, {});
+  assert.deepEqual(result.globals.metadataIndexes.byTypeName, {});
   assert.deepEqual(result.globals.categoryTree.items, []);
   assert.ok(
     errors.some((entry) =>

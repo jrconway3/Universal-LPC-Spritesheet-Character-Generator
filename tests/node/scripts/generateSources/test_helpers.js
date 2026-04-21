@@ -78,16 +78,10 @@ function extractTopLevelConstJson(outputText, constName) {
   throw new Error(`Unclosed object for const ${constName}`);
 }
 
-export function extractGlobalObjects(metadataJS) {
-  return {
-    itemMetadata: extractTopLevelConstJson(metadataJS, "itemMetadata"),
-    aliasMetadata: extractTopLevelConstJson(metadataJS, "aliasMetadata"),
-    categoryTree: extractTopLevelConstJson(metadataJS, "categoryTree"),
-    paletteMetadata: extractTopLevelConstJson(metadataJS, "paletteMetadata"),
-  };
-}
-
-/** Rebuilds full per-item metadata (lite + layers + credits) from captured generator writes. */
+/**
+ * Rebuilds full per-item metadata (lite + layers + credits) from captured generator writes.
+ * @param {Map<string, string>} writes basename → file contents from generateSources
+ */
 export function mergeMetadataForTests(writes) {
   const lite = extractTopLevelConstJson(
     writes.get("item-metadata.js") ?? "",
@@ -110,6 +104,30 @@ export function mergeMetadataForTests(writes) {
     };
   }
   return itemMetadata;
+}
+
+/**
+ * Parses all emitted metadata modules in `writes` into the same shapes the app used when
+ * everything lived in one `item-metadata.js` file, plus `metadataIndexes` from `index-metadata.js`.
+ * @param {Map<string, string>} writes basename → file contents from generateSources
+ */
+export function extractMetadataGlobalsFromWrites(writes) {
+  const indexSrc = writes.get("index-metadata.js") ?? "";
+  const byTypeName = extractTopLevelConstJson(indexSrc, "byTypeName");
+  const metadataIndexes = {
+    byTypeName,
+    hashMatch: { itemsByTypeName: byTypeName },
+  };
+  return {
+    itemMetadata: mergeMetadataForTests(writes),
+    aliasMetadata: extractTopLevelConstJson(indexSrc, "aliasMetadata"),
+    categoryTree: extractTopLevelConstJson(indexSrc, "categoryTree"),
+    paletteMetadata: extractTopLevelConstJson(
+      writes.get("palette-metadata.js") ?? "",
+      "paletteMetadata",
+    ),
+    metadataIndexes,
+  };
 }
 
 export async function loadGeneratorModule() {
@@ -158,22 +176,7 @@ export async function runBuild(buildName, palettesBuildName = buildName) {
 
   const csvGenerated = writes.get("CREDITS.csv") || "";
   const metadataJS = writes.get("item-metadata.js") || "";
-  const itemMetadata = mergeMetadataForTests(writes);
-  const globals = {
-    itemMetadata,
-    aliasMetadata: extractTopLevelConstJson(
-      writes.get("index-metadata.js") ?? "",
-      "aliasMetadata",
-    ),
-    categoryTree: extractTopLevelConstJson(
-      writes.get("index-metadata.js") ?? "",
-      "categoryTree",
-    ),
-    paletteMetadata: extractTopLevelConstJson(
-      writes.get("palette-metadata.js") ?? "",
-      "paletteMetadata",
-    ),
-  };
+  const globals = extractMetadataGlobalsFromWrites(writes);
 
   return {
     csvGenerated,
