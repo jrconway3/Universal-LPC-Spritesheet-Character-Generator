@@ -42,13 +42,25 @@ export function itemMetadataCodeSplittingGroups() {
 }
 
 /**
+ * Maps Vite CLI `command` to the `env` value passed into metadata generation (PR #432 indent).
+ * @param {"build"|"serve"|string} command
+ * @returns {"development"|"production"}
+ */
+export function metadataEnvForViteCommand(command) {
+  return command === "build" ? "production" : "development";
+}
+
+/**
  * Plugins for item-metadata generation (`enforce: "pre"` is set on the plugin).
  * Runs on **serve** and **build** (no `apply` filter).
+ * @param {"build"|"serve"|string} command
+ * @param {Parameters<typeof vitePluginItemMetadata>[1]} [pluginOptions] Optional; forwarded to
+ *   `vitePluginItemMetadata` (e.g. stub `generateSources` in Node tests).
  * @returns {import("vite").Plugin[]}
  */
-export function itemMetadataPlugins(command) {
-  const env = command === "build" ? "production" : "development";
-  return [vitePluginItemMetadata(env)];
+export function itemMetadataPlugins(command, pluginOptions) {
+  const env = metadataEnvForViteCommand(command);
+  return [vitePluginItemMetadata(env, pluginOptions)];
 }
 
 export { METADATA_MODULE_BASENAMES };

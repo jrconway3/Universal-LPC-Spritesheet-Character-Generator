@@ -24,16 +24,19 @@ function isPathInside(filePath, dirPath) {
  * @param {"development"|"production"} [env="production"] Passed through to
  *   `generateSources` / `JSON.stringify` indent: development pretty-prints embedded JSON;
  *   production emits compact JSON.
+ * @param {{ generateSources?: typeof generateSources }} [pluginOptions] Optional overrides
+ *   (used by Node tests to stub `generateSources`).
  * @returns {import("vite").Plugin}
  */
-export function vitePluginItemMetadata(env = "production") {
+export function vitePluginItemMetadata(env = "production", pluginOptions = {}) {
+  const generateSourcesFn = pluginOptions.generateSources ?? generateSources;
   let root = process.cwd();
   let debounceTimer = null;
 
   function runGenerate() {
     fs.mkdirSync(path.join(root, "dist"), { recursive: true });
     const metadataOutputPath = path.join(root, "dist", "item-metadata.js");
-    generateSources({
+    generateSourcesFn({
       writeMetadata: true,
       metadataOutputPath,
       env,
