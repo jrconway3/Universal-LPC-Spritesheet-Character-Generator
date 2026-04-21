@@ -25,8 +25,11 @@ export function copyToPreviewCanvas(
   applyTransparencyMask = false,
   zoomLevel = 1,
 ) {
-  if (!canvas || !previewCanvasElement) {
-    console.error("Canvas not initialized");
+  if (!previewCanvasElement) {
+    return;
+  }
+  // Offscreen buffer is created in `initCanvas()` after index+lite register; UI may mount first.
+  if (!canvas) {
     return;
   }
 

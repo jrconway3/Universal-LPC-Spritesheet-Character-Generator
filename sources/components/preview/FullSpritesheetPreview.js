@@ -3,70 +3,81 @@ import { state } from "../../state/state.js";
 import { CollapsibleSection } from "../CollapsibleSection.js";
 import PinchToZoom from "./PinchToZoom.js";
 import { copyToPreviewCanvas } from "../../canvas/preview-canvas.js";
+import { isOffscreenCanvasInitialized } from "../../canvas/renderer.js";
 import { ScrollableContainer } from "./ScrollableContainer.js";
 import { PreviewMetadataLoadingOverlay } from "./PreviewMetadataLoadingOverlay.js";
 
-// Canvas wrapper component with its own lifecycle
-const SpritesheetCanvas = {
-  oncreate: function (vnode) {
-    const canvas = vnode.dom;
-    const showTransparencyGrid = vnode.attrs.showTransparencyGrid;
-    const applyTransparencyMask = vnode.attrs.applyTransparencyMask;
-    const zoomLevel = vnode.attrs.zoomLevel;
+/**
+ * Offscreen `canvas` in renderer.js is created in `initCanvas()` after index+lite
+ * metadata register; the spritesheet preview mounts earlier, so we defer PinchToZoom
+ * and the first `copyToPreviewCanvas` until `isOffscreenCanvasInitialized()`.
+ */
+function syncFullSpritesheetFromOffscreen(vnode) {
+  if (!window.canvasRenderer) {
+    return;
+  }
+  if (!isOffscreenCanvasInitialized()) {
+    return;
+  }
 
-    if (!window.canvasRenderer) {
-      console.error("Canvas renderer not available yet");
-      return;
-    }
+  const domCanvas = vnode.dom;
+  const showTransparencyGrid = vnode.attrs.showTransparencyGrid;
+  const applyTransparencyMask = vnode.attrs.applyTransparencyMask;
+  const zoomLevel = vnode.attrs.zoomLevel;
 
-    // Copy from offscreen canvas to preview canvas
+  if (!vnode.state.pinch) {
     copyToPreviewCanvas(
-      canvas,
+      domCanvas,
       showTransparencyGrid,
       applyTransparencyMask,
       zoomLevel,
     );
-
     vnode.state.zoomLevel = zoomLevel;
-    new PinchToZoom(
-      canvas,
+    vnode.state.pinch = new PinchToZoom(
+      domCanvas,
       (scale) => {
-        // Update zoom level on pinch
+        if (!isOffscreenCanvasInitialized()) {
+          return;
+        }
         vnode.state.zoomLevel = scale;
-        // Trigger re-render to update preview canvas zoom
         m.redraw();
-        // Apply zoom to canvas
         copyToPreviewCanvas(
-          canvas,
+          domCanvas,
           showTransparencyGrid,
           applyTransparencyMask,
           vnode.state.zoomLevel,
         );
-
         state.fullSpritesheetCanvasZoomLevel = vnode.state.zoomLevel;
       },
       vnode.state.zoomLevel,
     );
+    return;
+  }
+
+  m.redraw();
+  copyToPreviewCanvas(
+    domCanvas,
+    showTransparencyGrid,
+    applyTransparencyMask,
+    zoomLevel,
+  );
+}
+
+// Canvas wrapper component with its own lifecycle
+const SpritesheetCanvas = {
+  oncreate: function (vnode) {
+    vnode.state.zoomLevel = vnode.attrs.zoomLevel;
+    if (!window.canvasRenderer) {
+      console.error("Canvas renderer not available yet");
+      return;
+    }
+    syncFullSpritesheetFromOffscreen(vnode);
   },
   onupdate: function (vnode) {
-    const canvas = vnode.dom;
-    const showTransparencyGrid = vnode.attrs.showTransparencyGrid;
-    const applyTransparencyMask = vnode.attrs.applyTransparencyMask;
-    const zoomLevel = vnode.attrs.zoomLevel;
-
     if (!window.canvasRenderer) {
       return;
     }
-
-    m.redraw();
-
-    // Copy from offscreen canvas to preview canvas
-    copyToPreviewCanvas(
-      canvas,
-      showTransparencyGrid,
-      applyTransparencyMask,
-      zoomLevel,
-    );
+    syncFullSpritesheetFromOffscreen(vnode);
   },
   view: function () {
     return m("canvas#spritesheet-preview");
