@@ -198,3 +198,30 @@ test("build4-expansive loads broad tree/palette coverage and captures fixture er
     ),
   );
 });
+
+test("build5-aliases emits non-empty aliasMetadata and pretty index when env is development", async () => {
+  const result = await runBuild("build5-aliases", "build1-basic", {
+    env: "development",
+  });
+
+  const alias = result.globals.aliasMetadata;
+  assert.ok(Object.keys(alias).length >= 1);
+  assert.deepEqual(alias.alias_build.legacy_slot, {
+    typeName: "alias_build",
+    name: "Alias_Build_Item",
+    variant: "adult",
+  });
+
+  const indexSrc = result.writes.get("index-metadata.js") ?? "";
+  assert.ok(
+    indexSrc.includes("\n  "),
+    "development index-metadata.js should pretty-print JSON",
+  );
+  assert.match(indexSrc, /"alias_build"/);
+
+  const rows = result.globals.metadataIndexes.byTypeName.alias_build;
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].itemId, "alias_build_item");
+  assert.ok(!Object.prototype.hasOwnProperty.call(rows[0], "layers"));
+  assert.ok(!Object.prototype.hasOwnProperty.call(rows[0], "credits"));
+});

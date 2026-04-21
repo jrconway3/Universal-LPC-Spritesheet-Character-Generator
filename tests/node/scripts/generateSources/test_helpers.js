@@ -135,13 +135,24 @@ export async function loadGeneratorModule() {
   return import(`${generatorModuleUrl}?test=${moduleLoadCounter}`);
 }
 
-export async function runBuild(buildName, palettesBuildName = buildName) {
+/**
+ * @param {string} buildName Fixture under tests/node/scripts/{buildName}/sheets
+ * @param {string} [palettesBuildName] Palette fixture dir (default same as buildName)
+ * @param {{ env?: "development"|"production" }} [options] Passed to generateSources as deps.env
+ */
+export async function runBuild(
+  buildName,
+  palettesBuildName = buildName,
+  options = {},
+) {
   const { generateSources } = await loadGeneratorModule();
   resetTestState();
   const writes = new Map();
+  const { env } = options;
 
   generateSources({
     writeMetadata: true,
+    ...(env !== undefined ? { env } : {}),
     readDirTreeFn: () => readDirTree(buildPath(buildName, "sheets")),
     parseTreeFn: (filePath, fileName) =>
       parseTree(filePath, fileName, {
