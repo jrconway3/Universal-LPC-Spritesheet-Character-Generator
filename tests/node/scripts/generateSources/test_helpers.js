@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import {
+  METADATA_MODULE_BASENAMES,
   readDirTree,
   resetGeneratorState,
 } from "../../../../scripts/generateSources/state.mjs";
@@ -86,6 +87,31 @@ export function extractGlobalObjects(metadataJS) {
   };
 }
 
+/** Rebuilds full per-item metadata (lite + layers + credits) from captured generator writes. */
+export function mergeMetadataForTests(writes) {
+  const lite = extractTopLevelConstJson(
+    writes.get("item-metadata.js") ?? "",
+    "itemMetadata",
+  );
+  const layers = extractTopLevelConstJson(
+    writes.get("layers-metadata.js") ?? "",
+    "itemLayers",
+  );
+  const credits = extractTopLevelConstJson(
+    writes.get("credits-metadata.js") ?? "",
+    "itemCredits",
+  );
+  const itemMetadata = {};
+  for (const id of Object.keys(lite)) {
+    itemMetadata[id] = {
+      ...lite[id],
+      layers: layers[id] ?? {},
+      credits: credits[id] ?? [],
+    };
+  }
+  return itemMetadata;
+}
+
 export async function loadGeneratorModule() {
   moduleLoadCounter += 1;
   return import(`${generatorModuleUrl}?test=${moduleLoadCounter}`);
@@ -123,14 +149,37 @@ export async function runBuild(buildName, palettesBuildName = buildName) {
       }),
   });
 
+  for (const basename of METADATA_MODULE_BASENAMES) {
+    assert.ok(
+      writes.has(basename),
+      `expected generateSources to write ${basename}`,
+    );
+  }
+
   const csvGenerated = writes.get("CREDITS.csv") || "";
   const metadataJS = writes.get("item-metadata.js") || "";
-  const globals = extractGlobalObjects(metadataJS);
+  const itemMetadata = mergeMetadataForTests(writes);
+  const globals = {
+    itemMetadata,
+    aliasMetadata: extractTopLevelConstJson(
+      writes.get("index-metadata.js") ?? "",
+      "aliasMetadata",
+    ),
+    categoryTree: extractTopLevelConstJson(
+      writes.get("index-metadata.js") ?? "",
+      "categoryTree",
+    ),
+    paletteMetadata: extractTopLevelConstJson(
+      writes.get("palette-metadata.js") ?? "",
+      "paletteMetadata",
+    ),
+  };
 
   return {
     csvGenerated,
     metadataJS,
     globals,
+    writes,
   };
 }
 

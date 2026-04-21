@@ -2,7 +2,6 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   buildPath,
-  extractGlobalObjects,
   loadGeneratorModule,
   runBuild,
   withCapturedConsoleError,
@@ -42,12 +41,6 @@ test("build1-basic aligns all generated window global objects", async () => {
   assert.ok(recolor.variants.includes("light"));
   assert.ok(recolor.variants.includes("lpcr.ashen"));
   assert.ok(recolor.variants.includes("all.lpcr.indigo"));
-
-  const parsed = extractGlobalObjects(result.metadataJS);
-  assert.deepEqual(parsed.itemMetadata, metadata);
-  assert.deepEqual(parsed.aliasMetadata, alias);
-  assert.deepEqual(parsed.categoryTree, category);
-  assert.deepEqual(parsed.paletteMetadata, palette);
 
   assert.deepEqual(metadata.wheelchair.path, ["body", "wheelchair"]);
   assert.deepEqual(metadata.head_nose_big.path, [

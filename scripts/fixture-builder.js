@@ -128,12 +128,29 @@ function collectItemIdsFromExport(obj, out = new Set()) {
 }
 
 async function loadFullItemMetadata() {
-  const mod = await import(pathToFileURL(ITEM_METADATA_PATH).href);
-  const meta = mod.itemMetadata;
-  if (!meta || typeof meta !== "object") {
+  const itemUrl = pathToFileURL(ITEM_METADATA_PATH).href;
+  const layersPath = path.join(REPO_ROOT, "dist", "layers-metadata.js");
+  const creditsPath = path.join(REPO_ROOT, "dist", "credits-metadata.js");
+  const [itemMod, layersMod, creditsMod] = await Promise.all([
+    import(itemUrl),
+    import(pathToFileURL(layersPath).href),
+    import(pathToFileURL(creditsPath).href),
+  ]);
+  const lite = itemMod.itemMetadata;
+  const itemLayers = layersMod.itemLayers;
+  const itemCredits = creditsMod.itemCredits;
+  if (!lite || typeof lite !== "object") {
     throw new Error(
       "dist/item-metadata.js did not export itemMetadata as an object",
     );
+  }
+  const meta = {};
+  for (const id of Object.keys(lite)) {
+    meta[id] = {
+      ...lite[id],
+      layers: itemLayers[id] ?? {},
+      credits: itemCredits[id] ?? [],
+    };
   }
   return meta;
 }

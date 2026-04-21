@@ -5,9 +5,16 @@ import {
   PALETTES_DIR,
   SHEETS_DIR,
   aliasMetadata,
-  buildMetadataJs,
+  buildAllMetadataModules,
+  buildCreditsMetadataJs,
+  buildIndexMetadataJs,
+  buildItemMetadataLiteJs,
+  buildLayersMetadataJs,
+  buildMetadataIndexes,
+  buildPaletteMetadataJs,
   categoryTree,
   csvList,
+  getMetadataJsonIndent,
   itemMetadata,
   licensesFound,
   onlyIfTemplate,
@@ -15,6 +22,7 @@ import {
   sortDirTree,
   readDirTree,
   parseJson,
+  splitItemMetadataMaps,
 } from "../../../../scripts/generateSources/state.mjs";
 import { buildPath, resetTestState } from "./test_helpers.js";
 
@@ -33,52 +41,120 @@ test("state exports mutable shared collections with expected defaults", () => {
   assert.deepEqual(paletteMetadata, { versions: {}, materials: {} });
 });
 
-test("buildMetadataJs exports all four metadata objects and syncs window", () => {
-  resetTestState();
-  itemMetadata.test_item = { name: "Test" };
-  categoryTree.children.body = { items: [], children: {} };
-
-  const js = buildMetadataJs();
-
-  assert.match(js, /const itemMetadata\s*=/);
-  assert.match(js, /const aliasMetadata\s*=/);
-  assert.match(js, /const categoryTree\s*=/);
-  assert.match(js, /const paletteMetadata\s*=/);
-  assert.match(js, /export\s*\{\s*itemMetadata/);
-  assert.match(js, /window\.itemMetadata\s*=\s*itemMetadata/);
-  assert.match(js, /"test_item"/);
+test("getMetadataJsonIndent is 2 in development only", () => {
+  assert.equal(getMetadataJsonIndent("development"), 2);
+  assert.equal(getMetadataJsonIndent("production"), undefined);
 });
 
-test("buildMetadataJs returns valid output with empty state", () => {
+test("splitItemMetadataMaps strips layers and credits into side maps", () => {
   resetTestState();
-
-  const js = buildMetadataJs();
-
-  assert.match(js, /THIS FILE IS AUTO-GENERATED/);
-  assert.match(js, /const itemMetadata = \{\}/);
-  assert.match(js, /const aliasMetadata = \{\}/);
+  itemMetadata.a = {
+    name: "A",
+    type_name: "t",
+    layers: { layer_1: { male: "p" } },
+    credits: [{ licenses: ["X"] }],
+  };
+  const { itemMetadataLite, itemCredits, itemLayers } =
+    splitItemMetadataMaps(itemMetadata);
+  assert.equal(itemMetadataLite.a.name, "A");
+  assert.ok(
+    !Object.prototype.hasOwnProperty.call(itemMetadataLite.a, "layers"),
+  );
+  assert.deepEqual(itemLayers.a, itemMetadata.a.layers);
+  assert.deepEqual(itemCredits.a, itemMetadata.a.credits);
 });
 
-test("buildMetadataJs pretty-prints embedded JSON in development only", () => {
+test("buildMetadataIndexes groups lite rows by type_name in key order", () => {
+  resetTestState();
+  itemMetadata.z = {
+    name: "Z",
+    type_name: "body",
+    layers: {},
+    credits: [],
+  };
+  itemMetadata.a = {
+    name: "A",
+    type_name: "body",
+    layers: {},
+    credits: [],
+  };
+  const { byTypeName } = buildMetadataIndexes(itemMetadata, {});
+  assert.equal(byTypeName.body.length, 2);
+  assert.equal(byTypeName.body[0].itemId, "z");
+  assert.equal(byTypeName.body[1].itemId, "a");
+});
+
+test("buildIndexMetadataJs shares byTypeName between metadataIndexes fields", () => {
+  resetTestState();
+  itemMetadata.x = {
+    name: "N",
+    type_name: "t",
+    layers: {},
+    credits: [],
+  };
+  const js = buildIndexMetadataJs(aliasMetadata, categoryTree, itemMetadata);
+  assert.match(js, /const byTypeName = /);
+  assert.match(js, /hashMatch:\s*\{\s*itemsByTypeName:\s*byTypeName\s*\}/);
+  assert.match(
+    js,
+    /export\s*\{\s*aliasMetadata,\s*categoryTree,\s*metadataIndexes\s*\}/,
+  );
+  assert.doesNotMatch(js, /window\./);
+});
+
+test("buildAllMetadataModules yields five basenames without window assignments", () => {
+  resetTestState();
+  const modules = buildAllMetadataModules("production");
+  assert.equal(modules.size, 5);
+  for (const src of modules.values()) {
+    assert.match(src, /THIS FILE IS AUTO-GENERATED/);
+    assert.doesNotMatch(src, /window\./);
+  }
+});
+
+test("metadata JSON is compact in production and pretty in development", () => {
   resetTestState();
   itemMetadata.nested = { bar: 1 };
 
-  const production = buildMetadataJs("production");
-  const development = buildMetadataJs("development");
-
+  const prodItem = buildItemMetadataLiteJs(itemMetadata, "production");
+  const devItem = buildItemMetadataLiteJs(itemMetadata, "development");
   assert.ok(
-    production.includes('"bar":1'),
-    "production should emit compact JSON (no space after colon in numbers)",
+    prodItem.includes('"nested":{"bar":1}'),
+    "production item-metadata should embed compact JSON",
   );
   assert.ok(
-    development.includes('"bar": 1'),
-    "development should emit pretty-printed JSON",
+    devItem.includes('"bar": 1'),
+    "development should pretty-print embedded JSON",
   );
   assert.ok(
-    development.includes("\n"),
+    devItem.includes("\n"),
     "development output should include newlines inside embedded JSON",
   );
-  assert.equal(buildMetadataJs(), production);
+
+  const prodPal = buildPaletteMetadataJs("production");
+  const devPal = buildPaletteMetadataJs("development");
+  assert.ok(prodPal.includes('"versions":{}'));
+  const palJsonStart = devPal.indexOf("{");
+  assert.ok(
+    palJsonStart >= 0 && devPal.slice(palJsonStart).includes("\n  "),
+    "development palette-metadata should indent top-level JSON",
+  );
+
+  const prodCred = buildCreditsMetadataJs(itemMetadata, "production");
+  const devCred = buildCreditsMetadataJs(itemMetadata, "development");
+  assert.ok(prodCred.includes('"nested":[]'));
+  assert.ok(
+    devCred.slice(devCred.indexOf("{")).includes("\n  "),
+    "development credits-metadata should indent",
+  );
+
+  const prodLay = buildLayersMetadataJs(itemMetadata, "production");
+  const devLay = buildLayersMetadataJs(itemMetadata, "development");
+  assert.ok(prodLay.includes('"nested":{}'));
+  assert.ok(
+    devLay.slice(devLay.indexOf("{")).includes("\n  "),
+    "development layers-metadata should indent",
+  );
 });
 
 test("sortDirTree sorts shallow paths before deep paths", () => {
