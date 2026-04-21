@@ -38,8 +38,8 @@ export async function restoreAppCatalogAfterTest() {
 }
 
 /**
- * Replace `catalog` with merged dist `itemMetadata` plus `patch` (same pattern as former
- * `window.itemMetadata = { ...window.itemMetadata, ...patch }`).
+ * Replace `catalog` with merged dist `itemMetadata` plus `patch` (re-seed lite + index after
+ * loading real dist chunks, mirroring a targeted edit to the in-memory item map).
  * Preserves dist index, palette, alias, and tree data so palette resolution matches production.
  */
 export async function seedBrowserCatalogMergedOnDist(patch) {
