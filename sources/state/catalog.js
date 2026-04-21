@@ -3,6 +3,8 @@
  * Loaders call `registerFrom*Module` after each dynamic import; consumers use getters and `is*Ready`.
  */
 
+import { buildItemsByTypeNameLite } from "./resolve-hash-param.js";
+
 function makeStage() {
   let resolveFn;
   const promise = new Promise((r) => {
@@ -152,6 +154,48 @@ export function getItemCredits(itemId) {
     return [];
   }
   return itemCreditsStore[itemId] ?? [];
+}
+
+/**
+ * Merged item view (lite + layers + credits) compatible with legacy monolithic `itemMetadata[id]`.
+ * Layers default to `{}` and credits to `[]` when those chunks are not registered yet.
+ * @param {string} itemId
+ * @returns {object|undefined}
+ */
+export function getItemMerged(itemId) {
+  if (!isLiteReady() || itemLiteStore === null) {
+    return undefined;
+  }
+  const lite = itemLiteStore[itemId];
+  if (lite === undefined) {
+    return undefined;
+  }
+  const layers =
+    isLayersReady() && itemLayersStore !== null
+      ? (itemLayersStore[itemId] ?? {})
+      : {};
+  const credits =
+    isCreditsReady() && itemCreditsStore !== null
+      ? (itemCreditsStore[itemId] ?? [])
+      : [];
+  return { ...lite, layers, credits };
+}
+
+/**
+ * `byTypeName` rows for hash resolution when index metadata is not registered yet
+ * (same shape as `buildMetadataIndexes` / `resolveHashParamFromHashMatch`).
+ * @returns {Record<string, Array<{ itemId: string } & Record<string, unknown>>>}
+ */
+export function buildItemsByTypeNameFromRegisteredLite() {
+  if (!itemLiteStore) {
+    return {};
+  }
+  /** @type {Record<string, object>} */
+  const synthetic = {};
+  for (const [id, lite] of Object.entries(itemLiteStore)) {
+    synthetic[id] = { ...lite, layers: {}, credits: [] };
+  }
+  return buildItemsByTypeNameLite(synthetic);
 }
 
 /**

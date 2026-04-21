@@ -19,6 +19,7 @@ import {
   setCustomAnimYPositions,
 } from "./preview-animation.js";
 import { getSortedLayersByAnim } from "../state/meta.js";
+import * as catalog from "../state/catalog.js";
 import { debugWarn } from "../utils/debug.js";
 
 /**
@@ -118,7 +119,7 @@ export async function renderCharacter(
 
     for (const [, selection] of Object.entries(selections)) {
       const { itemId, subId, variant } = selection;
-      const meta = window.itemMetadata[itemId];
+      const meta = catalog.getItemMerged(itemId);
 
       if (!meta || subId) continue;
 
@@ -515,7 +516,7 @@ export async function renderSingleItem(
   singleLayer = null,
   zipProfiler = null,
 ) {
-  const meta = window.itemMetadata[itemId];
+  const meta = catalog.getItemMerged(itemId);
   if (!meta) {
     console.error("Item metadata not found:", itemId);
     return null;
@@ -721,7 +722,7 @@ export async function renderSingleItemAnimation(
   singleLayer = null,
   zipProfiler = null,
 ) {
-  const meta = window.itemMetadata[itemId];
+  const meta = catalog.getItemMerged(itemId);
   if (!meta) {
     console.error("Item metadata not found:", itemId);
     return null;

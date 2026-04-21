@@ -22,14 +22,15 @@ import {
   registerFromLayersModule,
   resetCatalogForTests,
 } from "../../sources/state/catalog.js";
+import { restoreAppCatalogAfterTest } from "../browser-catalog-fixture.js";
 
 describe("state/catalog.js", () => {
   beforeEach(() => {
     resetCatalogForTests();
   });
 
-  afterEach(() => {
-    resetCatalogForTests();
+  afterEach(async () => {
+    await restoreAppCatalogAfterTest();
   });
 
   it("resetCatalogForTests clears readiness and getters", () => {

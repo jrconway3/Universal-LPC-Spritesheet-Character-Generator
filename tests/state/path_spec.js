@@ -9,6 +9,7 @@ import {
   loadCatalogFromFixtures,
   resetCatalogForTests,
 } from "../../sources/state/catalog.js";
+import { restoreAppCatalogAfterTest } from "../browser-catalog-fixture.js";
 import { es6DynamicTemplate } from "../../sources/utils/helpers.js";
 import { expect } from "chai";
 import sinon from "sinon";
@@ -20,9 +21,9 @@ describe("state/path.js", () => {
     resetPathDeps();
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     resetPathDeps();
-    resetCatalogForTests();
+    await restoreAppCatalogAfterTest();
   });
 
   describe("getNameWithoutVariant", () => {

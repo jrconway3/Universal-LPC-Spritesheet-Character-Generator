@@ -1,12 +1,13 @@
 // Global state and state operations
 import { LICENSE_CONFIG, ANIMATIONS, BODY_TYPES } from "./constants.js";
 import { syncSelectionsToHash, loadSelectionsFromHash } from "./hash.js";
+import * as catalog from "./catalog.js";
 import { renderCharacter } from "../canvas/renderer.js";
 
 // Dependency injection for testability (see setStateDeps / resetStateDeps)
 function createDefaultStateDeps() {
   return {
-    getItemMetadata: (itemId) => window.itemMetadata?.[itemId],
+    getItemMetadata: (itemId) => catalog.getItemMerged(itemId),
     selectDefaults,
     redraw: () => m.redraw(),
     syncSelectionsToHash,

@@ -5,12 +5,14 @@ import {
   getSelectionGroup,
   applyMatchBodyColor,
 } from "../../state/state.js";
+import * as catalog from "../../state/catalog.js";
 import { BodyTypeSelector } from "./BodyTypeSelector.js";
 import { TreeNode } from "./TreeNode.js";
 
 export const CategoryTree = {
   view: function () {
-    if (!window.categoryTree) {
+    const categoryTree = catalog.getCategoryTree();
+    if (!categoryTree) {
       return m("div.loading");
     }
 
@@ -44,7 +46,7 @@ export const CategoryTree = {
                     state.selections,
                   )) {
                     const { itemId } = selection;
-                    const meta = window.itemMetadata[itemId];
+                    const meta = catalog.getItemMerged(itemId);
                     if (meta && meta.path) {
                       let pathSoFar = "";
                       // Expand all path segments (categories)
@@ -118,7 +120,7 @@ export const CategoryTree = {
         // Body Type as first tree item
         m(BodyTypeSelector),
         // Rest of the category tree
-        Object.entries(window.categoryTree.children || {}).map(
+        Object.entries(categoryTree.children || {}).map(
           ([categoryName, categoryNode]) =>
             m(TreeNode, {
               key: categoryName,

@@ -2,10 +2,7 @@ import { state, selectDefaults } from "./state.js";
 import { parseRecolorKey } from "./palettes.js";
 import { debugWarn } from "../utils/debug.js";
 import * as catalog from "./catalog.js";
-import {
-  buildItemsByTypeNameLite,
-  resolveHashParamFromHashMatch,
-} from "./resolve-hash-param.js";
+import { resolveHashParamFromHashMatch } from "./resolve-hash-param.js";
 
 function createDefaultHashDeps() {
   return {
@@ -15,8 +12,10 @@ function createDefaultHashDeps() {
         const idx = catalog.getMetadataIndexes();
         itemsByTypeName =
           idx?.hashMatch?.itemsByTypeName ?? idx?.byTypeName ?? {};
+      } else if (catalog.isLiteReady()) {
+        itemsByTypeName = catalog.buildItemsByTypeNameFromRegisteredLite();
       } else {
-        itemsByTypeName = buildItemsByTypeNameLite(window.itemMetadata);
+        itemsByTypeName = {};
       }
       return resolveHashParamFromHashMatch({
         typeName,
@@ -24,12 +23,7 @@ function createDefaultHashDeps() {
         itemsByTypeName,
       });
     },
-    getItemLite: (itemId) => {
-      if (catalog.isLiteReady()) {
-        return catalog.getItemLite(itemId);
-      }
-      return window.itemMetadata?.[itemId];
-    },
+    getItemLite: (itemId) => catalog.getItemLite(itemId),
   };
 }
 
@@ -174,15 +168,16 @@ export function getHashParamsforSelections(selections) {
 
   // Add selections - use old format: type_name=Name_variant
   // Format: "body=Body_color_light", "shoes=Sara_sara"
+  const aliasMetadata = catalog.getAliasMetadata() ?? {};
   for (const [typeName, selection] of Object.entries(selections)) {
-    const meta = window.itemMetadata?.[selection.itemId];
+    const meta = catalog.getItemLite(selection.itemId);
     if (!meta || !meta.type_name) {
       // Check if an alias is overriding this entry (e.g., "sash=Waistband_rose" instead of "waistband=Waistband_rose")
       const name = selection.name.split(" (")[0]; // Get base name without variant (e.g., "Waistband" from "Waistband (rose)")
       const nameAndVariant =
         name.replaceAll(" ", "_") +
         (selection.variant ? `_${selection.variant}` : "");
-      const aliasType = window.aliasMetadata?.[typeName];
+      const aliasType = aliasMetadata[typeName];
       if (!aliasType) continue;
 
       // Check Name and Variant
@@ -251,7 +246,8 @@ export function loadSelectionsFromHash(hashString = null) {
     }
 
     // Check Name and Variant
-    const aliasType = window.aliasMetadata?.[typeName];
+    const aliasMd = catalog.getAliasMetadata() ?? {};
+    const aliasType = aliasMd[typeName];
     const aliasMeta = aliasType?.[nameAndVariant];
     if (aliasMeta) {
       typeName = aliasMeta.typeName;

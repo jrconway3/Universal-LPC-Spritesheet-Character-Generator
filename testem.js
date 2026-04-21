@@ -53,6 +53,8 @@ let viteClose;
 
 let testemConfig = {
   framework: "mocha+chai",
+  // Override when 7357 is busy: `TESTEM_PORT=7360 npm test`
+  port: Number.parseInt(process.env.TESTEM_PORT ?? "7357", 10),
   test_page: testPageFromEnv,
   before_tests: "node ./tests/node/run-node-tests.js",
   parallel: 2,

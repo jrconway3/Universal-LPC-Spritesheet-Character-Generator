@@ -13,7 +13,7 @@ function createDefaultPathDeps() {
     es6DynamicTemplate,
     debugLog,
     animations: ANIMATIONS,
-    getItemMetadata: (itemId) => window.itemMetadata?.[itemId],
+    getItemMetadata: (itemId) => catalog.getItemMerged(itemId),
     getMetadataIndexes: () => catalog.getMetadataIndexes(),
   };
 }

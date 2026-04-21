@@ -1,5 +1,6 @@
 // Recursive tree node component
 import { state, getSelectionGroup } from "../../state/state.js";
+import * as catalog from "../../state/catalog.js";
 import {
   isItemLicenseCompatible,
   isItemAnimationCompatible,
@@ -89,7 +90,7 @@ export const TreeNode = {
             // Render items in this category
             (node.items || [])
               .filter((itemId) => {
-                const meta = window.itemMetadata[itemId];
+                const meta = catalog.getItemMerged(itemId);
                 // Filter: Only show items compatible with current body type
                 if (!meta || !meta.required.includes(state.bodyType))
                   return false;
@@ -108,7 +109,7 @@ export const TreeNode = {
                 return true;
               })
               .map((itemId) => {
-                const meta = window.itemMetadata[itemId];
+                const meta = catalog.getItemMerged(itemId);
                 const displayName = meta.name;
                 const hasVariants = meta.variants && meta.variants.length > 0;
                 const hasRecolors =

@@ -28,6 +28,7 @@ import { importStateFromJSON } from "../../../sources/state/json.js";
 import issue382ItemMetadata from "./issue-382-itemdata.js";
 import issue382Selections from "./issue-382-selections.js";
 import { createFakeJSZip, sortedZipKeys } from "../../helpers/fake-jszip.js";
+import { seedBrowserCatalogMergedOnDist } from "../../browser-catalog-fixture.js";
 
 let fakeZip;
 
@@ -35,10 +36,7 @@ async function runGoldens() {
   resetState();
   layers.length = 0;
 
-  window.itemMetadata = {
-    ...(window.itemMetadata || {}),
-    ...issue382ItemMetadata,
-  };
+  await seedBrowserCatalogMergedOnDist(issue382ItemMetadata);
 
   Object.assign(state, importStateFromJSON(JSON.stringify(issue382Selections)));
 

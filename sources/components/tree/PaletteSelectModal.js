@@ -1,6 +1,7 @@
 // PaletteSelectModal.js
 import classNames from "classnames";
 import { drawRecolorPreview } from "../../canvas/palette-recolor.js";
+import * as catalog from "../../state/catalog.js";
 import { state, getSelectionGroup } from "../../state/state.js";
 import { ucwords } from "../../utils/helpers.js";
 import { COMPACT_FRAME_SIZE, FRAME_SIZE } from "../../state/constants.js";
@@ -18,7 +19,7 @@ export const PaletteSelectModal = {
     } = vnode.attrs;
 
     // Selection Group
-    const meta = window.itemMetadata[itemId];
+    const meta = catalog.getItemLite(itemId);
     const selectionGroup = opt.type_name ?? getSelectionGroup(itemId);
     const selection = state.selections[selectionGroup];
     const nodePath = `${itemId}-${opt.idx}-${opt.versions[0]}`;
@@ -54,10 +55,10 @@ export const PaletteSelectModal = {
             opt.versions.map((cat) => {
               const [material, version] = cat.split(".");
               const nodePath = `${itemId}-${opt.idx}-${cat}`;
-              const paletteMeta = window.paletteMetadata;
-              const paletteVersionMeta = paletteMeta.versions[version];
-              const materialMeta = paletteMeta.materials[material];
-              const recolors = materialMeta.palettes[version];
+              const paletteMeta = catalog.getPaletteMetadata();
+              const paletteVersionMeta = paletteMeta?.versions?.[version];
+              const materialMeta = paletteMeta?.materials?.[material];
+              const recolors = materialMeta?.palettes?.[version] ?? {};
               const isExpanded = state.expandedNodes[nodePath] || false;
               return [
                 m(

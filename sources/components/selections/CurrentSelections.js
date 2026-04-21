@@ -1,4 +1,5 @@
 // Current selections component
+import * as catalog from "../../state/catalog.js";
 import { state } from "../../state/state.js";
 import {
   isItemLicenseCompatible,
@@ -24,7 +25,7 @@ export const CurrentSelections = {
           const isLicenseCompatible = isItemLicenseCompatible(selection.itemId);
           const isAnimCompatible = isItemAnimationCompatible(selection.itemId);
           const isCompatible = isLicenseCompatible && isAnimCompatible;
-          const meta = window.itemMetadata?.[selection.itemId];
+          const meta = catalog.getItemMerged(selection.itemId);
 
           // Get all licenses for this item
           const allLicenses = new Set();

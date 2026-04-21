@@ -1,5 +1,6 @@
 import { customAnimationBase, customAnimations } from "../custom-animations.js";
 import { LICENSE_CONFIG, ANIMATIONS } from "./constants.js";
+import * as catalog from "./catalog.js";
 import { state } from "./state.js";
 
 // Dependency injection for testability
@@ -95,7 +96,7 @@ export function getAllowedLicenses() {
 
 // Helper function to check if an item is compatible with selected licenses
 export function isItemLicenseCompatible(itemId) {
-  const meta = window.itemMetadata?.[itemId];
+  const meta = catalog.getItemMerged(itemId);
   if (!meta || !meta.credits || meta.credits.length === 0) return true; // No license info = assume compatible
 
   const allowedLicenses = getAllowedLicenses();
@@ -119,7 +120,7 @@ export function isItemLicenseCompatible(itemId) {
 
 // Helper function to check if an item is compatible with selected animations
 export function isItemAnimationCompatible(itemId) {
-  const meta = window.itemMetadata?.[itemId];
+  const meta = catalog.getItemLite(itemId);
   return isNodeAnimationCompatible(meta);
 }
 

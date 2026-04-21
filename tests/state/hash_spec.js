@@ -19,30 +19,29 @@ import {
   resetHashCalledTimes,
   resetHashDeps,
 } from "../../sources/state/hash.js";
+import { resetCatalogForTests } from "../../sources/state/catalog.js";
 import {
-  loadCatalogFromFixtures,
-  resetCatalogForTests,
-} from "../../sources/state/catalog.js";
+  restoreAppCatalogAfterTest,
+  seedBrowserCatalog,
+} from "../browser-catalog-fixture.js";
 
 describe("state/hash.js", () => {
   let sandbox;
 
   beforeEach(() => {
     resetCatalogForTests();
-    window.aliasMetadata = {};
     sandbox = sinon.createSandbox();
     sandbox.stub(window, "addEventListener").callsFake(() => {});
-    sandbox.stub(window, "itemMetadata").value({});
     window.isTesting = true;
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     resetState();
     resetHashDeps();
     resetHashCalledTimes();
-    resetCatalogForTests();
     sandbox.restore();
     delete window.isTesting;
+    await restoreAppCatalogAfterTest();
   });
 
   describe("getHashParams", () => {
@@ -118,9 +117,9 @@ describe("state/hash.js", () => {
           body: { itemId: "1", variant: "light" },
         },
       });
-      window.itemMetadata = {
+      seedBrowserCatalog({
         1: { type_name: "body", name: "Body", variants: ["light"] },
-      };
+      });
 
       const params = getHashParamsforSelections(getState().selections);
       expect(params).to.deep.equal({
@@ -136,7 +135,7 @@ describe("state/hash.js", () => {
           body: { itemId: "1", recolor: "light" },
         },
       });
-      window.itemMetadata = {
+      seedBrowserCatalog({
         1: {
           type_name: "body",
           name: "Body",
@@ -144,7 +143,7 @@ describe("state/hash.js", () => {
             { material: "body", palettes: ["ulpc"], variants: ["light"] },
           ],
         },
-      };
+      });
 
       const params = getHashParamsforSelections(getState().selections);
       expect(params).to.deep.equal({
@@ -161,7 +160,7 @@ describe("state/hash.js", () => {
           eyes: { itemId: "1", subId: 1, recolor: "blue" },
         },
       });
-      window.itemMetadata = {
+      seedBrowserCatalog({
         1: {
           type_name: "body",
           name: "Body",
@@ -176,7 +175,7 @@ describe("state/hash.js", () => {
             },
           ],
         },
-      };
+      });
 
       const params = getHashParamsforSelections(getState().selections);
       expect(params).to.deep.equal({
@@ -195,9 +194,9 @@ describe("state/hash.js", () => {
           body: { itemId: "1", variant: "light" },
         },
       });
-      window.itemMetadata = {
+      seedBrowserCatalog({
         1: { type_name: "body", name: "Body", variants: ["light"] },
-      };
+      });
 
       syncSelectionsToHash();
       expect(getSetHashCalledTimes()).to.equal(1);
@@ -207,9 +206,9 @@ describe("state/hash.js", () => {
   describe("loadSelectionsFromHash", () => {
     it("should load selections from hash", () => {
       setHash("#body=Body_light");
-      window.itemMetadata = {
+      seedBrowserCatalog({
         1: { type_name: "body", name: "Body", variants: ["light"] },
-      };
+      });
 
       loadSelectionsFromHash();
       expect(getState().selections).to.deep.equal({
@@ -225,9 +224,9 @@ describe("state/hash.js", () => {
 
     it("should be case insensitive", () => {
       setHash("#body=Body_color_light");
-      window.itemMetadata = {
+      seedBrowserCatalog({
         1: { type_name: "body", name: "Body_Color", variants: ["light"] },
-      };
+      });
 
       loadSelectionsFromHash();
       expect(getState().selections).to.deep.equal({
@@ -243,7 +242,7 @@ describe("state/hash.js", () => {
 
     it("should load recolor options", () => {
       setHash("#body=Body_light");
-      window.itemMetadata = {
+      seedBrowserCatalog({
         1: {
           type_name: "body",
           name: "Body",
@@ -251,7 +250,7 @@ describe("state/hash.js", () => {
             { material: "body", palettes: ["ulpc"], variants: ["light"] },
           ],
         },
-      };
+      });
 
       loadSelectionsFromHash();
       expect(getState().selections).to.deep.equal({
@@ -267,7 +266,7 @@ describe("state/hash.js", () => {
 
     it("should load multiple recolor options", () => {
       setHash("#body=Body_light&eyes=Eyes_blue");
-      window.itemMetadata = {
+      seedBrowserCatalog({
         1: {
           type_name: "body",
           name: "Body",
@@ -282,7 +281,7 @@ describe("state/hash.js", () => {
             },
           ],
         },
-      };
+      });
 
       loadSelectionsFromHash();
       expect(getState().selections).to.deep.equal({
@@ -305,7 +304,7 @@ describe("state/hash.js", () => {
 
     it("should remove subcolor if doesn't exist on item", () => {
       setHash("#body=Body_light&eyes=Eyes_blue");
-      window.itemMetadata = {
+      seedBrowserCatalog({
         1: {
           type_name: "body",
           name: "Body",
@@ -313,7 +312,7 @@ describe("state/hash.js", () => {
             { material: "body", palettes: ["ulpc"], variants: ["light"] },
           ],
         },
-      };
+      });
 
       loadSelectionsFromHash();
       expect(getState().selections).to.deep.equal({
@@ -329,7 +328,7 @@ describe("state/hash.js", () => {
 
     it("should remove subcolor if type name does not match", () => {
       setHash("#body=Body_light&eyes=Eyes_blue");
-      window.itemMetadata = {
+      seedBrowserCatalog({
         1: {
           type_name: "body",
           name: "Body",
@@ -344,7 +343,7 @@ describe("state/hash.js", () => {
             },
           ],
         },
-      };
+      });
 
       loadSelectionsFromHash();
       expect(getState().selections).to.deep.equal({
@@ -360,20 +359,24 @@ describe("state/hash.js", () => {
 
     it("should forward to robe belt", () => {
       setHash("#body=Body_color_light&belt=Other_belts_white");
-      window.itemMetadata = {
-        1: { type_name: "body", name: "Body_Color", variants: ["light"] },
-        2: { type_name: "belt", name: "Other_belts", variants: ["white"] },
-        3: { type_name: "belt", name: "Robe_Belt", variants: ["white"] },
-      };
-      window.aliasMetadata = {
-        belt: {
-          Other_belts_white: {
-            typeName: "belt",
-            name: "Robe_Belt",
-            variant: "white",
+      seedBrowserCatalog(
+        {
+          1: { type_name: "body", name: "Body_Color", variants: ["light"] },
+          2: { type_name: "belt", name: "Other_belts", variants: ["white"] },
+          3: { type_name: "belt", name: "Robe_Belt", variants: ["white"] },
+        },
+        {
+          aliasMetadata: {
+            belt: {
+              Other_belts_white: {
+                typeName: "belt",
+                name: "Robe_Belt",
+                variant: "white",
+              },
+            },
           },
         },
-      };
+      );
 
       loadSelectionsFromHash();
       expect(getState().selections).to.deep.equal({
@@ -399,20 +402,24 @@ describe("state/hash.js", () => {
 
     it("should forward to waist = robe belt", () => {
       setHash("#body=Body_color_light&belt=Other_belts_white");
-      window.itemMetadata = {
-        1: { type_name: "body", name: "Body_Color", variants: ["light"] },
-        2: { type_name: "belt", name: "Other_belts", variants: ["white"] },
-        3: { type_name: "waist", name: "Robe_Belt", variants: ["white"] },
-      };
-      window.aliasMetadata = {
-        belt: {
-          Other_belts_white: {
-            typeName: "waist",
-            name: "Robe_Belt",
-            variant: "white",
+      seedBrowserCatalog(
+        {
+          1: { type_name: "body", name: "Body_Color", variants: ["light"] },
+          2: { type_name: "belt", name: "Other_belts", variants: ["white"] },
+          3: { type_name: "waist", name: "Robe_Belt", variants: ["white"] },
+        },
+        {
+          aliasMetadata: {
+            belt: {
+              Other_belts_white: {
+                typeName: "waist",
+                name: "Robe_Belt",
+                variant: "white",
+              },
+            },
           },
         },
-      };
+      );
 
       loadSelectionsFromHash();
       expect(getState().selections).to.deep.equal({
@@ -438,20 +445,24 @@ describe("state/hash.js", () => {
 
     it("should forward only type name, wrinkes > wrinkles", () => {
       setHash("#body=Body_color_light&wrinkes=Wrinkles_light");
-      window.itemMetadata = {
-        1: { type_name: "body", name: "Body_Color", variants: ["light"] },
-        2: { type_name: "belt", name: "Other_belts", variants: ["white"] },
-        4: { type_name: "wrinkles", name: "Wrinkles", variants: ["light"] },
-      };
-      window.aliasMetadata = {
-        wrinkes: {
-          "*": {
-            typeName: "wrinkles",
-            name: "*",
-            variant: "*",
+      seedBrowserCatalog(
+        {
+          1: { type_name: "body", name: "Body_Color", variants: ["light"] },
+          2: { type_name: "belt", name: "Other_belts", variants: ["white"] },
+          4: { type_name: "wrinkles", name: "Wrinkles", variants: ["light"] },
+        },
+        {
+          aliasMetadata: {
+            wrinkes: {
+              "*": {
+                typeName: "wrinkles",
+                name: "*",
+                variant: "*",
+              },
+            },
           },
         },
-      };
+      );
 
       loadSelectionsFromHash();
       expect(getState().selections).to.deep.equal({
@@ -475,32 +486,9 @@ describe("state/hash.js", () => {
       );
     });
 
-    it("loads selections from catalog indexes when window.itemMetadata is empty", () => {
-      loadCatalogFromFixtures({
-        itemMetadata: {
-          1: {
-            type_name: "body",
-            name: "Body",
-            variants: ["light"],
-            layers: {},
-            credits: [],
-          },
-        },
-        aliasMetadata: {},
-        categoryTree: { items: [], children: {} },
-        metadataIndexes: {
-          byTypeName: {
-            body: [
-              {
-                itemId: "1",
-                type_name: "body",
-                name: "Body",
-                variants: ["light"],
-              },
-            ],
-          },
-        },
-        paletteMetadata: { versions: {}, materials: {} },
+    it("loads selections from catalog only (no window metadata globals)", () => {
+      seedBrowserCatalog({
+        1: { type_name: "body", name: "Body", variants: ["light"] },
       });
 
       setHash("#body=Body_light");

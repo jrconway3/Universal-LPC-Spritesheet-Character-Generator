@@ -1,12 +1,9 @@
 /**
- * Loads generated metadata chunks (lite items, layers, credits, index, palette) via parallel
- * dynamic imports, registers them with `catalog`, and applies transitional `window` shims.
+ * Loads generated metadata chunks via parallel dynamic imports and registers them with `catalog`.
  *
  * Call `loadAllMetadata()` from the app entry (e.g. after DOM ready) before `initState` / canvas
- * work that reads `window.itemMetadata`. The browser test page (`tests_run.html`) triggers an
- * eager `loadAllMetadata()` at module evaluation so specs keep seeing populated `window.*`.
- *
- * Remove `window.*` assignments when callers use the catalog façade only (target ~Commit 8).
+ * work. The browser test page (`tests_run.html`) triggers an eager `loadAllMetadata()` at module
+ * evaluation so specs see a populated catalog.
  */
 import {
   registerFromCreditsModule,
@@ -27,9 +24,13 @@ function isBrowserTestHarnessPage() {
 
 let loadAllMetadataPromise = null;
 
+/** Test harness: allow `loadAllMetadata()` to run again after `resetCatalogForTests()`. */
+export function resetLoadAllMetadataCacheForTests() {
+  loadAllMetadataPromise = null;
+}
+
 /**
- * Parallel `import()` of the five metadata modules, `catalog.register*`, merged `itemMetadata`
- * for `window`, and transitional mirrors for tree / indexes / palette.
+ * Parallel `import()` of the five metadata modules and `catalog.register*`.
  * @returns {Promise<{ itemMetadata: Record<string, object>, aliasMetadata: object, categoryTree: object, paletteMetadata: object, metadataIndexes: object }>}
  */
 export function loadAllMetadata() {
@@ -64,14 +65,6 @@ export function loadAllMetadata() {
         layers: itemLayersMap[id] ?? {},
         credits: itemCreditsMap[id] ?? [],
       };
-    }
-
-    if (typeof window !== "undefined") {
-      window.itemMetadata = itemMetadata;
-      window.aliasMetadata = indexMod.aliasMetadata;
-      window.categoryTree = indexMod.categoryTree;
-      window.paletteMetadata = paletteMod.paletteMetadata;
-      window.metadataIndexes = indexMod.metadataIndexes;
     }
 
     return {

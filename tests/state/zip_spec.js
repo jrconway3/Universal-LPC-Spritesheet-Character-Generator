@@ -25,6 +25,10 @@ import { resetState } from "../../sources/state/hash.js";
 import { state } from "../../sources/state/state.js";
 import { ANIMATIONS, DIRECTIONS } from "../../sources/state/constants.js";
 import { createFakeJSZip } from "../helpers/fake-jszip.js";
+import {
+  restoreAppCatalogAfterTest,
+  seedBrowserCatalogMergedOnDist,
+} from "../browser-catalog-fixture.js";
 
 /**
  * `noExport` on an entry in ANIMATIONS is handled differently per export:
@@ -99,6 +103,10 @@ const CUSTOM_ANIMATION_ONLY_ITEM_METADATA = {
 };
 
 describe("state/zip.js", () => {
+  afterEach(async () => {
+    await restoreAppCatalogAfterTest();
+  });
+
   describe("exportSplitAnimations", () => {
     let sandbox;
     let fakeZip;
@@ -218,10 +226,7 @@ describe("state/zip.js", () => {
     });
 
     it("calls addAnimationToZipFolder for custom/<name>.png when addedCustomAnimations is non-empty after renderCharacter", async () => {
-      window.itemMetadata = {
-        ...(window.itemMetadata || {}),
-        ...ZIP_SPEC_ITEM_METADATA,
-      };
+      await seedBrowserCatalogMergedOnDist(ZIP_SPEC_ITEM_METADATA);
       state.selections = {
         body: {
           itemId: "body",
@@ -267,14 +272,11 @@ describe("state/zip.js", () => {
       return c;
     }
 
-    beforeEach(() => {
+    beforeEach(async () => {
       resetState();
       layers.length = 0;
 
-      window.itemMetadata = {
-        ...(window.itemMetadata || {}),
-        ...ZIP_SPEC_ITEM_METADATA,
-      };
+      await seedBrowserCatalogMergedOnDist(ZIP_SPEC_ITEM_METADATA);
 
       state.selections = {
         body: {
@@ -503,11 +505,10 @@ describe("state/zip.js", () => {
     });
 
     describe("issue #364 (custom-animation-only items)", () => {
-      beforeEach(() => {
-        window.itemMetadata = {
-          ...(window.itemMetadata || {}),
-          ...CUSTOM_ANIMATION_ONLY_ITEM_METADATA,
-        };
+      beforeEach(async () => {
+        await seedBrowserCatalogMergedOnDist(
+          CUSTOM_ANIMATION_ONLY_ITEM_METADATA,
+        );
         state.selections = {
           only: {
             itemId: "custom_only_whip",
@@ -642,14 +643,11 @@ describe("state/zip.js", () => {
       });
     });
 
-    beforeEach(() => {
+    beforeEach(async () => {
       resetState();
       layers.length = 0;
 
-      window.itemMetadata = {
-        ...(window.itemMetadata || {}),
-        ...ZIP_SPEC_ITEM_METADATA,
-      };
+      await seedBrowserCatalogMergedOnDist(ZIP_SPEC_ITEM_METADATA);
 
       state.selections = {
         body: {
@@ -1060,11 +1058,10 @@ describe("state/zip.js", () => {
     });
 
     describe("issue #364 (custom-animation-only items)", () => {
-      beforeEach(() => {
-        window.itemMetadata = {
-          ...(window.itemMetadata || {}),
-          ...CUSTOM_ANIMATION_ONLY_ITEM_METADATA,
-        };
+      beforeEach(async () => {
+        await seedBrowserCatalogMergedOnDist(
+          CUSTOM_ANIMATION_ONLY_ITEM_METADATA,
+        );
         state.selections = {
           only: {
             itemId: "custom_only_whip",
@@ -1267,10 +1264,7 @@ describe("state/zip.js", () => {
     });
 
     it("writes custom frame paths under custom/walk_128/ when renderCharacter adds that custom animation", async () => {
-      window.itemMetadata = {
-        ...(window.itemMetadata || {}),
-        ...ZIP_SPEC_ITEM_METADATA,
-      };
+      await seedBrowserCatalogMergedOnDist(ZIP_SPEC_ITEM_METADATA);
       state.selections = {
         body: {
           itemId: "body",

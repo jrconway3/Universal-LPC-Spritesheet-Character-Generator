@@ -39,6 +39,10 @@ import { paths as issue382ZipPathsSplitItemSheets } from "../fixtures/issue-382/
 import { paths as issue382ZipPathsSplitItemAnimations } from "../fixtures/issue-382/issue-382-zip-paths-split-item-animations.js";
 import { paths as issue382ZipPathsIndividualFrames } from "../fixtures/issue-382/issue-382-zip-paths-individual-frames.js";
 import { createFakeJSZip, sortedZipKeys } from "../helpers/fake-jszip.js";
+import {
+  restoreAppCatalogAfterTest,
+  seedBrowserCatalogMergedOnDist,
+} from "../browser-catalog-fixture.js";
 
 function applyImportedStateFromFixture() {
   Object.assign(state, importStateFromJSON(JSON.stringify(issue382Selections)));
@@ -48,17 +52,12 @@ describe("state/zip.js issue #382 regression (longsword + full outfit)", () => {
   let sandbox;
   let fakeZip;
   let alertStub;
-  let origItemMetadata;
 
   beforeEach(async () => {
     resetState();
     layers.length = 0;
 
-    origItemMetadata = window.itemMetadata;
-    window.itemMetadata = {
-      ...(window.itemMetadata || {}),
-      ...issue382ItemMetadata,
-    };
+    await seedBrowserCatalogMergedOnDist(issue382ItemMetadata);
 
     applyImportedStateFromFixture();
 
@@ -93,11 +92,11 @@ describe("state/zip.js issue #382 regression (longsword + full outfit)", () => {
     await renderCharacter(state.selections, state.bodyType);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     sandbox.restore();
     delete window.canvasRenderer;
     delete window.JSZip;
-    window.itemMetadata = origItemMetadata;
+    await restoreAppCatalogAfterTest();
     state.zipByAnimation.isRunning = false;
     state.zipByItem.isRunning = false;
     state.zipByAnimimationAndItem.isRunning = false;
