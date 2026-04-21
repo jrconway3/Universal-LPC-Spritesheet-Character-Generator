@@ -1,6 +1,10 @@
 /**
  * Loads generated metadata chunks (lite items, layers, credits, index, palette), merges
  * per-item records for legacy `window.itemMetadata`, and exposes structural data on `window`.
+ *
+ * Transitional (rollout Commit 4 / until ~Commit 8): mirrors catalog payloads onto `window` so
+ * `npm run dev` / `build` stay usable before the app migrates to `catalog.js` only. Remove these
+ * assignments when callers use the catalog façade.
  */
 import {
   aliasMetadata,
