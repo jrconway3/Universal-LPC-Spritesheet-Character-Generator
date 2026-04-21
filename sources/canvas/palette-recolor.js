@@ -93,13 +93,15 @@ function findMatchingColor(r, g, b, colorPairs, tolerance = 1) {
 }
 
 /**
- * Recolor an image using palette mapping (CPU implementation)
+ * Recolor an image using palette mapping (CPU implementation).
+ * Accepts a list of (source, target) palette mappings; all mappings are
+ * flattened into a single list of color pairs, then each pixel is tested
+ * against every pair in one pass.
  * @param {HTMLImageElement|HTMLCanvasElement} sourceImage - Source image
- * @param {string[]} sourcePalette - Array of hex colors (source)
- * @param {string[]} targetPalette - Array of hex colors (target)
+ * @param {Array<{source: string[], target: string[]}>} paletteMappings
  * @returns {HTMLCanvasElement} Recolored canvas
  */
-function recolorImageCPU(sourceImage, sourcePalette, targetPalette) {
+function recolorImageCPU(sourceImage, paletteMappings) {
   // Create offscreen canvas
   const canvas = document.createElement("canvas");
   canvas.width = sourceImage.width;
@@ -113,8 +115,12 @@ function recolorImageCPU(sourceImage, sourcePalette, targetPalette) {
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const pixels = imageData.data;
 
-  // Build color mapping
-  const colorPairs = buildColorMap(sourcePalette, targetPalette);
+  // Flatten all mappings into a single color pair list
+  const colorPairs = [];
+  for (const { source, target } of paletteMappings) {
+    const pairs = buildColorMap(source, target);
+    for (const p of pairs) colorPairs.push(p);
+  }
 
   // Recolor pixels with tolerance matching (like WebGL)
   for (let i = 0; i < pixels.length; i += 4) {
@@ -193,29 +199,28 @@ export function getPaletteRecolorConfig() {
 }
 
 /**
- * Recolor an image using palette mapping
- * Automatically uses WebGL if available, falls back to CPU
+ * Recolor an image using one or more palette mappings in a single pass.
+ * Automatically uses WebGL if available, falls back to CPU.
  * @param {HTMLImageElement|HTMLCanvasElement} sourceImage - Source image
- * @param {string[]} sourcePalette - Array of hex colors (source)
- * @param {string[]} targetPalette - Array of hex colors (target)
+ * @param {Array<{source: string[], target: string[]}>} paletteMappings
  * @returns {HTMLCanvasElement} Recolored canvas
  */
-export function recolorImage(sourceImage, sourcePalette, targetPalette) {
+export function recolorImage(sourceImage, paletteMappings) {
   const shouldUseWebGL = config.useWebGL && !config.forceCPU;
 
   if (shouldUseWebGL) {
     try {
       recolorStats.webgl++;
-      return recolorImageWebGL(sourceImage, sourcePalette, targetPalette);
+      return recolorImageWebGL(sourceImage, paletteMappings);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.warn("⚠️ WebGL recoloring failed, falling back to CPU:", error);
       recolorStats.fallback++;
-      return recolorImageCPU(sourceImage, sourcePalette, targetPalette);
+      return recolorImageCPU(sourceImage, paletteMappings);
     }
   }
   recolorStats.cpu++;
-  return recolorImageCPU(sourceImage, sourcePalette, targetPalette);
+  return recolorImageCPU(sourceImage, paletteMappings);
 }
 
 /**
@@ -232,33 +237,84 @@ export async function loadPalette(url) {
 }
 
 /**
- * Get image to draw - applies recoloring if needed based on palette configuration
- * Async because palette loading is lazy (loads on first use)
+ * Bounded LRU cache of recolored canvases, keyed by (spritePath, recolors).
+ * A JS Map preserves insertion order; `get → delete → set` moves an entry to
+ * the end (most-recently-used), and eviction always drops the head.
+ *
+ * We store the in-flight Promise rather than the resolved canvas so that
+ * concurrent callers for the same key (e.g. main render + a tree preview)
+ * share one recolor operation instead of starting duplicates.
+ */
+const RECOLOR_CACHE_CAP = 250;
+const recolorCache = new Map();
+
+/**
+ * Get image to draw - applies recoloring if needed based on palette configuration.
+ * Async because palette loading is lazy (loads on first use). When `spritePath`
+ * is supplied, the recolored result is memoized so repeated renders for the
+ * same (spritePath, recolors) skip the entire recolor pipeline.
+ *
  * @param {HTMLImageElement|HTMLCanvasElement} img - Source image
  * @param {string} itemId - Item identifier
  * @param {Object} recolors - Recolor names
+ * @param {string|null} [spritePath] - Source sprite URL (enables caching when set)
  * @returns {Promise<HTMLImageElement|HTMLCanvasElement>} Image or recolored canvas to draw
  */
-export async function getImageToDraw(img, itemId, recolors) {
+export async function getImageToDraw(img, itemId, recolors, spritePath = null) {
   if (!recolors) {
     return img; // No recolor specified, return original image
   }
   const meta = window.itemMetadata?.[itemId];
   const paletteConfig = getPalettesForItem(itemId, meta);
+  if (!paletteConfig) {
+    return img; // Item doesn't use palette recoloring
+  }
 
-  // Only recolor if item uses a palette and color is not the source color
-  if (paletteConfig && recolors) {
-    try {
-      return await recolorWithPalette(img, recolors, paletteConfig);
-    } catch (err) {
-      console.error(
-        `Failed to recolor ${paletteConfig[meta.type_name].material} color ${JSON.stringify(recolors)}:`,
-        err,
-      );
-      return img; // Fallback to original on error
+  const cacheKey = spritePath
+    ? `${spritePath}|${JSON.stringify(recolors)}`
+    : null;
+  if (cacheKey) {
+    const hit = recolorCache.get(cacheKey);
+    if (hit) {
+      // LRU touch
+      recolorCache.delete(cacheKey);
+      recolorCache.set(cacheKey, hit);
+      return hit;
     }
   }
-  return img; // Return original if no recoloring needed
+
+  const promise = recolorWithPalette(img, recolors, paletteConfig);
+
+  if (cacheKey) {
+    recolorCache.set(cacheKey, promise);
+    // On rejection, drop the entry so retries aren't poisoned by a stale failure.
+    promise.catch(() => {
+      if (recolorCache.get(cacheKey) === promise) {
+        recolorCache.delete(cacheKey);
+      }
+    });
+    while (recolorCache.size > RECOLOR_CACHE_CAP) {
+      const oldestKey = recolorCache.keys().next().value;
+      recolorCache.delete(oldestKey);
+    }
+  }
+
+  try {
+    return await promise;
+  } catch (err) {
+    console.error(
+      `Failed to recolor ${paletteConfig[meta.type_name].material} color ${JSON.stringify(recolors)}:`,
+      err,
+    );
+    return img; // Fallback to original on error
+  }
+}
+
+/**
+ * Clear the recolor cache. Mainly for tests; callable at runtime too.
+ */
+export function clearRecolorCache() {
+  recolorCache.clear();
 }
 
 /**
@@ -274,9 +330,10 @@ export async function recolorWithPalette(
   targetColors,
   sourcePalettes,
 ) {
-  // Loop All Palettes to Recolor
+  // Gather all (source, target) palette mappings so they can be applied
+  // in a single shader pass.
+  const mappings = [];
   for (const [typeName, palette] of Object.entries(sourcePalettes)) {
-    // Get Target Palette
     const targetPalette = getTargetPalette(
       palette.material,
       targetColors[typeName],
@@ -286,10 +343,12 @@ export async function recolorWithPalette(
         `Unknown target palette color: ${JSON.stringify(targetColors)}`,
       );
     }
-
-    sourceImage = recolorImage(sourceImage, palette.colors, targetPalette);
+    mappings.push({ source: palette.colors, target: targetPalette });
   }
-  return sourceImage;
+
+  return mappings.length > 0
+    ? recolorImage(sourceImage, mappings)
+    : sourceImage;
 }
 
 /**
@@ -359,13 +418,18 @@ export async function drawRecolorPreview(
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   // Draw each layer in zPos order
   imagesLoaded = 0;
-  for (const { img } of loadedLayers) {
+  for (const { img, layer } of loadedLayers) {
     if (isStaleRender()) {
       return 0;
     }
 
     if (img) {
-      const imageToDraw = await getImageToDraw(img, itemId, selectedColors);
+      const imageToDraw = await getImageToDraw(
+        img,
+        itemId,
+        selectedColors,
+        layer.path,
+      );
       const size = compactDisplay ? COMPACT_FRAME_SIZE : FRAME_SIZE;
       const srcX = previewCol * FRAME_SIZE + previewXOffset;
       const srcY = previewRow * FRAME_SIZE + previewYOffset;

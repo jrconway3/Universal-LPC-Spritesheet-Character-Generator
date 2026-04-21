@@ -129,32 +129,34 @@ function hexToRgbNormalized(hex) {
 }
 
 /**
- * Create a palette texture from source and target palettes
+ * Create a palette texture from one or more palette mappings.
+ * All source colors are concatenated into row 0; target colors at the same
+ * index sit in row 1. The shader loops up to `u_paletteSize` slots, so N
+ * regions can be recolored in a single pass by packing them back-to-back.
  * @param {WebGLRenderingContext} gl - WebGL context
- * @param {string[]} sourcePalette - Array of hex colors (source)
- * @param {string[]} targetPalette - Array of hex colors (target)
- * @returns {WebGLTexture} Palette texture
+ * @param {Array<{source: string[], target: string[]}>} paletteMappings
+ * @returns {{ texture: WebGLTexture, totalSize: number }}
  */
-function createPaletteTexture(gl, sourcePalette, targetPalette) {
+function createPaletteTexture(gl, paletteMappings) {
   const data = new Uint8Array(32 * 2 * 4); // 32 colors × 2 rows × RGBA
+  const TARGET_ROW_OFFSET = 32 * 4;
 
-  // First row: source colors
-  for (let i = 0; i < sourcePalette.length; i++) {
-    const rgb = hexToRgbNormalized(sourcePalette[i]);
-    data[i * 4 + 0] = Math.round(rgb[0] * 255);
-    data[i * 4 + 1] = Math.round(rgb[1] * 255);
-    data[i * 4 + 2] = Math.round(rgb[2] * 255);
-    data[i * 4 + 3] = 255;
-  }
+  let slot = 0;
+  for (const { source, target } of paletteMappings) {
+    const n = Math.min(source.length, target.length);
+    for (let i = 0; i < n && slot < 32; i++, slot++) {
+      const srcRgb = hexToRgbNormalized(source[i]);
+      data[slot * 4 + 0] = Math.round(srcRgb[0] * 255);
+      data[slot * 4 + 1] = Math.round(srcRgb[1] * 255);
+      data[slot * 4 + 2] = Math.round(srcRgb[2] * 255);
+      data[slot * 4 + 3] = 255;
 
-  // Second row: target colors
-  for (let i = 0; i < targetPalette.length; i++) {
-    const rgb = hexToRgbNormalized(targetPalette[i]);
-    const offset = 32 * 4; // Second row offset
-    data[offset + i * 4 + 0] = Math.round(rgb[0] * 255);
-    data[offset + i * 4 + 1] = Math.round(rgb[1] * 255);
-    data[offset + i * 4 + 2] = Math.round(rgb[2] * 255);
-    data[offset + i * 4 + 3] = 255;
+      const tgtRgb = hexToRgbNormalized(target[i]);
+      data[TARGET_ROW_OFFSET + slot * 4 + 0] = Math.round(tgtRgb[0] * 255);
+      data[TARGET_ROW_OFFSET + slot * 4 + 1] = Math.round(tgtRgb[1] * 255);
+      data[TARGET_ROW_OFFSET + slot * 4 + 2] = Math.round(tgtRgb[2] * 255);
+      data[TARGET_ROW_OFFSET + slot * 4 + 3] = 255;
+    }
   }
 
   const texture = gl.createTexture();
@@ -175,7 +177,7 @@ function createPaletteTexture(gl, sourcePalette, targetPalette) {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-  return texture;
+  return { texture, totalSize: slot };
 }
 
 /**
@@ -265,13 +267,15 @@ function initSharedWebGL() {
 }
 
 /**
- * Recolor an image using WebGL palette mapping (with shared context)
+ * Recolor an image using WebGL palette mapping (with shared context).
+ * Accepts a list of (source, target) palette mappings and applies them all in
+ * a single shader pass by packing them into one palette texture. The combined
+ * total must fit within the 32-slot palette texture.
  * @param {HTMLImageElement|HTMLCanvasElement} sourceImage - Source image
- * @param {string[]} sourcePalette - Array of hex colors (source)
- * @param {string[]} targetPalette - Array of hex colors (target)
+ * @param {Array<{source: string[], target: string[]}>} paletteMappings
  * @returns {HTMLCanvasElement} Recolored canvas
  */
-export function recolorImageWebGL(sourceImage, sourcePalette, targetPalette) {
+export function recolorImageWebGL(sourceImage, paletteMappings) {
   // Initialize shared resources if needed
   if (!sharedGL) {
     initSharedWebGL();
@@ -295,10 +299,9 @@ export function recolorImageWebGL(sourceImage, sourcePalette, targetPalette) {
 
     // Create textures (these are temporary and must be created per operation)
     const imageTexture = createImageTexture(gl, sourceImage);
-    const paletteTexture = createPaletteTexture(
+    const { texture: paletteTexture, totalSize } = createPaletteTexture(
       gl,
-      sourcePalette,
-      targetPalette,
+      paletteMappings,
     );
 
     // Set uniforms
@@ -311,7 +314,7 @@ export function recolorImageWebGL(sourceImage, sourcePalette, targetPalette) {
 
     gl.uniform1i(imageLocation, 0);
     gl.uniform1i(paletteLocation, 1);
-    gl.uniform1f(paletteSizeLocation, sourcePalette.length);
+    gl.uniform1f(paletteSizeLocation, totalSize);
 
     // Bind textures
     gl.activeTexture(gl.TEXTURE0);
