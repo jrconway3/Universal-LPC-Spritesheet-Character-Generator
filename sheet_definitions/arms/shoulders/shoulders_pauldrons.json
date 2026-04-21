@@ -3,10 +3,10 @@
   "layer_1": {
     "zPos": 60,
     "male": "shoulders/pauldrons/male/",
-    "female": "shoulders/pauldrons/female/",
+    "female": "shoulders/pauldrons/thin/",
     "muscular": "shoulders/pauldrons/male/",
-    "pregnant": "shoulders/pauldrons/female/",
-    "teen": "shoulders/pauldrons/female/"
+    "pregnant": "shoulders/pauldrons/thin/",
+    "teen": "shoulders/pauldrons/thin/"
   },
   "animations": [
     "spellcast",

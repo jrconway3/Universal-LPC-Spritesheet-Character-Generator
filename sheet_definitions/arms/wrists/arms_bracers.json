@@ -3,8 +3,9 @@
   "layer_1": {
     "zPos": 70,
     "male": "arms/bracers/male/",
-    "female": "arms/bracers/female/",
-    "pregnant": "arms/bracers/female/",
+    "female": "arms/bracers/thin/",
+    "pregnant": "arms/bracers/thin/",
+    "teen": "arms/bracers/thin/",
     "muscular": "arms/bracers/male/"
   },
   "animations": [
