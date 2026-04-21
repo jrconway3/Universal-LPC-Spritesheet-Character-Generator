@@ -65,7 +65,7 @@ export default defineConfig(({ command }) => ({
     target: false,
   },
   plugins: [
-    ...itemMetadataPlugins(),
+    ...itemMetadataPlugins(command),
     vitePluginBundledCssAfterBulma(),
     getSpritesheetsPlugin(command),
   ],

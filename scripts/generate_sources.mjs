@@ -22,7 +22,7 @@ import {
   readDirTree,
 } from "./generateSources/state.mjs";
 
-export function generateSources(deps = {}) {
+export function generateSources(deps = {}, env = "production") {
   const writeFileSyncFn = deps.writeFileSync ?? fs.writeFileSync;
   const parseTreeFn = deps.parseTreeFn ?? parseTree;
   const parseItemFn = deps.parseItemFn ?? parseItem;
@@ -73,7 +73,7 @@ export function generateSources(deps = {}) {
 
   // Build and write item-metadata.js (optional: CLI / tests skip; Vite plugin enables)
   if (writeMetadata) {
-    const metadataJS = buildMetadataJs();
+    const metadataJS = buildMetadataJs(env);
     try {
       writeFileSyncFn(metadataOutputPath, metadataJS);
       process.stdout.write("Item Metadata JS Updated!\n");

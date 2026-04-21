@@ -201,6 +201,8 @@ For visual tests only, **`npx playwright install chromium`** is enough. The Argo
 
 The runtime UI loads **`dist/item-metadata.js`**, which Vite generates from the sheet JSON under **`sheet_definitions/`** (and related inputs) when you run **`npm run dev`** or **`npm run build`**. Do not edit that file by hand.
 
+The JSON embedded in each `const` assignment is **pretty-printed** when Vite runs in development (**`npm run dev`**) and **compact** (no indentation inside those objects) when Vite runs a production build (**`npm run build`**). Inspecting **`dist/item-metadata.js`** after a dev run is easier; CI and release artifacts use the compact form.
+
 **Credits and z-positions (committed files)** — From the project root:
 
 ```bash
