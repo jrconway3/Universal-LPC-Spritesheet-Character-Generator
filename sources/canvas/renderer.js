@@ -107,6 +107,8 @@ export function resetRenderCharacterQueueForTests() {
 /**
  * Render character based on selections. Waits for layers metadata (S5), then runs serialized so
  * hash, defaults, and App updates cannot overlap expensive full renders.
+ * The `onLayersReady` wait, dynamic `import` of `state`, and the serialized render queue
+ * are outside the `renderCharacter` performance measure; marks wrap compositing in `runRenderCharacter` only.
  * @param {Object} selections - Selected items
  * @param {string} bodyType - Body type
  * @param {HTMLCanvasElement} targetCanvas - Canvas to render to (defaults to main canvas)
@@ -129,20 +131,20 @@ export async function renderCharacter(
 }
 
 async function runRenderCharacter(selections, bodyType, targetCanvas) {
-  // Mark start for profiling
   const profiler = window.profiler;
-  if (profiler) {
-    profiler.mark("renderCharacter:start");
-  }
 
   // Build list of items to draw
   itemsToDraw = [];
   addedCustomAnimations = new Set(); // Track which custom animations we've added
 
-  // Import state to access custom uploaded image
+  // Import state to access custom uploaded image (kept out of `renderCharacter` profile span)
   const appState = await import("../state/state.js").then((m) => m.state);
   appState.renderCharacter.isRendering = true;
   m.redraw();
+
+  if (profiler) {
+    profiler.mark("renderCharacter:start");
+  }
 
   try {
     // Use provided canvas or default to main canvas

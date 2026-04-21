@@ -21,6 +21,12 @@ describe("canvas/load-image.js", () => {
       expect(img1).to.equal(img2); // Cached image should be returned
     });
 
+    it("should share one in-flight request when the same src is requested concurrently", async () => {
+      const src = "/spritesheets/arms/bracers/female/hurt/bronze.png";
+      const [a, b] = await Promise.all([loadImage(src), loadImage(src)]);
+      expect(a).to.equal(b);
+    });
+
     it("should reject if the image fails to load", async () => {
       const src = "/spritesheets/arms/bracers/thin/invalid.png";
       try {

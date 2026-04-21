@@ -1,6 +1,8 @@
 import { debugWarn } from "../utils/debug.js";
 
 let loadedImages = {};
+/** @type {Map<string, Promise<HTMLImageElement>>} In-flight loads: same `src` shares one `Image` and one profiler span. */
+const inFlight = new Map();
 
 /**
  * Clears the in-memory image cache. Browser tests call this so a stubbed
@@ -8,19 +10,23 @@ let loadedImages = {};
  */
 export function resetImageLoadCache() {
   loadedImages = {};
+  inFlight.clear();
 }
 
 /**
  * Load an image
  */
 export function loadImage(src) {
-  return new Promise((resolve, reject) => {
-    if (loadedImages[src]) {
-      resolve(loadedImages[src]);
-      return;
-    }
+  if (loadedImages[src]) {
+    return Promise.resolve(loadedImages[src]);
+  }
+  const existing = inFlight.get(src);
+  if (existing) {
+    return existing;
+  }
 
-    // Mark start of image load for profiling
+  const p = new Promise((resolve, reject) => {
+    // Mark start of image load (after cache/inFlight checks — span is actual fetch/decode)
     const profiler = window.profiler;
     if (profiler) {
       profiler.mark(`image-load:${src}:start`);
@@ -29,8 +35,8 @@ export function loadImage(src) {
     const img = new Image();
     img.onload = () => {
       loadedImages[src] = img;
+      inFlight.delete(src);
 
-      // Mark end and measure
       if (profiler) {
         profiler.mark(`image-load:${src}:end`);
         profiler.measure(
@@ -43,11 +49,14 @@ export function loadImage(src) {
       resolve(img);
     };
     img.onerror = () => {
+      inFlight.delete(src);
       console.error(`Failed to load image: ${src}`);
       reject(new Error(`Failed to load ${src}`));
     };
     img.src = src;
   });
+  inFlight.set(src, p);
+  return p;
 }
 
 /**
