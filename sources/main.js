@@ -70,11 +70,6 @@ window.profiler = profiler;
 // Expose canvas renderer to global scope for compatibility
 window.canvasRenderer = canvasRenderer;
 
-/** Playwright / Argos: resolves when all catalog chunks (index … layers) are registered. */
-window.__LPC_waitCatalogAllReady = async () => {
-  await catalogReady.onAllReady;
-};
-
 // Expose initialization function to be called after canvas is ready
 window.setDefaultSelections = async function () {
   await initState();

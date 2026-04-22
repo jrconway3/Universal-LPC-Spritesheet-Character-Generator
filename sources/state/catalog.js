@@ -312,3 +312,13 @@ export function resetCatalogForTests() {
   itemLayersStore = null;
   paletteMetadataStore = null;
 }
+
+if (typeof globalThis !== "undefined") {
+  /**
+   * Playwright, Argos, and `dump-computed-styles` (production / vite preview).
+   * Inlined here so the assignment is not tree-shaken (uses `catalogReady` from this module).
+   */
+  globalThis.__LPC_waitCatalogAllReady = async () => {
+    await catalogReady.onAllReady;
+  };
+}

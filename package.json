@@ -1,4 +1,7 @@
 {
+  "sideEffects": [
+    "sources/state/catalog.js"
+  ],
   "scripts": {
     "dev": "vite",
     "prebuild": "rimraf \"dist/!(spritesheets)\"",
