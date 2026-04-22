@@ -22,7 +22,8 @@ describe("canvas/load-image.js", () => {
     });
 
     it("should share one in-flight request when the same src is requested concurrently", async () => {
-      const src = "/spritesheets/arms/bracers/female/hurt/bronze.png";
+      // Not thin/hurt.png — earlier tests already cache that URL.
+      const src = "/spritesheets/arms/bracers/thin/walk.png";
       const [a, b] = await Promise.all([loadImage(src), loadImage(src)]);
       expect(a).to.equal(b);
     });

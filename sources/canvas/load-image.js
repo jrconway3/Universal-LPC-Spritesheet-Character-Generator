@@ -25,37 +25,47 @@ export function loadImage(src) {
     return existing;
   }
 
-  const p = new Promise((resolve, reject) => {
-    // Mark start of image load (after cache/inFlight checks — span is actual fetch/decode)
-    const profiler = window.profiler;
-    if (profiler) {
-      profiler.mark(`image-load:${src}:start`);
-    }
-
-    const img = new Image();
-    img.onload = () => {
-      loadedImages[src] = img;
-      inFlight.delete(src);
-
-      if (profiler) {
-        profiler.mark(`image-load:${src}:end`);
-        profiler.measure(
-          `image-load:${src}`,
-          `image-load:${src}:start`,
-          `image-load:${src}:end`,
-        );
-      }
-
-      resolve(img);
-    };
-    img.onerror = () => {
-      inFlight.delete(src);
-      console.error(`Failed to load image: ${src}`);
-      reject(new Error(`Failed to load ${src}`));
-    };
-    img.src = src;
+  // Register in-flight *before* creating the Image. The Promise constructor runs
+  // the executor synchronously; if we only `set` after `new Promise(...)`, a
+  // second concurrent `loadImage(src)` can miss `inFlight` and create a second
+  // `Image` for the same `src` (fails "share one in-flight request" in tests).
+  let resolve;
+  let reject;
+  const p = new Promise((res, rej) => {
+    resolve = res;
+    reject = rej;
   });
   inFlight.set(src, p);
+
+  // Mark start of image load (span is actual fetch/decode)
+  const profiler = window.profiler;
+  if (profiler) {
+    profiler.mark(`image-load:${src}:start`);
+  }
+
+  const img = new Image();
+  img.onload = () => {
+    loadedImages[src] = img;
+    inFlight.delete(src);
+
+    if (profiler) {
+      profiler.mark(`image-load:${src}:end`);
+      profiler.measure(
+        `image-load:${src}`,
+        `image-load:${src}:start`,
+        `image-load:${src}:end`,
+      );
+    }
+
+    resolve(img);
+  };
+  img.onerror = () => {
+    inFlight.delete(src);
+    console.error(`Failed to load image: ${src}`);
+    reject(new Error(`Failed to load ${src}`));
+  };
+  img.src = src;
+
   return p;
 }
 
