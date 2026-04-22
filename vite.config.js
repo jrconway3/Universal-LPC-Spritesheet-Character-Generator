@@ -4,6 +4,7 @@ import { defineConfig } from "vite";
 import { getSpritesheetsPlugin } from "./vite/get-spritesheets-plugin.js";
 import { vitePluginPreviewServeDistSpritesheets } from "./vite/vite-plugin-preview-serve-dist-spritesheets.js";
 import { vitePluginBundledCssAfterBulma } from "./vite/vite-plugin-bundled-css-after-bulma.js";
+import { vitePluginPurgeCriticalCss } from "./vite/vite-plugin-purge-critical-css.js";
 import { vitePluginMetadataModulePreload } from "./vite/vite-plugin-metadata-modulepreload.js";
 import {
   itemMetadataCodeSplittingGroups,
@@ -67,5 +68,6 @@ export default defineConfig(({ command }) => ({
     vitePluginMetadataModulePreload(),
     vitePluginBundledCssAfterBulma(),
     getSpritesheetsPlugin(command),
+    vitePluginPurgeCriticalCss(),
   ],
 }));
