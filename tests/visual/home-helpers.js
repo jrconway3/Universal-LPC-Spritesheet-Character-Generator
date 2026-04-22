@@ -21,15 +21,32 @@ export async function scrollVisualCaptureToTop(page) {
  * @param {import('@playwright/test').Page} page
  * @param {string} [baseUrl] Defaults to PLAYWRIGHT_TEST_BASE_URL or http://127.0.0.1:4173
  */
-/** Await `catalogReady.onAllReady` in the page (Playwright + Argos). */
+/**
+ * Await `catalogReady.onAllReady` in the page when the production build exposes
+ * `globalThis.__LPC_waitCatalogAllReady` (see `sources/state/catalog.js`).
+ * If that hook is missing (e.g. stale `dist` on another worktree’s preview), fall
+ * back to the shell: `#mithril-filters` exists and has dropped the `loading` class.
+ */
 export async function waitForCatalogAllReady(page) {
   /* Playwright: options are the 3rd arg; the 2nd is passed to the page function. */
   await page.waitForFunction(
-    () => typeof window.__LPC_waitCatalogAllReady === "function",
+    () => {
+      if (typeof globalThis.__LPC_waitCatalogAllReady === "function") {
+        return true;
+      }
+      const el = document.getElementById("mithril-filters");
+      return !!(el && !el.classList.contains("loading"));
+    },
     undefined,
     { timeout: 120_000 },
   );
-  await page.evaluate(() => window.__LPC_waitCatalogAllReady());
+  if (
+    await page.evaluate(
+      () => typeof globalThis.__LPC_waitCatalogAllReady === "function",
+    )
+  ) {
+    await page.evaluate(() => globalThis.__LPC_waitCatalogAllReady());
+  }
 }
 
 export async function gotoHomepageReady(
