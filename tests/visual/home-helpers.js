@@ -22,10 +22,11 @@ export async function scrollVisualCaptureToTop(page) {
  * @param {string} [baseUrl] Defaults to PLAYWRIGHT_TEST_BASE_URL or http://127.0.0.1:4173
  */
 /**
- * Await `catalogReady.onAllReady` in the page when the production build exposes
+ * Await `catalogReady.onAllReady` when the build exposes
  * `globalThis.__LPC_waitCatalogAllReady` (see `sources/state/catalog.js`).
- * If that hook is missing (e.g. stale `dist` on another worktree’s preview), fall
- * back to the shell: `#mithril-filters` exists and has dropped the `loading` class.
+ * Otherwise, if `__LPC_arePaletteModalMetadataChunksReady` exists, wait until it is true
+ * (so palette / skintone modals are not opened while the UI still says “Loading layer data…”).
+ * Legacy dists without those hooks: only then fall back to “#mithril-filters” un-spinner.
  */
 export async function waitForCatalogAllReady(page) {
   /* Playwright: options are the 3rd arg; the 2nd is passed to the page function. */
@@ -35,7 +36,16 @@ export async function waitForCatalogAllReady(page) {
         return true;
       }
       const el = document.getElementById("mithril-filters");
-      return !!(el && !el.classList.contains("loading"));
+      if (!el || el.classList.contains("loading")) {
+        return false;
+      }
+      if (
+        typeof globalThis.__LPC_arePaletteModalMetadataChunksReady ===
+        "function"
+      ) {
+        return globalThis.__LPC_arePaletteModalMetadataChunksReady();
+      }
+      return true;
     },
     undefined,
     { timeout: 120_000 },

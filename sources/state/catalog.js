@@ -321,4 +321,16 @@ if (typeof globalThis !== "undefined") {
   globalThis.__LPC_waitCatalogAllReady = async () => {
     await catalogReady.onAllReady;
   };
+  /**
+   * Same gates as `PaletteSelectModal` (split metadata: palette + layers must be present).
+   * Used when a stale preview build omits `__LPC_waitCatalogAllReady` so we do not treat
+   * “shell un-spinner” as sufficient — otherwise the skintone modal stays on
+   * “Loading layer data…” and `data-previews-ready` never flips to true.
+   */
+  globalThis.__LPC_arePaletteModalMetadataChunksReady = () =>
+    isIndexReady() &&
+    isLiteReady() &&
+    isCreditsReady() &&
+    isPaletteReady() &&
+    isLayersReady();
 }
