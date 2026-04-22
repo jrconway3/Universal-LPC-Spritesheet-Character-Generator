@@ -145,6 +145,10 @@ export function isHashHydrationReady() {
   return isIndexReady() && isLiteReady();
 }
 
+export function isAllReady() {
+  return isIndexReady() && isLiteReady() && isCreditsReady() && isLayersReady();
+}
+
 export function getAliasMetadata() {
   return aliasMetadataStore;
 }

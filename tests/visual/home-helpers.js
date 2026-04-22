@@ -21,6 +21,15 @@ export async function scrollVisualCaptureToTop(page) {
  * @param {import('@playwright/test').Page} page
  * @param {string} [baseUrl] Defaults to PLAYWRIGHT_TEST_BASE_URL or http://127.0.0.1:4173
  */
+/** Await `catalogReady.onAllReady` in the page (Playwright + Argos). */
+export async function waitForCatalogAllReady(page) {
+  await page.waitForFunction(
+    () => typeof window.__LPC_waitCatalogAllReady === "function",
+    { timeout: 120_000 },
+  );
+  await page.evaluate(() => window.__LPC_waitCatalogAllReady());
+}
+
 export async function gotoHomepageReady(
   page,
   baseUrl = process.env.PLAYWRIGHT_TEST_BASE_URL ?? "http://127.0.0.1:4173",
@@ -32,6 +41,7 @@ export async function gotoHomepageReady(
   } catch {
     // Some environments never reach idle (long-polling, etc.); continue.
   }
+  await waitForCatalogAllReady(page);
   await page.waitForSelector("#mithril-preview canvas", {
     state: "visible",
     timeout: 120_000,
