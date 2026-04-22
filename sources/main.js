@@ -80,10 +80,14 @@ window.setDefaultSelections = async function () {
   await initState();
 };
 
+// Start metadata chunk fetches as soon as the entry module runs (no DOM required),
+// so download/parse overlaps HTML parse and the rest of this file.
+void loadAllMetadata();
+
 /** Commit 10 step 1: single-flight hash / init after index + lite are both registered. */
 let hashHydrationInitDone = false;
 
-// Wait for DOM to be ready, then mount UI and load metadata progressively
+// Wait for DOM to be ready, then mount UI; catalog may already be loading or ready.
 document.addEventListener("DOMContentLoaded", () => {
   m.mount(document.getElementById("mithril-filters"), App);
   m.mount(document.getElementById("mithril-preview"), AnimationPreview);
@@ -93,8 +97,6 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
   clearShellLoadingClass();
-
-  void loadAllMetadata();
 
   void (async () => {
     await Promise.all([catalogReady.onIndexReady, catalogReady.onLiteReady]);
