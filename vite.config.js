@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
 import { getSpritesheetsPlugin } from "./vite/get-spritesheets-plugin.js";
 import { vitePluginBundledCssAfterBulma } from "./vite/vite-plugin-bundled-css-after-bulma.js";
+import { vitePluginMetadataModulePreload } from "./vite/vite-plugin-metadata-modulepreload.js";
 import {
   itemMetadataCodeSplittingGroups,
   itemMetadataPlugins,
@@ -61,6 +62,7 @@ export default defineConfig(({ command }) => ({
   },
   plugins: [
     ...itemMetadataPlugins(command),
+    vitePluginMetadataModulePreload(),
     vitePluginBundledCssAfterBulma(),
     getSpritesheetsPlugin(command),
   ],
