@@ -23,8 +23,10 @@ export async function scrollVisualCaptureToTop(page) {
  */
 /** Await `catalogReady.onAllReady` in the page (Playwright + Argos). */
 export async function waitForCatalogAllReady(page) {
+  /* Playwright: options are the 3rd arg; the 2nd is passed to the page function. */
   await page.waitForFunction(
     () => typeof window.__LPC_waitCatalogAllReady === "function",
+    undefined,
     { timeout: 120_000 },
   );
   await page.evaluate(() => window.__LPC_waitCatalogAllReady());
@@ -57,6 +59,7 @@ export async function gotoHomepageReady(
         !preview.querySelector(".loading") && !sheet.querySelector(".loading")
       );
     },
+    undefined,
     { timeout: 120_000 },
   );
   await page.evaluate(
@@ -143,9 +146,11 @@ export async function openHumanMaleSkintonePalette(page) {
     .locator('.palette-modal[data-previews-ready="true"]')
     .waitFor({ state: "visible", timeout: 120_000 });
   /* Counter + data attribute can settle before GPU/canvas pixels are visible; sample alpha. */
-  await page.waitForFunction(paletteModalPreviewCanvasesHaveOpaquePixels, {
-    timeout: 120_000,
-  });
+  await page.waitForFunction(
+    paletteModalPreviewCanvasesHaveOpaquePixels,
+    undefined,
+    { timeout: 120_000 },
+  );
   /* Last click leaves the pointer over the tree; :hover adds white-ter on variant tiles and * differs by viewport. Move off so Argos + computed-style dumps match across breakpoints. */
   await page.mouse.move(0, 0);
 }

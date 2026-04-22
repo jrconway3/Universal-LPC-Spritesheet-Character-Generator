@@ -25,6 +25,8 @@
  *
  * All presets + diffs at once:
  *   node scripts/computed-style-diff-all.mjs
+ *
+ * Verbose stderr (timings + browser console): LPC_DEBUG_COMPUTED_STYLE=1
  */
 
 import fs from "node:fs";

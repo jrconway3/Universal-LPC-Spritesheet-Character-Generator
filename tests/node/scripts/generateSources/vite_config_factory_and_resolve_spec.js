@@ -44,13 +44,14 @@ test("vite.config.js factory (build): aliases, chunk groups, plugin order", asyn
   );
   assert.deepEqual(groupNames, ["vendor", ...expectedMetadataChunkNames()]);
 
-  assert.equal(cfg.plugins[0].name, "vite-plugin-item-metadata");
-  assert.equal(cfg.plugins[1].name, "vite-plugin-metadata-modulepreload");
-  assert.equal(cfg.plugins[2].name, "bundled-css-after-bulma");
+  assert.equal(cfg.plugins[0].name, "preview-serve-dist-spritesheets");
+  assert.equal(cfg.plugins[1].name, "vite-plugin-item-metadata");
+  assert.equal(cfg.plugins[2].name, "vite-plugin-metadata-modulepreload");
+  assert.equal(cfg.plugins[3].name, "bundled-css-after-bulma");
   if (process.platform === "win32") {
-    assert.equal(cfg.plugins[3].name, "copy-spritesheets-robocopy");
+    assert.equal(cfg.plugins[4].name, "copy-spritesheets-robocopy");
   } else {
-    assert.equal(cfg.plugins[3].name, "vite:plugin:run");
+    assert.equal(cfg.plugins[4].name, "vite:plugin:run");
   }
 });
 
@@ -67,10 +68,11 @@ test("vite.config.js factory (serve): metadata aliases and chunk groups match bu
   );
   assert.deepEqual(groupNames, ["vendor", ...expectedMetadataChunkNames()]);
 
-  assert.equal(cfg.plugins[0].name, "vite-plugin-item-metadata");
-  assert.equal(cfg.plugins[1].name, "vite-plugin-metadata-modulepreload");
-  assert.equal(cfg.plugins[2].name, "bundled-css-after-bulma");
-  assert.equal(cfg.plugins[3].name, "dynamic assets");
+  assert.equal(cfg.plugins[0].name, "preview-serve-dist-spritesheets");
+  assert.equal(cfg.plugins[1].name, "vite-plugin-item-metadata");
+  assert.equal(cfg.plugins[2].name, "vite-plugin-metadata-modulepreload");
+  assert.equal(cfg.plugins[3].name, "bundled-css-after-bulma");
+  assert.equal(cfg.plugins[4].name, "dynamic assets");
 });
 
 test("resolveConfig (build): merged aliases and rolldown groups stay consistent", async () => {

@@ -26,7 +26,8 @@
     "diff:zip-profile": "node scripts/zip/diff-zip-profile.mjs",
     "compute-style-dump": "node scripts/computed-style/dump-computed-styles.mjs",
     "compute-style-dump:mobile": "node scripts/computed-style/dump-computed-styles.mjs --preset mobile",
-    "compute-style-diff-all": "node scripts/computed-style/computed-style-diff-all.mjs"
+    "compute-style-diff-all": "node scripts/computed-style/computed-style-diff-all.mjs",
+    "compute-style-diff-all:preview-ports": "node scripts/computed-style/computed-style-diff-all.mjs --url-a http://localhost:4176 --url-b http://localhost:4177"
   },
   "devDependencies": {
     "@argos-ci/playwright": "^6.6.1",
