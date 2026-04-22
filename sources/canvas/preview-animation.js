@@ -133,6 +133,20 @@ function paintPreviewFrameForCycleIndex(cycleIndex) {
 /**
  * Start the preview animation loop
  */
+/**
+ * When Playwright sets `__DISABLE_PREVIEW_ANIMATION__`, we paint once instead of using rAF.
+ * The first paint can run before `renderCharacter` finishes; call this after any redraw that
+ * may follow a completed render so the preview copies fresh offscreen pixels (Argos / visual tests).
+ */
+export function repaintStaticPreviewFrameForTests() {
+  if (
+    typeof window !== "undefined" &&
+    window.__DISABLE_PREVIEW_ANIMATION__ === true
+  ) {
+    paintPreviewFrameForCycleIndex(currentFrameIndex);
+  }
+}
+
 export function startPreviewAnimation() {
   if (animationFrameId !== null) {
     return; // Already running

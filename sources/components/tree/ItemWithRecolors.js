@@ -53,6 +53,7 @@ export const ItemWithRecolors = {
         rootViewNode,
         onClose: () => {
           rootViewNode.state.showPaletteModal = null;
+          rootViewNode.state._palettePreviewLastTotal = undefined;
           m.redraw();
         },
         onSelect: (recolor) => {
@@ -167,6 +168,8 @@ export const ItemWithRecolors = {
                             {
                               onclick: (e) => {
                                 e.stopPropagation();
+                                rootViewNode.state._palettePreviewLastTotal =
+                                  undefined;
                                 rootViewNode.state.showPaletteModal = idx;
                                 m.redraw();
                               },
@@ -217,6 +220,7 @@ export const ItemWithRecolors = {
                     onclick: (e) => {
                       e.stopPropagation();
                       if (!paletteReady) return;
+                      rootViewNode.state._palettePreviewLastTotal = undefined;
                       rootViewNode.state.showPaletteModal = 0;
                       m.redraw();
                     },
@@ -289,6 +293,8 @@ export const ItemWithRecolors = {
                                 onclick: (e) => {
                                   e.stopPropagation();
                                   if (!paletteReady) return;
+                                  rootViewNode.state._palettePreviewLastTotal =
+                                    undefined;
                                   rootViewNode.state.showPaletteModal = idx;
                                   m.redraw();
                                 },

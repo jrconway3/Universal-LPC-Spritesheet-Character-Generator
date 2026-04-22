@@ -73,6 +73,43 @@ export async function gotoHomepageReady(
 }
 
 /**
+ * Predicate for `page.waitForFunction` (executes in the browser).
+ * True when the palette modal exists, has at least one variant canvas, and each canvas’s
+ * top-left sample has some non-transparent pixels (async draws have finished).
+ * @returns {boolean}
+ */
+function paletteModalPreviewCanvasesHaveOpaquePixels() {
+  const modal = document.querySelector(".palette-modal");
+  if (!modal) {
+    return false;
+  }
+  const canvases = modal.querySelectorAll("canvas.variant-canvas");
+  if (canvases.length === 0) {
+    return false;
+  }
+  for (const c of canvases) {
+    const ctx = c.getContext("2d", { willReadFrequently: true });
+    if (!ctx || c.width < 1 || c.height < 1) {
+      return false;
+    }
+    const w = Math.min(32, c.width);
+    const h = Math.min(32, c.height);
+    const d = ctx.getImageData(0, 0, w, h).data;
+    let hasOpaque = false;
+    for (let i = 3; i < d.length; i += 4) {
+      if (d[i] !== 0) {
+        hasOpaque = true;
+        break;
+      }
+    }
+    if (!hasOpaque) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
  * Expands Head → Heads → Human Heads → Human Male, then opens the Skintone palette modal.
  * (The top-level "Head" row must be expanded before "Heads" is visible.)
  *
@@ -102,6 +139,13 @@ export async function openHumanMaleSkintonePalette(page) {
   await skintone.click();
 
   await page.locator(".palette-modal").waitFor({ state: "visible" });
+  await page
+    .locator('.palette-modal[data-previews-ready="true"]')
+    .waitFor({ state: "visible", timeout: 120_000 });
+  /* Counter + data attribute can settle before GPU/canvas pixels are visible; sample alpha. */
+  await page.waitForFunction(paletteModalPreviewCanvasesHaveOpaquePixels, {
+    timeout: 120_000,
+  });
   /* Last click leaves the pointer over the tree; :hover adds white-ter on variant tiles and * differs by viewport. Move off so Argos + computed-style dumps match across breakpoints. */
   await page.mouse.move(0, 0);
 }

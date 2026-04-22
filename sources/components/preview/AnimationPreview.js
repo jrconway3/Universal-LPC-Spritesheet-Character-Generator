@@ -3,6 +3,7 @@ import { state } from "../../state/state.js";
 import { ANIMATIONS } from "../../state/constants.js";
 import { CollapsibleSection } from "../CollapsibleSection.js";
 import {
+  repaintStaticPreviewFrameForTests,
   setPreviewAnimation,
   startPreviewAnimation,
   stopPreviewAnimation,
@@ -70,6 +71,7 @@ const PreviewCanvas = {
     }
 
     vnode.state.zoomLevel = state.previewCanvasZoomLevel || 1;
+    repaintStaticPreviewFrameForTests();
   },
   onremove: function () {
     // Stop animation when canvas is removed from DOM
