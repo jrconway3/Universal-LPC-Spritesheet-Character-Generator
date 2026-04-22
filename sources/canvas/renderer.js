@@ -140,6 +140,7 @@ async function runRenderCharacter(selections, bodyType, targetCanvas) {
   // Import state to access custom uploaded image (kept out of `renderCharacter` profile span)
   const appState = await import("../state/state.js").then((m) => m.state);
   appState.renderCharacter.isRendering = true;
+  appState.isRenderingCharacter = true;
   m.redraw();
 
   if (profiler) {
@@ -483,6 +484,7 @@ async function runRenderCharacter(selections, bodyType, targetCanvas) {
     }
   } finally {
     appState.renderCharacter.isRendering = false;
+    appState.isRenderingCharacter = false;
     m.redraw();
 
     // Mark end and measure

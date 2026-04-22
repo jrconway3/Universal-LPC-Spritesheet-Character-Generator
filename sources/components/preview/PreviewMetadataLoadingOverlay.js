@@ -10,9 +10,11 @@ export const PreviewMetadataLoadingOverlay = {
     return m(
       "div.preview-canvas-loading-overlay",
       { role: "status", "aria-live": "polite" },
-      m("div.preview-canvas-loading-inner.has-text-centered", [
-        m("span.loading", { "aria-label": "Loading metadata" }),
-        m("p.is-size-7.mt-2.mb-0.has-text-grey", message),
+      m("div.preview-canvas-loading-inner", [
+        m("span.loading", {
+          "aria-hidden": true,
+        }),
+        m("span.is-size-7.has-text-grey.preview-canvas-loading-text", message),
       ]),
     );
   },

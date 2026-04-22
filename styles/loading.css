@@ -101,14 +101,32 @@
   margin: 0 auto;
 }
 
-/* Animation / full spritesheet preview: canvas shell for absolute loading overlay */
+/* Preview shell: overlays use inset:0 so they match canvas size (no extra band after load). */
 .preview-canvas-area {
   position: relative;
 }
 
-/* Min height only while the overlay is shown — avoids a large empty band after load */
-.preview-canvas-area:has(.preview-canvas-loading-overlay) {
+.preview-canvas-area--spritesheet {
   min-height: 12rem;
+}
+
+.preview-canvas-root {
+  position: relative;
+  display: inline-block;
+  vertical-align: top;
+  max-width: 100%;
+}
+
+.preview-canvas-busy {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  background: rgba(245, 245, 245, 0.72);
+  border-radius: 4px;
 }
 
 .preview-canvas-loading-overlay {
@@ -121,9 +139,27 @@
   background: rgba(245, 245, 245, 0.88);
   border-radius: 4px;
   pointer-events: auto;
+  overflow: hidden;
 }
 
 .preview-canvas-loading-inner {
-  max-width: 20rem;
-  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  max-width: 100%;
+  padding: 0.125rem 0.35rem;
+  flex-wrap: nowrap;
+}
+
+.preview-canvas-loading-inner .loading {
+  flex-shrink: 0;
+}
+
+.preview-canvas-loading-text {
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }

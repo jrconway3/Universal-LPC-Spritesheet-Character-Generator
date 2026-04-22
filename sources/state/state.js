@@ -49,9 +49,10 @@ export const state = {
   customImageZPos: 0, // z-position for custom uploaded image
   previewCanvasZoomLevel: 1, // zoom level for animation preview canvas
   fullSpritesheetCanvasZoomLevel: 1, // zoom level for full spritesheet preview canvas
-  /** Set in `main.js` after first `initState` / `setDefaultSelections` completes (with first draw). */
+  /** Set in `main.js` before `setDefaultSelections` / first `renderCharacter` (overlay vs render spinner). */
   previewBootstrapRenderDone: false,
-  isRenderingCharacter: false, // true if a character render is in progress
+  /** Mirrored from `renderCharacter` compositing (see `renderer.js`). */
+  isRenderingCharacter: false,
   // License filters - all enabled by default (derived from LICENSE_CONFIG)
   enabledLicenses: Object.fromEntries(
     LICENSE_CONFIG.map((lic) => [lic.key, true]),

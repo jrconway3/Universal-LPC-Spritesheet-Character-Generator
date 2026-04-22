@@ -11,6 +11,9 @@ import { state } from "./state.js";
  *   layers are registered, offscreen canvas exists, and main bootstrap render has finished.
  */
 export function getPreviewCanvasLoadingMessage() {
+  if (state.isRenderingCharacter) {
+    return null;
+  }
   if (!isLayersReady()) {
     return "Loading layer data…";
   }

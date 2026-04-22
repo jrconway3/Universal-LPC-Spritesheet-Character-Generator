@@ -105,11 +105,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     initHashChangeListener();
 
+    // Before first render: overlay uses this; during render, `isRenderingCharacter` hides overlay.
+    state.previewBootstrapRenderDone = true;
+
     if (window.setDefaultSelections) {
       await window.setDefaultSelections();
     }
 
-    state.previewBootstrapRenderDone = true;
     m.redraw();
   })();
 });

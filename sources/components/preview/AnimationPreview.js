@@ -205,21 +205,26 @@ export const AnimationPreview = {
           ]),
         ]),
         m("div.mt-3", [
-          m("div", { class: state.isRenderingCharacter ? "loading" : "" }),
           m("div.preview-canvas-area", [
             m(ScrollableContainer, { classes: "spritesheet-preview" }, [
-              m("div", {
-                class: state.renderCharacter.isRendering ? "loading" : "",
-              }),
-              m(PreviewCanvas, {
-                selectedAnimation: vnode.state.selectedAnimation,
-                zoomLevel: vnode.state.zoomLevel,
-                onFrameCycleUpdate: (frameCycle) => {
-                  vnode.state.frameCycle = frameCycle;
-                },
-              }),
+              m("div.preview-canvas-root", [
+                m(PreviewCanvas, {
+                  selectedAnimation: vnode.state.selectedAnimation,
+                  zoomLevel: vnode.state.zoomLevel,
+                  onFrameCycleUpdate: (frameCycle) => {
+                    vnode.state.frameCycle = frameCycle;
+                  },
+                }),
+                state.isRenderingCharacter
+                  ? m("div.preview-canvas-busy", { "aria-hidden": true }, [
+                      m("span.loading", {
+                        "aria-label": "Rendering character",
+                      }),
+                    ])
+                  : null,
+                m(PreviewMetadataLoadingOverlay),
+              ]),
             ]),
-            m(PreviewMetadataLoadingOverlay),
           ]),
         ]),
       ],

@@ -15,6 +15,7 @@ test("getPreviewCanvasLoadingMessage: null only when S5, offscreen, and bootstra
   resetCatalogForTests();
   resetOffscreenCanvasStateForTests();
   state.previewBootstrapRenderDone = false;
+  state.isRenderingCharacter = false;
 
   assert.equal(getPreviewCanvasLoadingMessage(), "Loading layer data…");
   registerFromLayersModule({ itemLayers: {} });
@@ -26,5 +27,21 @@ test("getPreviewCanvasLoadingMessage: null only when S5, offscreen, and bootstra
 
   resetCatalogForTests();
   resetOffscreenCanvasStateForTests();
+  state.previewBootstrapRenderDone = false;
+});
+
+test("getPreviewCanvasLoadingMessage: null while compositing (render spinner only)", () => {
+  resetCatalogForTests();
+  resetOffscreenCanvasStateForTests();
+  state.previewBootstrapRenderDone = false;
+  registerFromLayersModule({ itemLayers: {} });
+  setOffscreenCanvasInitializedForTests(true);
+  assert.equal(getPreviewCanvasLoadingMessage(), "Loading layer data…");
+  state.isRenderingCharacter = true;
+  assert.equal(getPreviewCanvasLoadingMessage(), null);
+
+  resetCatalogForTests();
+  resetOffscreenCanvasStateForTests();
+  state.isRenderingCharacter = false;
   state.previewBootstrapRenderDone = false;
 });
