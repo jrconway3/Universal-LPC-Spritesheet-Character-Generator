@@ -77,6 +77,7 @@ const { debugLog } = require("./utils/debug.js");
 
 const REPO_ROOT = path.join(__dirname, "..");
 const ITEM_METADATA_PATH = path.join(REPO_ROOT, "dist", "item-metadata.js");
+const INDEX_METADATA_PATH = path.join(REPO_ROOT, "dist", "index-metadata.js");
 const TESTS_FIXTURES = path.join(REPO_ROOT, "tests", "fixtures", "issue-382");
 
 /**
@@ -128,15 +129,24 @@ function collectItemIdsFromExport(obj, out = new Set()) {
 }
 
 async function loadFullItemMetadata() {
+  const { expandInternedItemLite, isInternedItemLite } = await import(
+    pathToFileURL(
+      path.join(REPO_ROOT, "sources", "state", "resolve-hash-param.js"),
+    ).href
+  );
   const itemUrl = pathToFileURL(ITEM_METADATA_PATH).href;
+  const indexUrl = pathToFileURL(INDEX_METADATA_PATH).href;
   const layersPath = path.join(REPO_ROOT, "dist", "layers-metadata.js");
   const creditsPath = path.join(REPO_ROOT, "dist", "credits-metadata.js");
-  const [itemMod, layersMod, creditsMod] = await Promise.all([
+  const [itemMod, indexMod, layersMod, creditsMod] = await Promise.all([
     import(itemUrl),
+    import(indexUrl),
     import(pathToFileURL(layersPath).href),
     import(pathToFileURL(creditsPath).href),
   ]);
   const lite = itemMod.itemMetadata;
+  const { variantArrays, recolorVariantArrays } =
+    indexMod.metadataIndexes ?? {};
   const itemLayers = layersMod.itemLayers;
   const itemCredits = creditsMod.itemCredits;
   if (!lite || typeof lite !== "object") {
@@ -146,8 +156,20 @@ async function loadFullItemMetadata() {
   }
   const meta = {};
   for (const id of Object.keys(lite)) {
+    let entry = lite[id];
+    if (
+      isInternedItemLite(entry) &&
+      Array.isArray(variantArrays) &&
+      Array.isArray(recolorVariantArrays)
+    ) {
+      entry = expandInternedItemLite(
+        entry,
+        variantArrays,
+        recolorVariantArrays,
+      );
+    }
     meta[id] = {
-      ...lite[id],
+      ...entry,
       layers: itemLayers[id] ?? {},
       credits: itemCredits[id] ?? [],
     };

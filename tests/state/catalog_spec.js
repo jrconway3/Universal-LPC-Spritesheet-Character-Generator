@@ -78,6 +78,33 @@ describe("state/catalog.js", () => {
     expect(isHashHydrationReady()).to.be.true;
   });
 
+  it("expands interned item lites from shared index variant tables", () => {
+    const variantArrays = [["male", "female"]];
+    const recolorVariantArrays = [[]];
+    const byType = {
+      body: [{ itemId: "b1", name: "Body", type_name: "body", v: 0, r: 0 }],
+    };
+    const metadataIndexes = {
+      variantArrays,
+      recolorVariantArrays,
+      byTypeName: byType,
+      hashMatch: { itemsByTypeName: byType },
+    };
+    registerFromIndexModule({
+      aliasMetadata: {},
+      categoryTree: { items: [], children: {} },
+      metadataIndexes,
+    });
+    registerFromItemModule({
+      itemMetadata: {
+        b1: { name: "Body", type_name: "body", v: 0, r: 0, recolors: [] },
+      },
+    });
+    const lite = getItemLite("b1");
+    expect(lite.variants).to.deep.equal(["male", "female"]);
+    expect(lite).to.not.have.property("v");
+  });
+
   it("getItemCredits defaults to [] when stage missing or key missing", () => {
     expect(getItemCredits("any")).to.deep.equal([]);
     registerFromCreditsModule({ itemCredits: {} });

@@ -190,6 +190,54 @@ export function internSlimByTypeNameRows(byTypeNameFull) {
   return { variantArrays, recolorVariantArrays, byTypeName };
 }
 
+/**
+ * Drop duplicate variant strings on `recolors[0]`; runtime restores them from
+ * `recolorVariantArrays[r]` in `index-metadata.js`.
+ * @param {Array|undefined} recolors
+ * @returns {Array}
+ */
+function stripRecolorEntryZeroVariantsForEmit(recolors) {
+  if (!Array.isArray(recolors) || recolors.length === 0) {
+    return recolors ?? [];
+  }
+  return recolors.map((entry, i) => {
+    if (i !== 0 || !entry || typeof entry !== "object") {
+      return entry;
+    }
+    return { ...entry, variants: [] };
+  });
+}
+
+/**
+ * @param {Record<string, object>} itemMetadataLite
+ * @param {Record<string, { v: number, r: number, itemId: string }[]>} internedByTypeName
+ * @return {Record<string, object>}
+ */
+function buildInternedItemMetadataLiteMap(itemMetadataLite, internedByTypeName) {
+  const itemIdToVr = new Map();
+  for (const rows of Object.values(internedByTypeName)) {
+    for (const row of rows) {
+      itemIdToVr.set(row.itemId, { v: row.v, r: row.r });
+    }
+  }
+  const out = {};
+  for (const [itemId, lite] of Object.entries(itemMetadataLite)) {
+    const vr = itemIdToVr.get(itemId);
+    if (vr == null) {
+      out[itemId] = lite;
+      continue;
+    }
+    const { variants: _dropV, recolors, ...rest } = lite;
+    out[itemId] = {
+      ...rest,
+      v: vr.v,
+      r: vr.r,
+      recolors: stripRecolorEntryZeroVariantsForEmit(recolors ?? []),
+    };
+  }
+  return out;
+}
+
 function buildNamedConstModule(constName, valueJson, exportNames) {
   const exports = exportNames.join(", ");
   return `${METADATA_FILE_BANNER}
@@ -271,7 +319,17 @@ export function buildPaletteMetadataJs(env = "production") {
 export function buildItemMetadataLiteJs(fullItemMetadata, env = "production") {
   const indent = getMetadataJsonIndent(env);
   const { itemMetadataLite } = splitItemMetadataMaps(fullItemMetadata);
-  const itemJson = JSON.stringify(itemMetadataLite, null, indent);
+  const { byTypeName: byTypeNameFull } = buildMetadataIndexes(
+    fullItemMetadata,
+    {},
+  );
+  const { byTypeName: internedByType } =
+    internSlimByTypeNameRows(byTypeNameFull);
+  const internedLite = buildInternedItemMetadataLiteMap(
+    itemMetadataLite,
+    internedByType,
+  );
+  const itemJson = JSON.stringify(internedLite, null, indent);
   return buildNamedConstModule("itemMetadata", itemJson, ["itemMetadata"]);
 }
 

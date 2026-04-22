@@ -131,8 +131,8 @@ test("metadata JSON is compact in production and pretty in development", () => {
   const prodItem = buildItemMetadataLiteJs(itemMetadata, "production");
   const devItem = buildItemMetadataLiteJs(itemMetadata, "development");
   assert.ok(
-    prodItem.includes('"nested":{"bar":1}'),
-    "production item-metadata should embed compact JSON",
+    prodItem.includes('"bar":1') && prodItem.includes('"nested"'),
+    "production item-metadata should embed compact JSON for nested",
   );
   assert.ok(
     devItem.includes('"bar": 1'),

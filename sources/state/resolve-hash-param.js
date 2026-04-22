@@ -8,8 +8,9 @@
  * item record lives in the lite item map.
  *
  * Emitted `index-metadata.js` may store interned rows (`v` / `r` into `variantArrays` /
- * `recolorVariantArrays`); `catalog.registerFromIndexModule` expands to the slim row shape above
- * before any consumer runs.
+ * `recolorVariantArrays`); `catalog.registerFromIndexModule` expands `byTypeName` to the slim row
+ * shape and keeps the two array tables for expanding interned `item-metadata.js` lites. Emitted
+ * `item-metadata.js` may store per-item `v` / `r` and stripped `recolors[0].variants` only.
  *
  * @param {string} itemId
  * @param {object} meta Full or lite item metadata (may include `layers` / `credits`).
@@ -62,15 +63,68 @@ export function expandMetadataIndexesWithInternedArrays(metadataIndexes) {
     });
   }
   const {
-    variantArrays: _va,
-    recolorVariantArrays: _ra,
+    variantArrays: variantArraysKept,
+    recolorVariantArrays: recolorVariantArraysKept,
     ...rest
   } = metadataIndexes;
   return {
     ...rest,
     byTypeName: expanded,
     hashMatch: { itemsByTypeName: expanded },
+    variantArrays: variantArraysKept,
+    recolorVariantArrays: recolorVariantArraysKept,
   };
+}
+
+/**
+ * @param {object|undefined} lite
+ * @returns {boolean}
+ */
+export function isInternedItemLite(lite) {
+  return (
+    lite != null &&
+    typeof lite === "object" &&
+    typeof lite.v === "number" &&
+    typeof lite.r === "number" &&
+    !Object.prototype.hasOwnProperty.call(lite, "variants")
+  );
+}
+
+/**
+ * Restores `variants` and `recolors[0].variants` from the shared tables (same as `index-metadata.js`).
+ * @param {object} lite
+ * @param {string[][]|undefined} variantArrays
+ * @param {string[][]|undefined} recolorVariantArrays
+ * @returns {object}
+ */
+export function expandInternedItemLite(
+  lite,
+  variantArrays,
+  recolorVariantArrays,
+) {
+  if (
+    !isInternedItemLite(lite) ||
+    !Array.isArray(variantArrays) ||
+    !Array.isArray(recolorVariantArrays)
+  ) {
+    return lite;
+  }
+  const { v, r, recolors: rcIn, ...rest } = lite;
+  const variants = variantArrays[v] ?? [];
+  const rList = recolorVariantArrays[r] ?? [];
+  let recolors = Array.isArray(rcIn) ? rcIn : [];
+  if (recolors.length > 0) {
+    const [head, ...tail] = recolors;
+    if (head && typeof head === "object") {
+      const merged0 = { ...head, variants: rList.length ? [...rList] : [] };
+      recolors = [merged0, ...tail];
+    }
+  } else if (rList.length > 0) {
+    recolors = [{ variants: [...rList] }];
+  } else {
+    recolors = recolors ?? [];
+  }
+  return { ...rest, variants, recolors };
 }
 
 export function buildSlimByTypeNameRow(itemId, meta) {

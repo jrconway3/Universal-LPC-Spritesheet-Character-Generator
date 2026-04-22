@@ -5,7 +5,9 @@
 
 import {
   buildItemsByTypeNameLite,
+  expandInternedItemLite,
   expandMetadataIndexesWithInternedArrays,
+  isInternedItemLite,
 } from "./resolve-hash-param.js";
 
 function makeStage() {
@@ -89,6 +91,30 @@ function splitFullItemMetadataForCatalog(fullItemMetadata) {
     itemLayers[itemId] = layers ?? {};
   }
   return { itemMetadataLite, itemCredits, itemLayers };
+}
+
+/**
+ * Fills `variants` and `recolors[0].variants` from `metadataIndexesStore` when the lite chunk
+ * was emitted with interned `v` / `r` (shared tables live only in `index-metadata.js`).
+ */
+function expandInternedItemLitesInStore() {
+  if (itemLiteStore === null || metadataIndexesStore === null) {
+    return;
+  }
+  const { variantArrays, recolorVariantArrays } = metadataIndexesStore;
+  if (!Array.isArray(variantArrays) || !Array.isArray(recolorVariantArrays)) {
+    return;
+  }
+  for (const itemId of Object.keys(itemLiteStore)) {
+    const cur = itemLiteStore[itemId];
+    if (isInternedItemLite(cur)) {
+      itemLiteStore[itemId] = expandInternedItemLite(
+        cur,
+        variantArrays,
+        recolorVariantArrays,
+      );
+    }
+  }
 }
 
 export function isIndexReady() {
@@ -210,6 +236,7 @@ export function registerFromIndexModule(exports_) {
     exports_.metadataIndexes,
   );
   indexStage.resolve();
+  expandInternedItemLitesInStore();
 }
 
 /** @param {{ paletteMetadata: object }} exports_ */
@@ -221,6 +248,7 @@ export function registerFromPaletteModule(exports_) {
 /** @param {{ itemMetadata: Record<string, object> }} exports_ */
 export function registerFromItemModule(exports_) {
   itemLiteStore = exports_.itemMetadata;
+  expandInternedItemLitesInStore();
   liteStage.resolve();
 }
 

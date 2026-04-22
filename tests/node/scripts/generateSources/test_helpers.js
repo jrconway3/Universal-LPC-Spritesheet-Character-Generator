@@ -7,7 +7,10 @@ import {
   resetGeneratorState,
 } from "../../../../scripts/generateSources/state.mjs";
 import { loadPaletteMetadata } from "../../../../scripts/generateSources/palettes.mjs";
-import { expandMetadataIndexesWithInternedArrays } from "../../../../sources/state/resolve-hash-param.js";
+import {
+  expandInternedItemLite,
+  expandMetadataIndexesWithInternedArrays,
+} from "../../../../sources/state/resolve-hash-param.js";
 import { parseTree } from "../../../../scripts/generateSources/tree.mjs";
 import { parseItem } from "../../../../scripts/generateSources/items.mjs";
 import { processItemCredits } from "../../../../scripts/generateSources/credits.mjs";
@@ -93,10 +96,28 @@ function extractTopLevelConstJson(outputText, constName) {
  * @param {Map<string, string>} writes basename → file contents from generateSources
  */
 export function mergeMetadataForTests(writes) {
-  const lite = extractTopLevelConstJson(
+  const indexSrc = writes.get("index-metadata.js") ?? "";
+  const rawLite = extractTopLevelConstJson(
     writes.get("item-metadata.js") ?? "",
     "itemMetadata",
   );
+  let lite = rawLite;
+  if (indexSrc.includes("const variantArrays = ")) {
+    const variantArrays = /** @type {string[][]} */ (
+      extractTopLevelJsonLiteral(indexSrc, "variantArrays")
+    );
+    const recolorVariantArrays = /** @type {string[][]} */ (
+      extractTopLevelJsonLiteral(indexSrc, "recolorVariantArrays")
+    );
+    lite = {};
+    for (const id of Object.keys(rawLite)) {
+      lite[id] = expandInternedItemLite(
+        rawLite[id],
+        variantArrays,
+        recolorVariantArrays,
+      );
+    }
+  }
   const layers = extractTopLevelConstJson(
     writes.get("layers-metadata.js") ?? "",
     "itemLayers",
