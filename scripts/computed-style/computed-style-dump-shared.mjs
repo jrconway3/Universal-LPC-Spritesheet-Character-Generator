@@ -1174,12 +1174,12 @@ export async function dumpComputedStylesForUrl(url, viewport, options = {}) {
     if (dumpPage === "human-male-skintone") {
       lpcComputedStyleLog("openHumanMaleSkintonePalette…");
       const t2 = Date.now();
-      await openHumanMaleSkintonePalette(page);
+      await openHumanMaleSkintonePalette(page, { forComputedStyleDump: true });
       lpcComputedStyleLog(`openHumanMaleSkintonePalette done +${Date.now() - t2}ms`);
     } else if (dumpPage === "filters-search-arm") {
       lpcComputedStyleLog("openHumanMaleSkintonePalette (filters path)…");
       const t2 = Date.now();
-      await openHumanMaleSkintonePalette(page);
+      await openHumanMaleSkintonePalette(page, { forComputedStyleDump: true });
       lpcComputedStyleLog(`openHumanMaleSkintonePalette done +${Date.now() - t2}ms`);
       lpcComputedStyleLog("closeSkintonePaletteModal…");
       await closeSkintonePaletteModal(page);

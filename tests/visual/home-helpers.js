@@ -144,8 +144,12 @@ function paletteModalPreviewCanvasesHaveOpaquePixels() {
  * (The top-level "Head" row must be expanded before "Heads" is visible.)
  *
  * @param {import('@playwright/test').Page} page
+ * @param {{ forComputedStyleDump?: boolean }} [opts] Use `forComputedStyleDump: true` for
+ * `dump-computed-styles` only: keep Argos/strict waits for `data-previews-ready` and canvas
+ * pixels, but do not require them for style text (stale dist / GPU can leave them unset forever).
  */
-export async function openHumanMaleSkintonePalette(page) {
+export async function openHumanMaleSkintonePalette(page, opts = {}) {
+  const { forComputedStyleDump = false } = opts;
   const tree = page.locator("#chooser-column");
   const clickTreeLabel = async (exact) => {
     const row = tree.locator("div.tree-label").filter({
@@ -169,15 +173,37 @@ export async function openHumanMaleSkintonePalette(page) {
   await skintone.click();
 
   await page.locator(".palette-modal").waitFor({ state: "visible" });
-  await page
-    .locator('.palette-modal[data-previews-ready="true"]')
-    .waitFor({ state: "visible", timeout: 120_000 });
-  /* Counter + data attribute can settle before GPU/canvas pixels are visible; sample alpha. */
-  await page.waitForFunction(
-    paletteModalPreviewCanvasesHaveOpaquePixels,
-    undefined,
-    { timeout: 120_000 },
-  );
+  if (forComputedStyleDump) {
+    try {
+      await page
+        .locator('.palette-modal[data-previews-ready="true"]')
+        .waitFor({ state: "visible", timeout: 45_000 });
+    } catch {
+      /* Modal is open; enough for getComputedStyle on palette chrome if previews stall. */
+    }
+  } else {
+    await page
+      .locator('.palette-modal[data-previews-ready="true"]')
+      .waitFor({ state: "visible", timeout: 120_000 });
+  }
+  if (!forComputedStyleDump) {
+    /* Counter + data attribute can settle before GPU/canvas pixels are visible; sample alpha. */
+    await page.waitForFunction(
+      paletteModalPreviewCanvasesHaveOpaquePixels,
+      undefined,
+      { timeout: 120_000 },
+    );
+  } else {
+    try {
+      await page.waitForFunction(
+        paletteModalPreviewCanvasesHaveOpaquePixels,
+        undefined,
+        { timeout: 20_000 },
+      );
+    } catch {
+      /* best-effort for dumps */
+    }
+  }
   /* Last click leaves the pointer over the tree; :hover adds white-ter on variant tiles and * differs by viewport. Move off so Argos + computed-style dumps match across breakpoints. */
   await page.mouse.move(0, 0);
 }
