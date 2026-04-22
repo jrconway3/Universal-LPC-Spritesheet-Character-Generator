@@ -1,5 +1,6 @@
 // Main entry point - initializes and mounts the Mithril application
 
+import "./styles/critical-entry.scss";
 import "./vendor-globals.js";
 import { loadAllMetadata } from "./install-item-metadata.js";
 import { catalogReady } from "./state/catalog.js";
@@ -78,6 +79,8 @@ window.setDefaultSelections = async function () {
 // Start metadata chunk fetches as soon as the entry module runs (no DOM required),
 // so download/parse overlaps HTML parse and the rest of this file.
 void loadAllMetadata();
+
+void import("./styles/load-deferred-styles.js");
 
 /** Commit 10 step 1: single-flight hash / init after index + lite are both registered. */
 let hashHydrationInitDone = false;
