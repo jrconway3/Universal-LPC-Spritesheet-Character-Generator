@@ -1,7 +1,7 @@
 /**
  * Loads generated metadata chunks via parallel dynamic imports and registers them with `catalog`.
- * Each chunk calls `register*` and `m.redraw()` as soon as it arrives so the UI can show S1/S2/S3
- * without waiting for the slowest module.
+ * Each chunk calls `register*` as soon as its file loads; `m.redraw()` is coalesced to at most
+ * once per animation frame so several chunks landing together do not thrash layout.
  *
  * Call `loadAllMetadata()` to start loading; it returns a promise that resolves when all five
  * chunks are registered (merged shape for tests and `seedBrowserCatalogMergedOnDist`).
@@ -26,12 +26,19 @@ function isBrowserTestHarnessPage() {
 
 let loadAllMetadataPromise = null;
 
+/** @type {number|null} */
+let metadataRedrawRaf = null;
+
 function safeRedraw() {
-  try {
-    globalThis.m?.redraw?.();
-  } catch {
-    /* ignore */
-  }
+  if (metadataRedrawRaf !== null) return;
+  metadataRedrawRaf = requestAnimationFrame(() => {
+    metadataRedrawRaf = null;
+    try {
+      globalThis.m?.redraw?.();
+    } catch {
+      /* ignore */
+    }
+  });
 }
 
 /** Test harness: allow `loadAllMetadata()` to run again after `resetCatalogForTests()`. */
