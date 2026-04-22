@@ -12,12 +12,8 @@ import { TreeNode } from "./TreeNode.js";
 export const CategoryTree = {
   view: function () {
     if (!catalog.isIndexReady()) {
-      return m(
-        "div.box.has-background-light.category-tree-panel",
-        {
-          style: "min-height: 14rem;",
-        },
-        [
+      return m("div.box.has-background-light.category-tree-panel", [
+        m("div.category-tree-loading-host", [
           m(
             "div.category-tree-loading-overlay",
             { "aria-busy": "true", "aria-live": "polite" },
@@ -25,18 +21,14 @@ export const CategoryTree = {
           ),
           m("h3.title.is-5.mb-3", "Available Items"),
           m("p.has-text-grey.is-size-7", "Loading category index…"),
-        ],
-      );
+        ]),
+      ]);
     }
 
     const categoryTree = catalog.getCategoryTree();
     if (!categoryTree) {
-      return m(
-        "div.box.has-background-light.category-tree-panel",
-        {
-          style: "min-height: 14rem;",
-        },
-        [
+      return m("div.box.has-background-light.category-tree-panel", [
+        m("div.category-tree-loading-host", [
           m(
             "div.category-tree-loading-overlay",
             { "aria-busy": "true" },
@@ -44,8 +36,8 @@ export const CategoryTree = {
           ),
           m("h3.title.is-5.mb-3", "Available Items"),
           m("p.has-text-grey.is-size-7", "Loading category index…"),
-        ],
-      );
+        ]),
+      ]);
     }
 
     const liteReady = catalog.isLiteReady();
@@ -55,7 +47,7 @@ export const CategoryTree = {
         "div.is-flex.is-justify-content-space-between.is-align-items-center.mb-3",
         [
           m("h3.title.is-5.mb-0", "Available Items"),
-          m("div.buttons.mb-0.is-relative", [
+          m("div.buttons.mb-0", [
             m(
               "button.button.is-danger.is-small",
               {

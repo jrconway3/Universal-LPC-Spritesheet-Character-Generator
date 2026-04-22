@@ -80,6 +80,7 @@ export function getPurgeSafelist() {
       "collapsible-title",
       "collapsible-content",
       "category-tree-panel",
+      "category-tree-loading-host",
       "category-tree-loading-overlay",
       "variant-canvas",
       "variant-display-name",

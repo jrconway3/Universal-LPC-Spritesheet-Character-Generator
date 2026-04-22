@@ -81,9 +81,10 @@
   }
 }
 
-/* Category tree: spinner overlay without shifting the button row (Commit 9) */
-.category-tree-panel {
+/* Category tree: overlay host is positioned so the outer .box stays static (computed-style parity w/ older builds). */
+.category-tree-loading-host {
   position: relative;
+  min-height: 14rem;
 }
 
 .category-tree-loading-overlay {
