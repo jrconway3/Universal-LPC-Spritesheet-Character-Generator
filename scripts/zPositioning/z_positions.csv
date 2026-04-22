@@ -1,8 +1,8 @@
 json,layer,zPos,images
-arms_armour,layer_1,60,arms/armour/plate/male/ arms/armour/plate/female/ arms/armour/plate/male/ arms/armour/plate/female/
-arms_bracers,layer_1,70,arms/bracers/male/ arms/bracers/female/ arms/bracers/male/ arms/bracers/female/
-arms_gloves,layer_1,70,arms/gloves/male/ arms/gloves/female/ arms/gloves/male/ arms/gloves/female/
-arms_hands_ring_stud,layer_1,75,arms/hands/ring/stud/male/ arms/hands/ring/stud/female/ arms/hands/ring/stud/male/ arms/hands/ring/stud/female/
+arms_armour,layer_1,60,arms/armour/plate/male/ arms/armour/plate/thin/ arms/armour/plate/male/ arms/armour/plate/thin/
+arms_bracers,layer_1,70,arms/bracers/male/ arms/bracers/thin/ arms/bracers/male/ arms/bracers/thin/
+arms_gloves,layer_1,70,arms/hands/gloves/male/ arms/hands/gloves/thin/ arms/hands/gloves/male/ arms/hands/gloves/thin/
+arms_hands_ring_stud,layer_1,75,arms/hands/ring/stud/male/ arms/hands/ring/stud/thin/ arms/hands/ring/stud/male/ arms/hands/ring/stud/thin/
 backpack,layer_1,110,backpack/backpack/male/ backpack/backpack/female/ backpack/backpack/male/ backpack/backpack/female/
 backpack_basket,layer_1,130,backpack/basket/fg/ backpack/basket/fg/ backpack/basket/fg/ backpack/basket/fg/
 backpack_basket,layer_2,5,backpack/basket/bg/ backpack/basket/bg/ backpack/basket/bg/ backpack/basket/bg/
@@ -14,7 +14,7 @@ backpack_jetpack,layer_1,110,backpack/jetpack/male/ backpack/jetpack/female/ bac
 backpack_jetpack_fins,layer_1,112,backpack/jetpack_fins/male/ backpack/jetpack_fins/female/ backpack/jetpack_fins/male/ backpack/jetpack_fins/female/
 backpack_squarepack,layer_1,110,backpack/squarepack/male/ backpack/squarepack/female/ backpack/squarepack/male/ backpack/squarepack/female/
 backpack_straps,layer_1,110,backpack/straps/male/ backpack/straps/female/ backpack/straps/male/ backpack/straps/female/
-bauldron,layer_1,65,bauldron/male/ bauldron/female/ bauldron/male/ bauldron/female/
+bauldron,layer_1,65,shoulders/bauldron/male/ shoulders/bauldron/thin/ shoulders/bauldron/male/ shoulders/bauldron/thin/
 beards_5oclock_shadow,layer_1,111,beards/beard/5oclock_shadow/ beards/beard/5oclock_shadow/ beards/beard/5oclock_shadow/ beards/beard/5oclock_shadow/
 beards_beard,layer_1,110,beards/beard/basic/ beards/beard/basic/ beards/beard/basic/ beards/beard/basic/
 beards_bigstache,layer_1,111,beards/mustache/bigstache/ beards/mustache/bigstache/ beards/mustache/bigstache/ beards/mustache/bigstache/
@@ -636,18 +636,11 @@ shield_two_engrailed,layer_2,110,shield/two_engrailed/paint/fg/male/ shield/two_
 shield_two_engrailed_trim,layer_1,3,shield/two_engrailed/trim/bg/ shield/two_engrailed/trim/bg/ shield/two_engrailed/trim/bg/ shield/two_engrailed/trim/bg/
 shield_two_engrailed_trim,layer_2,115,shield/two_engrailed/trim/fg/male/ shield/two_engrailed/trim/fg/female/ shield/two_engrailed/trim/fg/male/ shield/two_engrailed/trim/fg/female/
 shoulders_epaulets,layer_1,60,shoulders/epaulets/male/ shoulders/epaulets/thin/ shoulders/epaulets/male/ shoulders/epaulets/thin/
-shoulders_leather,layer_1,60,shoulders/leather/male/ shoulders/leather/female/ shoulders/leather/male/ shoulders/leather/female/
 shoulders_legion,layer_1,60,shoulders/legion/male/ shoulders/legion/female/ shoulders/legion/male/ shoulders/legion/female/
-shoulders_mantal,layer_1,75,shoulders/mantal/male/
-shoulders_plate,layer_1,65,shoulders/plate/male/ shoulders/plate/female/ shoulders/plate/male/ shoulders/plate/female/
+shoulders_mantal,layer_1,75,shoulders/mantal/male/ shoulders/mantal/thin/ shoulders/mantal/male/ shoulders/mantal/thin/
+shoulders_pauldrons,layer_1,60,shoulders/pauldrons/male/ shoulders/pauldrons/thin/ shoulders/pauldrons/male/ shoulders/pauldrons/thin/
 tail_cat,layer_1,125,body/tail/cat/adult/fg/ body/tail/cat/adult/fg/ body/tail/cat/adult/fg/ body/tail/cat/adult/fg/ body/tail/cat/child/fg/
 tail_cat,layer_2,5,body/tail/cat/adult/bg/ body/tail/cat/adult/bg/ body/tail/cat/adult/bg/ body/tail/cat/adult/bg/ body/tail/cat/child/bg/
-tail_dragon,layer_1,85,body/tail/dragon/adult/fg/ body/tail/dragon/adult/fg/ body/tail/dragon/adult/fg/ body/tail/dragon/adult/fg/ body/tail/dragon/child/fg/
-tail_dragon,layer_2,5,body/tail/dragon/adult/bg/ body/tail/dragon/adult/bg/ body/tail/dragon/adult/bg/ body/tail/dragon/adult/bg/ body/tail/dragon/child/bg/
-tail_feather,layer_1,85,body/tail/feather/adult/fg/ body/tail/feather/adult/fg/ body/tail/feather/adult/fg/ body/tail/feather/adult/fg/ body/tail/feather/child/fg/
-tail_feather,layer_2,5,body/tail/feather/adult/bg/ body/tail/feather/adult/bg/ body/tail/feather/adult/bg/ body/tail/feather/adult/bg/ body/tail/feather/child/bg/
-tail_fin,layer_1,85,body/tail/fin/adult/fg/ body/tail/fin/adult/fg/ body/tail/fin/adult/fg/ body/tail/fin/adult/fg/ body/tail/fin/child/fg/
-tail_fin,layer_2,5,body/tail/fin/adult/bg/ body/tail/fin/adult/bg/ body/tail/fin/adult/bg/ body/tail/fin/adult/bg/ body/tail/fin/child/bg/
 tail_lizard,layer_1,85,body/tail/lizard/adult/fg/ body/tail/lizard/adult/fg/ body/tail/lizard/adult/fg/ body/tail/lizard/adult/fg/ body/tail/lizard/child/fg/
 tail_lizard,layer_2,5,body/tail/lizard/adult/bg/ body/tail/lizard/adult/bg/ body/tail/lizard/adult/bg/ body/tail/lizard/adult/bg/ body/tail/lizard/child/bg/
 tail_lizard_alt,layer_1,85,body/tail/lizard/alt/adult/fg/ body/tail/lizard/alt/adult/fg/ body/tail/lizard/alt/adult/fg/ body/tail/lizard/alt/adult/fg/ body/tail/lizard/alt/child/fg/
@@ -885,5 +878,5 @@ wound_eye_left,layer_1,115,body/wound/eye_left/ body/wound/eye_left/ body/wound/
 wound_eye_right,layer_1,115,body/wound/eye_right/ body/wound/eye_right/ body/wound/eye_right/ body/wound/eye_right/
 wound_mouth,layer_1,115,body/wound/mouth/ body/wound/mouth/ body/wound/mouth/ body/wound/mouth/
 wound_ribs,layer_1,15,body/wound/ribs/ body/wound/ribs/ body/wound/ribs/ body/wound/ribs/
-wrists_cuffs,layer_1,70,wrists/cuffs/male/
-wrists_cuffs_lace,layer_1,70,wrists/lace/male/
+wrists_cuffs,layer_1,70,arms/wrists/cuffs/male/ arms/wrists/cuffs/thin/ arms/wrists/cuffs/male/ arms/wrists/cuffs/thin/
+wrists_cuffs_lace,layer_1,70,arms/wrists/lace/male/ arms/wrists/lace/thin/ arms/wrists/lace/male/ arms/wrists/lace/thin/

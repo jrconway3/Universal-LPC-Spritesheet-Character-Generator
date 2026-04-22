@@ -1,0 +1,94 @@
+{
+  "name": "Pauldrons",
+  "layer_1": {
+    "zPos": 60,
+    "male": "shoulders/pauldrons/male/",
+    "female": "shoulders/pauldrons/thin/",
+    "muscular": "shoulders/pauldrons/male/",
+    "pregnant": "shoulders/pauldrons/thin/",
+    "teen": "shoulders/pauldrons/thin/"
+  },
+  "animations": [
+    "spellcast",
+    "thrust",
+    "walk",
+    "slash",
+    "shoot",
+    "hurt",
+    "watering",
+    "climb",
+    "idle",
+    "jump",
+    "sit",
+    "emote",
+    "run",
+    "combat",
+    "1h_slash",
+    "1h_backslash",
+    "1h_halfslash"
+  ],
+  "credits": [
+    {
+      "file": "shoulders/pauldrons",
+      "notes": "adapted to female base by makrohn, adapted to v3 bases by bluecarrot16, climb/jump/sit/emote/run/revised combat by JaidynReiman",
+      "authors": [
+        "Matthew Krohn (makrohn)",
+        "Johannes Sjölund (wulax)",
+        "bluecarrot16",
+        "JaidynReiman"
+      ],
+      "licenses": [
+        "OGA-BY 3.0",
+        "CC-BY-SA 3.0",
+        "GPL 3.0"
+      ],
+      "urls": [
+        "https://opengameart.org/content/lpc-medieval-fantasy-character-sprites",
+        "http://opengameart.org/content/lpc-clothing-updates"
+      ]
+    }
+  ],
+  "recolors": {
+    "material": "cloth",
+    "palettes": [
+      "ulpc",
+      "metal.ulpc",
+      "all.lpcr"
+    ]
+  },
+  "aliases": {
+    "Leather_black": "black",
+    "Leather_blue": "blue",
+    "Leather_bluegray": "bluegray",
+    "Leather_brown": "brown",
+    "Leather_charcoal": "charcoal",
+    "Leather_forest": "forest",
+    "Leather_gray": "gray",
+    "Leather_green": "green",
+    "Leather_lavender": "lavender",
+    "Leather_leather": "leather",
+    "Leather_maroon": "maroon",
+    "Leather_navy": "navy",
+    "Leather_orange": "orange",
+    "Leather_pink": "pink",
+    "Leather_purple": "purple",
+    "Leather_red": "red",
+    "Leather_rose": "rose",
+    "Leather_sky": "sky",
+    "Leather_slate": "slate",
+    "Leather_tan": "tan",
+    "Leather_teal": "teal",
+    "Leather_walnut": "walnut",
+    "Leather_white": "white",
+    "Leather_yellow": "yellow",
+    "Plate_bronze": "metal.bronze",
+    "Plate_ceramic": "metal.ceramic",
+    "Plate_brass": "metal.brass",
+    "Plate_copper": "metal.copper",
+    "Plate_iron": "metal.iron",
+    "Plate_steel": "metal.steel",
+    "Plate_silver": "metal.silver",
+    "Plate_gold": "metal.gold"
+  },
+  "type_name": "shoulders"
+}

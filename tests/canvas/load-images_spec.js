@@ -8,21 +8,21 @@ import {
 describe("canvas/load-image.js", () => {
   describe("loadImage", () => {
     it("should load an image successfully", async () => {
-      const src = "/spritesheets/arms/bracers/female/hurt/brass.png";
+      const src = "/spritesheets/arms/bracers/thin/hurt.png";
       const img = await loadImage(src);
       expect(img).to.be.an.instanceof(Image);
       expect(img.src).to.include(src);
     });
 
     it("should cache loaded images", async () => {
-      const src = "/spritesheets/arms/bracers/female/hurt/brass.png";
+      const src = "/spritesheets/arms/bracers/thin/hurt.png";
       const img1 = await loadImage(src);
       const img2 = await loadImage(src);
       expect(img1).to.equal(img2); // Cached image should be returned
     });
 
     it("should reject if the image fails to load", async () => {
-      const src = "/spritesheets/arms/bracers/female/hurt/invalid.png";
+      const src = "/spritesheets/arms/bracers/thin/invalid.png";
       try {
         await loadImage(src);
       } catch (err) {
@@ -35,8 +35,8 @@ describe("canvas/load-image.js", () => {
   describe("loadImagesInParallel", () => {
     it("should load multiple images successfully", async () => {
       const items = [
-        { spritePath: "/spritesheets/arms/bracers/female/hurt/brass.png" },
-        { spritePath: "/spritesheets/arms/bracers/female/hurt/bronze.png" },
+        { spritePath: "/spritesheets/arms/bracers/thin/hurt.png" },
+        { spritePath: "/spritesheets/arms/bracers/thin/walk.png" },
       ];
       const results = await loadImagesInParallel(items);
       expect(results).to.be.an("array").with.lengthOf(2);
@@ -49,8 +49,8 @@ describe("canvas/load-image.js", () => {
 
     it("should handle image load failures gracefully", async () => {
       const items = [
-        { spritePath: "/spritesheets/arms/bracers/female/hurt/brass.png" },
-        { spritePath: "/spritesheets/arms/bracers/female/hurt/invalid.png" },
+        { spritePath: "/spritesheets/arms/bracers/thin/hurt.png" },
+        { spritePath: "/spritesheets/arms/bracers/thin/invalid.png" },
       ];
       const results = await loadImagesInParallel(items);
       expect(results).to.be.an("array").with.lengthOf(2);
@@ -67,8 +67,8 @@ describe("canvas/load-image.js", () => {
 
     it("should use a custom path extractor function", async () => {
       const items = [
-        { customPath: "/spritesheets/arms/bracers/female/hurt/brass.png" },
-        { customPath: "/spritesheets/arms/bracers/female/hurt/bronze.png" },
+        { customPath: "/spritesheets/arms/bracers/thin/hurt.png" },
+        { customPath: "/spritesheets/arms/bracers/thin/walk.png" },
       ];
       const getPath = (item) => item.customPath;
       const results = await loadImagesInParallel(items, getPath);

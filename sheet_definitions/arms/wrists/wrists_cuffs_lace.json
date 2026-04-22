@@ -2,17 +2,12 @@
   "name": "Lace Cuffs",
   "layer_1": {
     "zPos": 70,
-    "male": "wrists/lace/male/"
+    "male": "arms/wrists/lace/male/",
+    "muscular": "arms/wrists/lace/male/",
+    "female": "arms/wrists/lace/thin/",
+    "teen": "arms/wrists/lace/thin/",
+    "pregnant": "arms/wrists/lace/thin/"
   },
-  "variants": [
-    "bronze",
-    "gold",
-    "silver",
-    "red",
-    "blue",
-    "teal",
-    "yellow"
-  ],
   "animations": [
     "spellcast",
     "thrust",
@@ -20,14 +15,35 @@
     "slash",
     "shoot",
     "hurt",
-    "idle"
+    "watering",
+    "idle",
+    "climb",
+    "jump",
+    "sit",
+    "emote",
+    "run"
   ],
   "credits": [
     {
-      "file": "wrists/lace",
-      "notes": "",
+      "file": "arms/wrists/lace",
+      "notes": "Original by bluecarrot16, climb/jump/sit/emote/run by JaidynReiman",
       "authors": [
-        "bluecarrot16"
+        "bluecarrot16",
+        "JaidynReiman"
+      ],
+      "licenses": [
+        "OGA-BY 3.0"
+      ],
+      "urls": [
+        "https://opengameart.org/content/lpc-pirates"
+      ]
+    },
+    {
+      "file": "arms/wrists/lace/thin",
+      "notes": "Original by bluecarrot16, female/teen version by JaidynReiman",
+      "authors": [
+        "bluecarrot16",
+        "JaidynReiman"
       ],
       "licenses": [
         "OGA-BY 3.0"
@@ -37,5 +53,12 @@
       ]
     }
   ],
+  "recolors": {
+    "material": "cloth",
+    "palettes": [
+      "ulpc",
+      "all.lpcr"
+    ]
+  },
   "type_name": "wrists"
 }
