@@ -4,7 +4,8 @@
  * once per animation frame so several chunks landing together do not thrash layout.
  *
  * Call `loadAllMetadata()` to start loading; it returns a promise that resolves when all five
- * chunks are registered (merged shape for tests and `seedBrowserCatalogMergedOnDist`).
+ * chunks are registered. The return value exposes lite `itemMetadata`, `layersMetadata`, and
+ * `creditsMetadata` separately (no merged per-item objects). Tests merge as needed.
  * The browser test page (`tests_run.html`) still awaits `loadAllMetadata()` at module evaluation.
  */
 import {
@@ -48,7 +49,15 @@ export function resetLoadAllMetadataCacheForTests() {
 
 /**
  * Parallel `import()` of the five metadata modules; each registers as soon as its file loads.
- * @returns {Promise<{ itemMetadata: Record<string, object>, aliasMetadata: object, categoryTree: object, paletteMetadata: object, metadataIndexes: object }>}
+ * @returns {Promise<{
+ *   itemMetadata: Record<string, object>,
+ *   layersMetadata: Record<string, Record<string, object>>,
+ *   creditsMetadata: Record<string, object[]>,
+ *   aliasMetadata: object,
+ *   categoryTree: object,
+ *   paletteMetadata: object,
+ *   metadataIndexes: object,
+ * }>}
  */
 export function loadAllMetadata() {
   loadAllMetadataPromise ??= (async () => {
@@ -85,21 +94,10 @@ export function loadAllMetadata() {
         }),
       ]);
 
-    const itemMetadataLite = itemMod.itemMetadata;
-    const itemLayersMap = layersMod.itemLayers;
-    const itemCreditsMap = creditsMod.itemCredits;
-
-    const itemMetadata = {};
-    for (const id of Object.keys(itemMetadataLite)) {
-      itemMetadata[id] = {
-        ...itemMetadataLite[id],
-        layers: itemLayersMap[id] ?? {},
-        credits: itemCreditsMap[id] ?? [],
-      };
-    }
-
     return {
-      itemMetadata,
+      itemMetadata: itemMod.itemMetadata,
+      layersMetadata: layersMod.itemLayers,
+      creditsMetadata: creditsMod.itemCredits,
       aliasMetadata: indexMod.aliasMetadata,
       categoryTree: indexMod.categoryTree,
       paletteMetadata: paletteMod.paletteMetadata,

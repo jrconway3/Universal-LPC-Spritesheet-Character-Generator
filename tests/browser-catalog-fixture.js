@@ -12,6 +12,27 @@ const emptyPalette = { versions: {}, materials: {} };
 const emptyTree = { items: [], children: {} };
 
 /**
+ * @param {{
+ *   itemMetadata: Record<string, object>,
+ *   layersMetadata: Record<string, Record<string, object>>,
+ *   creditsMetadata: Record<string, object[]>,
+ * }} loaded
+ * @returns {Record<string, object>}
+ */
+function mergedItemMapFromLoadedChunks(loaded) {
+  const { itemMetadata: lite, layersMetadata, creditsMetadata } = loaded;
+  const out = {};
+  for (const id of Object.keys(lite)) {
+    out[id] = {
+      ...lite[id],
+      layers: layersMetadata[id] ?? {},
+      credits: creditsMetadata[id] ?? [],
+    };
+  }
+  return out;
+}
+
+/**
  * Load split catalog from a merged item map (browser tests; mirrors generator split).
  * @param {Record<string, object>} itemMetadata
  * @param {{ aliasMetadata?: object, categoryTree?: object, paletteMetadata?: object }} [extras]
@@ -45,7 +66,10 @@ export async function restoreAppCatalogAfterTest() {
 export async function seedBrowserCatalogMergedOnDist(patch) {
   resetLoadAllMetadataCacheForTests();
   const loaded = await loadAllMetadata();
-  const mergedItems = { ...loaded.itemMetadata, ...patch };
+  const mergedItems = {
+    ...mergedItemMapFromLoadedChunks(loaded),
+    ...patch,
+  };
   const byTypeName = buildItemsByTypeNameLite(mergedItems);
   resetCatalogForTests();
   loadCatalogFromFixtures({
