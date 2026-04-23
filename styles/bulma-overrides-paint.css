@@ -1,0 +1,531 @@
+/*
+ * Subset of bulma-overrides.css for first paint (loading + shell) — loaded with critical CSS.
+ * Keep in sync: full chain lives in bulma-overrides.css (paint + rest). Deferred loads both again;
+ * identical rules = no post-load visual change.
+ *
+ * (Same header as bulma-overrides.css — v1 → v0.9.4 visual parity)
+ */
+
+:root {
+  --bulma-scheme-h: 0deg;
+  --bulma-scheme-s: 0%;
+  --bulma-text-h: 0deg;
+  --bulma-text-s: 0%;
+  --bulma-light-h: 0deg;
+  --bulma-light-s: 0%;
+  --bulma-shadow-h: 0deg;
+  --bulma-shadow-s: 0%;
+  --bulma-body-font-size: 16px;
+  --bulma-radius: 4px;
+  --bulma-radius-large: 6px;
+  --bulma-family-primary:
+    BlinkMacSystemFont, -apple-system, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
+    "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", "Helvetica", "Arial",
+    sans-serif;
+  --bulma-family-secondary:
+    BlinkMacSystemFont, -apple-system, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
+    "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", "Helvetica", "Arial",
+    sans-serif;
+  --bulma-primary-h: 171deg;
+  --bulma-primary-s: 100%;
+  --bulma-primary-l: 41%;
+  --bulma-link-h: 229deg;
+  --bulma-link-s: 53%;
+  --bulma-link-l: 53%;
+  --bulma-info-h: 204deg;
+  --bulma-info-s: 59%;
+  --bulma-info-l: 53%;
+  --bulma-success-h: 153deg;
+  --bulma-success-s: 54%;
+  --bulma-success-l: 53%;
+  --bulma-warning-h: 48deg;
+  --bulma-warning-s: 100%;
+  --bulma-warning-l: 77%;
+  --bulma-danger-h: 348deg;
+  --bulma-danger-s: 86%;
+  --bulma-danger-l: 61%;
+  --bulma-block-spacing: 1.5rem;
+  --bulma-field-block-spacing: 0.75rem;
+  --bulma-label-spacing: 0.5em;
+  /* Bulma 1 defaults "bold" to 600; master (0.9) uses 700 for .label and related. */
+  --bulma-weight-bold: 700;
+}
+
+.field {
+  --bulma-field-block-spacing: 0.75rem;
+}
+
+.box {
+  --bulma-box-padding: 1.25rem;
+  --bulma-box-radius: var(--bulma-radius-large);
+  font-family: monospace;
+}
+
+.box .title {
+  font-family: monospace;
+}
+
+/*
+ * Preview mount roots are `#mithril-preview` / `#mithril-spritesheet-preview` with a child `.box`
+ * (not `#mithril-preview.box`). Force collapsible body spacing to match main.css (1rem): a bad
+ * `#mithril-preview.box` rule never applied; Bulma 1 can differ; `calc(1rem - 2px)` vs master’s 1rem
+ * showed up as Argos vertical drift (branch read as shifted up).
+ */
+#mithril-preview > .box > .collapsible-content,
+#mithril-spritesheet-preview > .box > .collapsible-content {
+  margin-top: 1rem;
+}
+
+.title {
+  --bulma-title-weight: var(--bulma-weight-semibold);
+}
+
+/*
+ * Bulma 1 builds .button colors/borders from --bulma-button-* variables. Do not set
+ * border-width/border-style on the base selector — it overrides variant rules and can
+ * make filled buttons look like plain text links in some browsers.
+ */
+.button {
+  border-radius: 2px;
+  box-shadow: none;
+  font-family: var(--bulma-family-primary);
+}
+
+.button.is-small {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  /* Bulma 0.9 small buttons: 12px horizontal padding; v1 can compute 11px from em vars. */
+  padding-left: 12px;
+  padding-right: 12px;
+  font-weight: 400 !important;
+}
+
+.button:hover,
+.button:focus,
+.button.is-hovered {
+  box-shadow: none;
+}
+
+.label {
+  font-weight: var(--bulma-weight-bold);
+}
+
+.title:not(.is-spaced) + .subtitle {
+  margin-top: -12px;
+}
+
+.buttons:not(:last-child),
+.tags:not(:last-child) {
+  margin-bottom: 1rem;
+}
+
+.buttons {
+  gap: 0;
+  row-gap: 0;
+  column-gap: 0;
+  align-items: flex-start;
+  align-content: flex-start;
+  justify-content: flex-start;
+}
+
+/* Bulma 0.9: only non-last .button children get margin-right (last matches margin-right: 0). */
+.buttons .button {
+  margin-right: 0;
+  margin-bottom: 0.5rem;
+  flex-grow: 0;
+  flex-shrink: 1;
+  min-width: auto;
+  max-width: none;
+  align-self: auto;
+}
+
+.buttons .button:not(:last-child):not(.is-fullwidth) {
+  margin-right: 0.5rem;
+}
+
+#download-buttons.buttons {
+  gap: 0.5rem;
+  row-gap: 0.5rem;
+  column-gap: 0.5rem;
+  align-items: center;
+  align-content: flex-start;
+  justify-content: flex-start;
+  margin-bottom: -0.5rem;
+}
+
+/* CategoryTree "Available Items" header toolbar — global .buttons uses flex-start + gap 0; 0.9 centers this row. */
+#mithril-filters .box.has-background-light > div:nth-child(1) .buttons.mb-0 {
+  align-items: center !important;
+  gap: revert;
+  row-gap: revert;
+  column-gap: revert;
+}
+
+.columns.is-gapless:not(:last-child) {
+  margin-bottom: var(--bulma-block-spacing);
+}
+
+#columns-container.columns {
+  --bulma-column-gap: 0.75rem;
+}
+
+/* Match Bulma 0.9.4 .mb-3 (0.75rem); v1 spacing helpers differ — two .mb-3 blocks in CategoryTree. */
+#mithril-filters .box.has-background-light .mb-3 {
+  margin-bottom: 0.75rem !important;
+}
+
+#mithril-filters > div > .box:nth-child(2) .collapsible-content > .mb-4 {
+  margin-bottom: 1rem !important;
+}
+
+#mithril-filters .columns .column.filters-column {
+  --bulma-column-padding: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 0;
+  padding-right: 0.5rem;
+}
+
+/*
+ * License/Animation cards only (direct .tree-label on these .box rows). main.css .tree-label is
+ * height:32px for category rows; height:auto restores wrap. Match Bulma 0.9 computed min-height:0
+ * (explicit height:32px on category rows yields min-height 0; v1 + min-height:32px drifted dumps).
+ */
+#mithril-filters .box.has-background-light > .tree-label {
+  height: auto;
+  min-height: 0;
+}
+
+/*
+ * License/Animation expanded body: Bulma 1 spacing scale makes .mt-3 smaller than 0.9 here, so the
+ * gap from the card header to the checkbox list is 12px vs 16px (computed-style __filter_*_header_to_checkbox_block_gap).
+ */
+#mithril-filters .box.mb-4.has-background-light > .content.mt-3 {
+  margin-top: 1rem !important;
+}
+
+/*
+ * .input / .textarea: Bulma 1 default border + padding differ from 0.9. Do not clear outline on idle inputs —
+ * master computed-style keeps outline-width:3px on unfocused controls.
+ */
+#mithril-filters .field .control .input:not(.is-small),
+#mithril-filters .field .control .textarea:not(.is-small),
+#mithril-preview .field .control .input:not(.is-small),
+#mithril-preview .field .control .textarea:not(.is-small) {
+  padding-top: 7px !important;
+  padding-bottom: 7px !important;
+}
+
+#mithril-filters .input,
+#mithril-filters .textarea,
+#mithril-preview .input,
+#mithril-preview .textarea {
+  border-color: rgb(219, 219, 219) !important;
+  /* Bulma 1 transitions border-color on focus (~0.29s); dumps read styles immediately → interpolated rgb. Master (0.9) is transition-duration 0s. */
+  transition-duration: 0s !important;
+}
+
+/*
+ * Programmatic fill() → :-webkit-autofill; idle:0.9 #dbdbdb + inset shadow.
+ * Exclude :focus / :focus-visible: autofill alone is (1,2,1) and beats #mithril-filters .input:focus
+ * (1,2,0), which left border-color on Bulma's hsl() while our focus box-shadow still applied.
+ */
+#mithril-filters input.input:-webkit-autofill:not(:focus):not(:focus-visible),
+#mithril-filters input.input:-webkit-autofill:hover:not(:focus):not(:focus-visible),
+#mithril-filters input.input:-webkit-autofill:active:not(:focus):not(:focus-visible) {
+  border-color: rgb(219, 219, 219) !important;
+  -webkit-text-fill-color: rgb(54, 54, 54) !important;
+  box-shadow: rgba(10, 10, 10, 0.05) 0px 1px 2px 0px inset,
+    0 0 0 1000px rgb(255, 255, 255) inset !important;
+}
+
+/* Focused: #485fc7 + 2px ring + no outline (matches 0.9). Instant transition-duration on .input avoids Bulma 1 border-color interpolation in dumps. */
+#mithril-filters .input:focus,
+#mithril-filters .input:focus-visible,
+#mithril-filters .input:focus-within,
+#mithril-filters .textarea:focus,
+#mithril-filters .textarea:focus-visible,
+#mithril-filters .textarea:focus-within,
+#mithril-preview .input:focus,
+#mithril-preview .input:focus-visible,
+#mithril-preview .input:focus-within,
+#mithril-preview .textarea:focus,
+#mithril-preview .textarea:focus-visible,
+#mithril-preview .textarea:focus-within {
+  border: 1px solid rgb(72, 95, 199) !important;
+  box-shadow: rgba(72, 95, 199, 0.25) 0 0 0 2px !important;
+  outline: none !important;
+  outline-width: 0 !important;
+}
+
+/*
+ * Advanced Tools (.box:nth-child(4)): match Bulma 0.9 computed-style dumps — .field:not(:last-child)
+ * margin-bottom 0.75rem (12px); .help line-height 18px (0.75rem × 1.5), not v1’s tighter metrics.
+ */
+#mithril-filters > div > .box:nth-child(4) .field:not(:last-child) {
+  margin-bottom: 0.75rem !important;
+}
+
+#mithril-filters > div > .box:nth-child(4) .field:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* Match master computed `font: 12px / 18px monospace` on Advanced Tools help blocks. */
+#mithril-filters > div > .box:nth-child(4) .collapsible-content .help {
+  margin-top: 0.25rem !important;
+  font: 12px/18px monospace !important;
+}
+
+/*
+ * Z-Position help mixes text + inline `code`. Master (Bulma0.9) computes code as
+ * `10.5px / 15.75px` (0.875em × line-height 1.5 on the code font); v1 +18px strut was +2px on .help.
+ */
+#mithril-filters > div > .box:nth-child(4) .collapsible-content .help code {
+  background-color: whitesmoke;
+  border-radius: 0;
+  color: #da1039;
+  font: 10.5px/15.75px monospace !important;
+  font-weight: normal;
+  padding: 0.25em 0.5em;
+  vertical-align: baseline;
+}
+
+#mithril-filters > div > .box:nth-child(4) input.input[type="file"] {
+  padding-top: 7px !important;
+  padding-bottom: 7px !important;
+  min-height: 0 !important;
+}
+
+/* License/Animation count: Bulma 1 .is-size-7 uses 24px line-height; master/tree is 12px × 1.5 (18px). */
+#mithril-filters .box.has-background-light > .tree-label .is-size-7 {
+  line-height: 18px !important;
+}
+
+#credits-section p.is-size-7.mb-2 {
+  line-height: 18px !important;
+  margin-bottom: 0.5rem !important;
+}
+
+#credits-section p.is-size-7.mb-3 {
+  line-height: 18px !important;
+  margin-bottom: 0.75rem !important;
+}
+
+/* File list body copy: Bulma 1 .is-size-7 line-height is 24px; master uses 18px (12px × 1.5). */
+#credits-section .content p.is-size-7 {
+  line-height: 18px !important;
+}
+
+#credits-section .content strong.is-size-6 {
+  font-weight: 700 !important;
+}
+
+/* Bulma 0.9 .mb-3 is 12px here; v1 1rem (16px) shifts stacked blocks vs master dumps. */
+#credits-section .content.has-background-light .mb-3 {
+  margin-bottom: 12px !important;
+}
+
+#credits-section .buttons.mt-3 {
+  align-items: center;
+  align-content: flex-start;
+  justify-content: flex-start;
+  margin-bottom: -0.5rem;
+  gap: initial;
+  row-gap: initial;
+  column-gap: initial;
+}
+
+#mithril-filters .variants-container {
+  gap: 0.5rem;
+  row-gap: 0.5rem;
+  column-gap: 0.5rem;
+}
+
+#mithril-filters .variant-item {
+  gap: 0.25rem;
+  padding: 0.5rem 0.5rem 0.25rem 0.5rem;
+  min-width: 80px;
+  max-width: 120px;
+}
+
+#mithril-filters .variant-item:has(.compact-display) {
+  padding: 0.125rem;
+  gap: 0.125rem;
+}
+
+#mithril-filters .variant-display-name {
+  line-height: 1.2;
+}
+
+#mithril-filters .box.has-background-light .buttons.mb-0,
+#mithril-filters .box.has-background-light div.buttons.ml-4 {
+  margin-bottom: 0 !important;
+}
+
+#mithril-filters .box.has-background-light div.buttons.ml-4 {
+  align-items: center !important;
+}
+
+#mithril-spritesheet-preview .columns.is-mobile {
+  margin-top: -12px;
+  margin-bottom: 12px;
+}
+
+#mithril-spritesheet-preview .columns.is-mobile > .column {
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
+#mithril-spritesheet-preview .columns.is-mobile.is-variable {
+  --bulma-column-gap: 0.25rem;
+}
+
+.has-text-grey-darker {
+  color: #363636 !important;
+}
+
+.has-text-grey-dark {
+  color: #4a4a4a !important;
+}
+
+.has-text-grey {
+  color: #7a7a7a !important;
+}
+
+.has-text-grey-light {
+  color: #b5b5b5 !important;
+}
+
+.has-text-grey-lighter {
+  color: #dbdbdb !important;
+}
+
+/* Match Bulma 0.9 filled buttons: 1px border (transparent on colors) + stable metrics in dumps. */
+.button.is-primary {
+  background-color: #00d1b2 !important;
+  border-width: 1px !important;
+  border-style: solid !important;
+  border-color: transparent !important;
+  color: #fff !important;
+}
+
+.button.is-primary:hover,
+.button.is-primary.is-hovered {
+  background-color: #00c4a7 !important;
+  border-width: 1px !important;
+  border-style: solid !important;
+  border-color: transparent !important;
+  color: #fff !important;
+}
+
+.button.is-link {
+  background-color: #485fc7 !important;
+  border-width: 1px !important;
+  border-style: solid !important;
+  border-color: transparent !important;
+  color: #fff !important;
+}
+
+.button.is-link:hover,
+.button.is-link.is-hovered {
+  background-color: #3e56c4 !important;
+  border-width: 1px !important;
+  border-style: solid !important;
+  border-color: transparent !important;
+  color: #fff !important;
+}
+
+.button.is-danger {
+  background-color: #f14668 !important;
+  border-width: 1px !important;
+  border-style: solid !important;
+  border-color: transparent !important;
+  color: #fff !important;
+}
+
+.button.is-danger:hover,
+.button.is-danger.is-hovered {
+  background-color: #f03a5f !important;
+  border-width: 1px !important;
+  border-style: solid !important;
+  border-color: transparent !important;
+  color: #fff !important;
+}
+
+.button.is-info {
+  background-color: #3e8ed0 !important;
+  border-width: 1px !important;
+  border-style: solid !important;
+  border-color: transparent !important;
+  color: #fff !important;
+}
+
+.button.is-info:hover,
+.button.is-info.is-hovered {
+  background-color: #3488ce !important;
+  border-width: 1px !important;
+  border-style: solid !important;
+  border-color: transparent !important;
+  color: #fff !important;
+}
+
+.button.is-static.is-light {
+  background-color: whitesmoke;
+  border-color: #dbdbdb;
+  color: #7a7a7a;
+  box-shadow: none;
+}
+
+.tag:not(body).is-info {
+  background-color: #3e8ed0;
+  color: #fff;
+}
+
+.tag:not(body).is-warning {
+  background-color: #ffe08a;
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.tag:not(body).is-success {
+  background-color: #48c78e;
+  color: #fff;
+}
+
+#mithril-filters .tags:not(.has-addons),
+#mithril-preview .tags:not(.has-addons) {
+  gap: 0;
+  row-gap: 0;
+  column-gap: 0;
+}
+
+#header-left h1.title,
+#header-left span.subtitle {
+  font-family: monospace;
+}
+
+#mithril-filters .label,
+#mithril-preview .label,
+#mithril-filters .field-label .label,
+#mithril-preview .field-label .label,
+#mithril-filters .checkbox,
+#mithril-preview .checkbox {
+  font-size: 1rem;
+  font-family: monospace;
+}
+
+#mithril-filters .tag:not(body),
+#mithril-preview .tag:not(body) {
+  font-family: monospace;
+  min-width: auto;
+  max-width: none;
+}
+
+#mithril-filters .input,
+#mithril-preview .input,
+#mithril-filters .select select,
+#mithril-preview .select select,
+#mithril-filters .textarea,
+#mithril-preview .textarea {
+  font-size: 1rem;
+  font-family: var(--bulma-family-primary);
+}

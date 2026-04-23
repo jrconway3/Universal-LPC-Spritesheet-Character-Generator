@@ -1,21 +1,14 @@
 @charset "utf-8";
 
-/*! Remaining Bulma (forms, components, extra elements, helpers) */
+/*! Remaining Bulma: button/form/block/content/tag/notification/grid live in bulma-critical.scss (first paint). */
 @use "bulma/sass/base/animations";
 @use "bulma/sass/base/skeleton";
-@use "bulma/sass/grid/grid";
-@use "bulma/sass/elements/block";
-@use "bulma/sass/elements/button";
-@use "bulma/sass/elements/content";
 @use "bulma/sass/elements/delete";
 @use "bulma/sass/elements/icon";
 @use "bulma/sass/elements/image";
 @use "bulma/sass/elements/loader";
-@use "bulma/sass/elements/notification";
 @use "bulma/sass/elements/progress";
 @use "bulma/sass/elements/table";
-@use "bulma/sass/elements/tag";
-@use "bulma/sass/form";
 @use "bulma/sass/components";
 @use "bulma/sass/layout";
 @use "bulma/sass/helpers/aspect-ratio";

@@ -1,6 +1,6 @@
 /*
- * Bulma CSS variables + .field spacing (loaded with critical CSS before deferred Bulma).
- * @see bulma-overrides.css for component parity rules (deferred).
+ * Bulma CSS variables + .field spacing (in critical bundle, after bulma-critical).
+ * Parity: bulma-overrides-paint in critical, bulma-overrides-rest in deferred; main.css @imports both via bulma-overrides.css.
  */
 
 :root {
