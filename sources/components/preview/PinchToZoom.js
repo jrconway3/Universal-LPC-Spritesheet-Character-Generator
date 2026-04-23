@@ -1,5 +1,3 @@
-import TinyGesture from "https://cdn.jsdelivr.net/npm/tinygesture@3.0.0/+esm";
-
 export default class PinchToZoom {
   initialZoom = 1;
   currentZoom = 1;
@@ -7,26 +5,34 @@ export default class PinchToZoom {
   gesture = null;
   onZoom = null;
 
-  constructor(element, onZoom, initialZoom = 1) {
-    this.element = element;
-    this.onZoom = onZoom;
-    this.initialZoom = initialZoom || 1;
-    this.currentZoom = this.initialZoom;
+  /**
+   * Loads `tinygesture` on demand (separate chunk) for pinch-to-zoom after the UI is up.
+   */
+  static async create(element, onZoom, initialZoom = 1) {
+    const pinch = new PinchToZoom();
+    pinch.element = element;
+    pinch.onZoom = onZoom;
+    pinch.initialZoom = initialZoom || 1;
+    pinch.currentZoom = pinch.initialZoom;
 
-    this.init();
+    const { default: TinyGesture } = await import("tinygesture");
+    pinch.gesture = new TinyGesture(element, { mouseSupport: false });
+
+    pinch.gesture.on("pinch", () => {
+      const scale = pinch.gesture.scale;
+      pinch.currentZoom = pinch.initialZoom * scale;
+      pinch.onZoom(pinch.currentZoom);
+    });
+
+    pinch.gesture.on("pinchend", () => {
+      pinch.initialZoom = pinch.currentZoom;
+    });
+
+    return pinch;
   }
 
-  init() {
-    this.gesture = new TinyGesture(this.element, { mouseSupport: false });
-
-    this.gesture.on("pinch", () => {
-      const scale = this.gesture.scale;
-      this.currentZoom = this.initialZoom * scale;
-      this.onZoom(this.currentZoom);
-    });
-
-    this.gesture.on("pinchend", () => {
-      this.initialZoom = this.currentZoom;
-    });
+  destroy() {
+    this.gesture?.destroy();
+    this.gesture = null;
   }
 }

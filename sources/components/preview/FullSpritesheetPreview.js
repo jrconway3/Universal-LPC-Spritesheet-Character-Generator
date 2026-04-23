@@ -36,24 +36,33 @@ function syncFullSpritesheetFromOffscreen(vnode) {
       zoomLevel,
     );
     vnode.state.zoomLevel = zoomLevel;
-    vnode.state.pinch = new PinchToZoom(
-      domCanvas,
-      (scale) => {
-        if (!isOffscreenCanvasInitialized()) {
+    if (!vnode.state._pinchCreatePromise) {
+      vnode.state._pinchCreatePromise = PinchToZoom.create(
+        domCanvas,
+        (scale) => {
+          if (!isOffscreenCanvasInitialized()) {
+            return;
+          }
+          vnode.state.zoomLevel = scale;
+          m.redraw();
+          copyToPreviewCanvas(
+            domCanvas,
+            showTransparencyGrid,
+            applyTransparencyMask,
+            vnode.state.zoomLevel,
+          );
+          state.fullSpritesheetCanvasZoomLevel = vnode.state.zoomLevel;
+        },
+        vnode.state.zoomLevel,
+      ).then((pinch) => {
+        vnode.state._pinchCreatePromise = null;
+        if (vnode.state._pinchUnmounted) {
+          pinch.destroy();
           return;
         }
-        vnode.state.zoomLevel = scale;
-        m.redraw();
-        copyToPreviewCanvas(
-          domCanvas,
-          showTransparencyGrid,
-          applyTransparencyMask,
-          vnode.state.zoomLevel,
-        );
-        state.fullSpritesheetCanvasZoomLevel = vnode.state.zoomLevel;
-      },
-      vnode.state.zoomLevel,
-    );
+        vnode.state.pinch = pinch;
+      });
+    }
     return;
   }
 
@@ -70,6 +79,7 @@ function syncFullSpritesheetFromOffscreen(vnode) {
 const SpritesheetCanvas = {
   oncreate: function (vnode) {
     vnode.state.zoomLevel = vnode.attrs.zoomLevel;
+    vnode.state._pinchUnmounted = false;
     primeSpritesheetPreviewCanvasElement(vnode.dom);
     if (!window.canvasRenderer) {
       console.error("Canvas renderer not available yet");
@@ -82,6 +92,12 @@ const SpritesheetCanvas = {
       return;
     }
     syncFullSpritesheetFromOffscreen(vnode);
+  },
+  onremove: function (vnode) {
+    vnode.state._pinchUnmounted = true;
+    vnode.state.pinch?.destroy();
+    vnode.state.pinch = null;
+    vnode.state._pinchCreatePromise = null;
   },
   view: function () {
     return m("canvas#spritesheet-preview");

@@ -40,7 +40,8 @@ const PreviewCanvas = {
 
     vnode.state.zoomLevel = zoomLevel;
     vnode.state.lastAnimation = selectedAnimation;
-    new PinchToZoom(
+    vnode.state._pinchUnmounted = false;
+    PinchToZoom.create(
       canvas,
       (scale) => {
         // Update zoom level on pinch
@@ -54,7 +55,13 @@ const PreviewCanvas = {
         state.previewCanvasZoomLevel = vnode.state.zoomLevel;
       },
       vnode.state.zoomLevel,
-    );
+    ).then((pinch) => {
+      if (vnode.state._pinchUnmounted) {
+        pinch.destroy();
+        return;
+      }
+      vnode.state.pinch = pinch;
+    });
   },
   onupdate: function (vnode) {
     const selectedAnimation = vnode.attrs.selectedAnimation;
@@ -73,7 +80,10 @@ const PreviewCanvas = {
     vnode.state.zoomLevel = state.previewCanvasZoomLevel || 1;
     repaintStaticPreviewFrameForTests();
   },
-  onremove: function () {
+  onremove: function (vnode) {
+    vnode.state._pinchUnmounted = true;
+    vnode.state.pinch?.destroy();
+    vnode.state.pinch = null;
     // Stop animation when canvas is removed from DOM
     if (window.canvasRenderer) {
       stopPreviewAnimation();
