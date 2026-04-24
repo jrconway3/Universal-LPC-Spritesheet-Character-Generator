@@ -7,7 +7,6 @@ import {
   get2DContext,
   getZPos,
   hasContentInRegion,
-  image2canvas,
 } from "../../sources/canvas/canvas-utils.ts";
 import { resetCatalogForTests } from "../../sources/state/catalog.js";
 import {
@@ -104,51 +103,10 @@ describe("canvas/canvas-utils.ts", () => {
       ]);
     });
 
-    it("returns null when getContext returns null", () => {
+    it("throws when getContext returns null", () => {
       const canvas = createCanvas(4, 4);
       sinon.stub(canvas, "getContext").returns(null);
-      expect(get2DContext(canvas)).to.equal(null);
-    });
-  });
-
-  describe("image2canvas", () => {
-    afterEach(() => {
-      sinon.restore();
-    });
-
-    it("creates a canvas matching source dimensions and copies pixels", () => {
-      const src = createCanvas(16, 8);
-      const sctx = src.getContext("2d");
-      sctx.fillStyle = "#00ff00";
-      sctx.fillRect(3, 2, 4, 4);
-
-      const out = image2canvas(src);
-
-      expect(out).not.to.equal(src);
-      expect(out.width).to.equal(16);
-      expect(out.height).to.equal(8);
-
-      const outCtx = out.getContext("2d");
-      const d = outCtx.getImageData(0, 0, 16, 8).data;
-      const i = (2 * 16 + 3) * 4;
-      expect([d[i], d[i + 1], d[i + 2], d[i + 3]]).to.deep.equal([
-        0, 255, 0, 255,
-      ]);
-    });
-
-    it("throws when the destination canvas cannot get a 2d context", () => {
-      const src = createCanvas(4, 4);
-      const originalCreateElement = document.createElement.bind(document);
-      sinon.stub(document, "createElement").callsFake((tagName) => {
-        if (tagName === "canvas") {
-          const el = originalCreateElement("canvas");
-          sinon.stub(el, "getContext").returns(null);
-          return el;
-        }
-        return originalCreateElement(tagName);
-      });
-
-      expect(() => image2canvas(src)).to.throw("Failed to get canvas context");
+      expect(() => get2DContext(canvas)).to.throw("Failed to get 2D context");
     });
   });
 
