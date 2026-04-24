@@ -5,7 +5,7 @@ import { loadImage, loadImagesInParallel } from "./load-image.js";
 import { getSpritePath } from "../state/path.js";
 import { getImageToDraw } from "./palette-recolor.js";
 import { getMultiRecolors } from "../state/palettes.js";
-import { get2DContext, getZPos } from "./canvas-utils.js";
+import { get2DContext, getZPos } from "./canvas-utils.ts";
 import { variantToFilename } from "../utils/helpers.ts";
 import { drawFramesToCustomAnimation } from "./draw-frames.ts";
 import {

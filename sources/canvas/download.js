@@ -1,4 +1,4 @@
-import { canvasToBlob } from "./canvas-utils.js";
+import { canvasToBlob } from "./canvas-utils.ts";
 import { getCanvas } from "./renderer.js";
 
 /**

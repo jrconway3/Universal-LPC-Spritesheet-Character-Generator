@@ -80,7 +80,7 @@ window.setDefaultSelections = async function () {
 // so download/parse overlaps HTML parse and the rest of this file.
 void loadAllMetadata();
 
-void import("./styles/load-deferred-styles.js");
+void import("./styles/load-deferred-styles.ts");
 
 /** Commit 10 step 1: single-flight hash / init after index + lite are both registered. */
 let hashHydrationInitDone = false;
