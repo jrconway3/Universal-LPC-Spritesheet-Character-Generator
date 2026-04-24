@@ -6,7 +6,7 @@ import {
   isWebGLAvailable,
 } from "./webgl-palette-recolor.js";
 import { debugLog, debugWarn } from "../utils/debug.js";
-import { get2DContext } from "./canvas-utils.js";
+import { get2DContext } from "./canvas-utils.ts";
 import * as catalog from "../state/catalog.js";
 import { state } from "../state/state.js";
 import { getLayersToLoad } from "../state/meta.js";

@@ -10,7 +10,7 @@ import {
   canvasToBlob,
   get2DContext,
   hasContentInRegion,
-} from "../canvas/canvas-utils.js";
+} from "../canvas/canvas-utils.ts";
 import { debugLog, debugWarn } from "../utils/debug.js";
 import { getAllCredits, creditsToTxt, creditsToCsv } from "./credits.js";
 import { exportStateAsJSON } from "../state/json.js";

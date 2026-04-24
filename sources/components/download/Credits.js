@@ -4,7 +4,7 @@ import {
   getAllCredits,
   creditsToCsv,
   creditsToTxt,
-} from "../../utils/credits.js";
+} from "../../utils/credits.ts";
 import { CollapsibleSection } from "../CollapsibleSection.js";
 import { downloadFile } from "../../canvas/download.js";
 

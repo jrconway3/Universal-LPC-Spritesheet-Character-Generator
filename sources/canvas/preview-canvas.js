@@ -4,7 +4,7 @@ import {
   SHEET_HEIGHT,
   isOffscreenCanvasInitialized,
 } from "./renderer.js";
-import { drawTransparencyBackground, get2DContext } from "./canvas-utils.js";
+import { drawTransparencyBackground, get2DContext } from "./canvas-utils.ts";
 import { FRAME_SIZE } from "../state/constants.ts";
 import { applyTransparencyMaskToCanvas } from "./mask.ts";
 import {

@@ -8,7 +8,7 @@ import {
   getZPos,
   hasContentInRegion,
   image2canvas,
-} from "../../sources/canvas/canvas-utils.js";
+} from "../../sources/canvas/canvas-utils.ts";
 import { resetCatalogForTests } from "../../sources/state/catalog.js";
 import {
   restoreAppCatalogAfterTest,
@@ -22,7 +22,7 @@ function createCanvas(width, height) {
   return canvas;
 }
 
-describe("canvas/canvas-utils.js", () => {
+describe("canvas/canvas-utils.ts", () => {
   describe("canvasToBlob", () => {
     afterEach(() => {
       sinon.restore();

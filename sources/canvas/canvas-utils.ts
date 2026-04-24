@@ -3,12 +3,17 @@
 import * as catalog from "../state/catalog.js";
 import { debugWarn } from "../utils/debug.js";
 
+// TODO: catalog.js currently returns `object | undefined` from
+// getItemMerged (JSDoc-erased shape). When catalog.js converts to .ts
+// and the generator output shapes it manages are typed, delete this
+// local narrowing and use the real exported type instead.
+type ItemLayerMeta = { zPos?: number };
+type ItemMergedShape = { layers?: Record<string, ItemLayerMeta | undefined> };
+
 /**
  * Encode a canvas as a PNG Blob (rejects if toBlob yields null or throws).
- * @param {HTMLCanvasElement} canvas
- * @returns {Promise<Blob>}
  */
-export function canvasToBlob(canvas) {
+export function canvasToBlob(canvas: HTMLCanvasElement): Promise<Blob> {
   return new Promise((resolve, reject) => {
     try {
       canvas.toBlob((blob) => {
@@ -19,48 +24,42 @@ export function canvasToBlob(canvas) {
         }
       }, "image/png");
     } catch (err) {
-      reject(new Error(`Canvas to Blob conversion failed: ${err.message}`));
+      const msg = err instanceof Error ? err.message : String(err);
+      reject(new Error(`Canvas to Blob conversion failed: ${msg}`));
     }
   });
 }
 
 /**
- * Get 2D context with image smoothing disabled for crisp pixel rendering
- * @param {HTMLCanvasElement} canvas - Canvas element
- * @param {boolean} willReadFrequently - Whether the context will be used for frequent getImageData calls
- * @returns {CanvasRenderingContext2D | null} Context with smoothing disabled
+ * Get 2D context with image smoothing disabled for crisp pixel rendering.
+ * Throws if the canvas cannot produce a 2D context (e.g. it has already
+ * been claimed by a different context type like WebGL — a canvas can
+ * only ever have one context kind).
  */
-export function get2DContext(canvas, willReadFrequently = false) {
+export function get2DContext(
+  canvas: HTMLCanvasElement,
+  willReadFrequently: boolean = false,
+): CanvasRenderingContext2D {
   const ctx = canvas.getContext("2d", { willReadFrequently });
   if (!ctx) {
-    return null;
+    throw new Error(
+      "Failed to get 2D context (canvas may already have a different context type)",
+    );
   }
   ctx.imageSmoothingEnabled = false;
   return ctx;
 }
 
 /**
- * Draw a loaded image onto a new canvas (same dimensions as the image).
- * @param {CanvasImageSource} img
- * @returns {HTMLCanvasElement}
- */
-export function image2canvas(img) {
-  const imgCanvas = document.createElement("canvas");
-  imgCanvas.width = img.width;
-  imgCanvas.height = img.height;
-  const imgCtx = get2DContext(imgCanvas);
-  if (!imgCtx) {
-    throw new Error("Failed to get canvas context");
-  }
-  imgCtx.drawImage(img, 0, 0);
-  return imgCanvas;
-}
-
-/**
  * Whether a rectangular region has any non-zero channel (including alpha) in its ImageData.
- * @param {CanvasRenderingContext2D} ctx
  */
-export function hasContentInRegion(ctx, x, y, width, height) {
+export function hasContentInRegion(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+): boolean {
   try {
     const imageData = ctx.getImageData(x, y, width, height);
     return imageData.data.some((pixel) => pixel !== 0);
@@ -70,11 +69,8 @@ export function hasContentInRegion(ctx, x, y, width, height) {
   }
 }
 
-/**
- * Get zPos for a layer
- */
-export function getZPos(itemId, layerNum = 1) {
-  const meta = catalog.getItemMerged(itemId);
+export function getZPos(itemId: string, layerNum: number = 1): number {
+  const meta = catalog.getItemMerged(itemId) as ItemMergedShape | undefined;
   if (!meta) return 100;
 
   const layerKey = `layer_${layerNum}`;
@@ -84,18 +80,14 @@ export function getZPos(itemId, layerNum = 1) {
 }
 
 /**
- * Draw a checkered transparency background (like image editors)
- * @param {CanvasRenderingContext2D} context - Canvas context
- * @param {number} width - Canvas width
- * @param {number} height - Canvas height
- * @param {number} squareSize - Size of each checker square (default 8px)
+ * Draw a checkered transparency background (like image editors).
  */
 export function drawTransparencyBackground(
-  context,
-  width,
-  height,
-  squareSize = 8,
-) {
+  context: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  squareSize: number = 8,
+): void {
   const lightGray = "#CCCCCC";
   const darkGray = "#999999";
 

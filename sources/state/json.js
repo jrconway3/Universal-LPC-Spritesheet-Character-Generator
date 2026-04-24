@@ -3,7 +3,7 @@ import {
   getHashParamsforSelections,
   loadSelectionsFromHash,
 } from "./hash.js";
-import { getAllCredits } from "../utils/credits.js";
+import { getAllCredits } from "../utils/credits.ts";
 import { state } from "./state.js";
 
 // Dependency injection for testability (see setJsonDeps / resetJsonDeps)
