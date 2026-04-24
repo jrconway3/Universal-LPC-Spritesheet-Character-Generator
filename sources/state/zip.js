@@ -3,7 +3,7 @@ import {
   ANIMATION_CONFIGS,
   FRAME_SIZE,
   DIRECTIONS,
-} from "./constants.js";
+} from "./constants.ts";
 import * as catalog from "./catalog.js";
 import {
   extractAnimationFromCanvas,

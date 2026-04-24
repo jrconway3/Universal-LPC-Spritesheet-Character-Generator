@@ -2,7 +2,7 @@
 import { state } from "../../state/state.js";
 import * as catalog from "../../state/catalog.js";
 import { isItemLicenseCompatible } from "../../state/filters.js";
-import { LICENSE_CONFIG } from "../../state/constants.js";
+import { LICENSE_CONFIG } from "../../state/constants.ts";
 
 // Dependency injection for testability
 let deps = {
