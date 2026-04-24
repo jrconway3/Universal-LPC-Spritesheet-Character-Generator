@@ -1,7 +1,7 @@
 // WebGL-accelerated palette recoloring for LPC sprites
 // Uses GPU shaders for fast color replacement
 
-import { get2DContext } from "./canvas-utils.js";
+import { get2DContext } from "./canvas-utils.ts";
 import { debugLog } from "../utils/debug.js";
 
 // Shared WebGL resources for reuse

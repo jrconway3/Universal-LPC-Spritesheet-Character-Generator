@@ -4,7 +4,7 @@ import {
   getAllCredits,
   creditsToCsv,
   creditsToTxt,
-} from "../../sources/utils/credits.js";
+} from "../../sources/utils/credits.ts";
 import { resetCatalogForTests } from "../../sources/state/catalog.js";
 import {
   restoreAppCatalogAfterTest,
@@ -12,7 +12,7 @@ import {
 } from "../browser-catalog-fixture.js";
 import { state } from "../../sources/state/state.js";
 
-describe("utils/credits.js", () => {
+describe("utils/credits.ts", () => {
   let previousSelectedAnimation;
 
   beforeEach(() => {

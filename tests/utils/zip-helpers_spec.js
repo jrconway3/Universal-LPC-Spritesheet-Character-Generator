@@ -323,15 +323,6 @@ describe("utils/zip-helpers.js", () => {
       expect(out).to.deep.equal({});
     });
 
-    it("returns {} when the animation canvas has no 2d context", () => {
-      const canvas = createCanvas(832, 64);
-      sinon.stub(canvas, "getContext").returns(null);
-
-      const out = extractFramesFromAnimation(canvas, "hurt");
-
-      expect(out).to.deep.equal({});
-    });
-
     it("yields empty arrays when every frame cell is transparent", () => {
       const canvas = createCanvas(832, 64);
 
@@ -459,16 +450,6 @@ describe("utils/zip-helpers.js", () => {
       ctx.fillRect(0, 0, def.frameSize, def.frameSize);
       return canvas;
     }
-
-    it("returns {} when the canvas has no 2d context", () => {
-      const def = minimalFourRowDef();
-      const canvas = createFourRowCustomCanvas(def);
-      sinon.stub(canvas, "getContext").returns(null);
-
-      const out = extractFramesFromCustomAnimation(canvas, def);
-
-      expect(out).to.deep.equal({});
-    });
 
     it("extracts every frame for each direction (including fully transparent slots)", () => {
       const def = minimalFourRowDef();

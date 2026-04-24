@@ -1,4 +1,4 @@
-import { getZPos } from "../canvas/canvas-utils.js";
+import { getZPos } from "../canvas/canvas-utils.ts";
 import { variantToFilename } from "../utils/helpers.ts";
 import { replaceInPath } from "./path.js";
 import * as catalog from "./catalog.js";

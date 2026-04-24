@@ -1,7 +1,7 @@
 import { previewCanvas, previewCtx } from "./preview-canvas.js";
 import { state } from "../state/state.js";
 import { FRAME_SIZE, ANIMATION_CONFIGS } from "../state/constants.ts";
-import { get2DContext, drawTransparencyBackground } from "./canvas-utils.js";
+import { get2DContext, drawTransparencyBackground } from "./canvas-utils.ts";
 import { applyTransparencyMaskToCanvas } from "./mask.ts";
 import { canvas } from "./renderer.js";
 import { customAnimations } from "../custom-animations.ts";

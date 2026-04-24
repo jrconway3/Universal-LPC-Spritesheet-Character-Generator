@@ -21,7 +21,7 @@ import { loadImage } from "../canvas/load-image.js";
 import { getImageToDraw } from "../canvas/palette-recolor.js";
 import { customAnimations, customAnimationSize } from "../custom-animations.ts";
 import { getSortedLayersWithCustomFallback } from "./meta.js";
-import { canvasToBlob } from "../canvas/canvas-utils.js";
+import { canvasToBlob } from "../canvas/canvas-utils.ts";
 import {
   addAnimationToZipFolder,
   addStandardAnimationToZipCustomFolder,
