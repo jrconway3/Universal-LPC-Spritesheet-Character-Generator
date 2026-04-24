@@ -4,7 +4,7 @@ import { describe, it, beforeEach, afterEach } from "mocha-globals";
 import {
   customAnimations,
   customAnimationSize,
-} from "../../sources/custom-animations.js";
+} from "../../sources/custom-animations.ts";
 import {
   addAnimationToZipFolder,
   addCharacterJsonAndCredits,

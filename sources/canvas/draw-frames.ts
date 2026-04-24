@@ -1,18 +1,13 @@
 import { FRAME_SIZE } from "../state/constants.ts";
-import { animationRowsLayout } from "../custom-animations.js";
+import {
+  animationRowsLayout,
+  type CustomAnimationDefinition,
+} from "../custom-animations.ts";
 
 // Both HTMLImageElement and HTMLCanvasElement expose a numeric .height
 // and are accepted by CanvasRenderingContext2D.drawImage — the full API
 // surface this function uses, so it can treat them interchangeably.
 type SpriteSource = HTMLImageElement | HTMLCanvasElement;
-
-// TODO: custom-animations.js already declares this exact shape via JSDoc
-// typedef. Once that file converts to .ts, delete this local type and
-// import CustomAnimationDefinition from "../custom-animations.ts" instead.
-type CustomAnimationDefinition = {
-  frameSize: number;
-  frames: string[][];
-};
 
 export function drawFrameToFrame(
   destCtx: CanvasRenderingContext2D,

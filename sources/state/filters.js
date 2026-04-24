@@ -1,4 +1,4 @@
-import { customAnimationBase, customAnimations } from "../custom-animations.js";
+import { customAnimationBase, customAnimations } from "../custom-animations.ts";
 import { LICENSE_CONFIG, ANIMATIONS } from "./constants.ts";
 import * as catalog from "./catalog.js";
 import { state } from "./state.js";

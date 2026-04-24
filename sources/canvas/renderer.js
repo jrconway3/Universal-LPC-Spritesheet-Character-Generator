@@ -13,7 +13,7 @@ import {
   ANIMATION_OFFSETS,
   ANIMATION_CONFIGS,
 } from "../state/constants.ts";
-import { customAnimations, customAnimationBase } from "../custom-animations.js";
+import { customAnimations, customAnimationBase } from "../custom-animations.ts";
 import {
   setCurrentCustomAnimations,
   setCustomAnimYPositions,

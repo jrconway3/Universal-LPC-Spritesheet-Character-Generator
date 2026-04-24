@@ -19,7 +19,7 @@ import { getMultiRecolors } from "./palettes.js";
 import { getItemFileName } from "../utils/fileName.js";
 import { loadImage } from "../canvas/load-image.js";
 import { getImageToDraw } from "../canvas/palette-recolor.js";
-import { customAnimations, customAnimationSize } from "../custom-animations.js";
+import { customAnimations, customAnimationSize } from "../custom-animations.ts";
 import { getSortedLayersWithCustomFallback } from "./meta.js";
 import { canvasToBlob } from "../canvas/canvas-utils.js";
 import {

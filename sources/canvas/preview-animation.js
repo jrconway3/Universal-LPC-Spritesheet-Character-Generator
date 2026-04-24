@@ -4,7 +4,7 @@ import { FRAME_SIZE, ANIMATION_CONFIGS } from "../state/constants.ts";
 import { get2DContext, drawTransparencyBackground } from "./canvas-utils.js";
 import { applyTransparencyMaskToCanvas } from "./mask.ts";
 import { canvas } from "./renderer.js";
-import { customAnimations } from "../custom-animations.js";
+import { customAnimations } from "../custom-animations.ts";
 
 // Animation preview state
 let animationFrames = [1, 2, 3, 4, 5, 6, 7, 8]; // default for walk
