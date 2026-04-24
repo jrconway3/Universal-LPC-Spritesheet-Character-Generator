@@ -292,10 +292,6 @@ export function extractFramesFromAnimation(
   const framesPerRow = STANDARD_ANIMATION_FRAMES_PER_ROW;
 
   const sourceCtx = get2DContext(animationCanvas, true);
-  if (!sourceCtx) {
-    console.error("Failed to get animation canvas context");
-    return frames;
-  }
 
   const canvasPool = createFrameCanvasPool(
     directions.length * framesPerRow,
@@ -403,10 +399,6 @@ export function extractFramesFromCustomAnimation(
   });
 
   const sourceCtx = get2DContext(animationCanvas, true);
-  if (!sourceCtx) {
-    console.error("Failed to get custom animation canvas context");
-    return frames;
-  }
 
   const maxFrames = Math.max(...animationFrames.map((row) => row.length));
   const canvasPool = createFrameCanvasPool(
