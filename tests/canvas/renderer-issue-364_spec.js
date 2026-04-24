@@ -6,7 +6,7 @@
  * Real sprite URLs (no global Image stub): avoids cache/global issues in the
  * shared `load-image` module. `try`/`finally` plus `resetRendererModuleState()`
  * (layers, itemsToDraw, customAreaItems, addedCustomAnimations, initCanvas) plus
- * `resetImageLoadCache()` and restoring `window.itemMetadata` keep later specs
+ * `resetImageLoadCache()` and restoring the app catalog keep later specs
  * safe when this file is imported first (e.g. if test order is randomized later).
  */
 import { expect } from "chai";
@@ -15,6 +15,7 @@ import { describe, it, beforeEach, afterEach } from "mocha-globals";
 import {
   initCanvas,
   renderCharacter,
+  resetRenderCharacterQueueForTests,
   addedCustomAnimations,
   layers as rendererLayers,
   itemsToDraw,
@@ -22,6 +23,11 @@ import {
 } from "../../sources/canvas/renderer.js";
 import { resetImageLoadCache } from "../../sources/canvas/load-image.js";
 import { resetState } from "../../sources/state/hash.js";
+import { resetCatalogForTests } from "../../sources/state/catalog.js";
+import {
+  restoreAppCatalogAfterTest,
+  seedBrowserCatalog,
+} from "../browser-catalog-fixture.js";
 import { state } from "../../sources/state/state.js";
 
 const ISSUE_364_METADATA = {
@@ -43,17 +49,13 @@ const ISSUE_364_METADATA = {
 
 describe("canvas/renderer.js issue #364 (addedCustomAnimations export)", () => {
   let sandbox;
-  let previousItemMetadata;
 
   beforeEach(() => {
     sandbox = sinon.createSandbox();
     resetState();
     initCanvas();
-    previousItemMetadata = window.itemMetadata;
-    window.itemMetadata = {
-      ...(window.itemMetadata || {}),
-      ...ISSUE_364_METADATA,
-    };
+    resetCatalogForTests();
+    seedBrowserCatalog(ISSUE_364_METADATA);
     state.selections = {
       slot: {
         itemId: "issue364_wheel_item",
@@ -67,6 +69,7 @@ describe("canvas/renderer.js issue #364 (addedCustomAnimations export)", () => {
   });
 
   function resetRendererModuleState() {
+    resetRenderCharacterQueueForTests();
     rendererLayers.length = 0;
     itemsToDraw.length = 0;
     for (const k of Object.keys(customAreaItems)) {
@@ -77,32 +80,22 @@ describe("canvas/renderer.js issue #364 (addedCustomAnimations export)", () => {
   }
 
   afterEach(async () => {
-    window.itemMetadata = previousItemMetadata;
     resetImageLoadCache();
     resetRendererModuleState();
     if (sandbox) {
       sandbox.restore();
       sandbox = null;
     }
+    await restoreAppCatalogAfterTest();
   });
 
   it("records custom animation names on the exported addedCustomAnimations set after renderCharacter", async () => {
-    try {
-      await renderCharacter(state.selections, "male");
+    await renderCharacter(state.selections, "male");
 
-      expect(
-        addedCustomAnimations.size,
-        "module export addedCustomAnimations must list custom animations used during render (fixes shadowed local Set)",
-      ).to.be.at.least(1);
-      expect(addedCustomAnimations.has("wheelchair")).to.be.true;
-    } finally {
-      window.itemMetadata = previousItemMetadata;
-      resetImageLoadCache();
-      resetRendererModuleState();
-      if (sandbox) {
-        sandbox.restore();
-        sandbox = null;
-      }
-    }
+    expect(
+      addedCustomAnimations.size,
+      "module export addedCustomAnimations must list custom animations used during render (fixes shadowed local Set)",
+    ).to.be.at.least(1);
+    expect(addedCustomAnimations.has("wheelchair")).to.be.true;
   });
 }, 15_000);

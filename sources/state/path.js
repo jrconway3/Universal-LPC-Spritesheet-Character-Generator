@@ -1,7 +1,8 @@
 import "../install-item-metadata.js";
-import { ANIMATIONS } from "./constants.js";
+import { ANIMATIONS } from "./constants.ts";
 import { getHashParamsforSelections } from "./hash.js";
-import { variantToFilename, es6DynamicTemplate } from "../utils/helpers.js";
+import * as catalog from "./catalog.js";
+import { variantToFilename, es6DynamicTemplate } from "../utils/helpers.ts";
 import { debugLog } from "../utils/debug.js";
 
 // Dependency injection for testability (see setPathDeps / resetPathDeps)
@@ -12,7 +13,8 @@ function createDefaultPathDeps() {
     es6DynamicTemplate,
     debugLog,
     animations: ANIMATIONS,
-    getItemMetadata: (itemId) => window.itemMetadata?.[itemId],
+    getItemMetadata: (itemId) => catalog.getItemMerged(itemId),
+    getMetadataIndexes: () => catalog.getMetadataIndexes(),
   };
 }
 
@@ -144,20 +146,8 @@ export function replaceInPath(path, selections, meta) {
   return path;
 }
 
-const indexedMetadataCache = new Map();
-
-for (const key of Object.keys(window.itemMetadata || {})) {
-  const item = window.itemMetadata[key];
-  const indexKey = item.type_name;
-  if (indexedMetadataCache.has(indexKey)) {
-    const existing = indexedMetadataCache.get(indexKey);
-    existing.push(item);
-  } else {
-    indexedMetadataCache.set(indexKey, [item]);
-  }
-}
-
 function _getNameWithoutVariant(typeName, nameAndVariant) {
-  const itemsForType = indexedMetadataCache.get(typeName) || [];
+  const indexes = pathDeps.getMetadataIndexes();
+  const itemsForType = indexes?.byTypeName?.[typeName] ?? [];
   return getNameWithoutVariant(nameAndVariant, itemsForType);
 }

@@ -1,6 +1,7 @@
 import { getZPos } from "../canvas/canvas-utils.js";
-import { variantToFilename } from "../utils/helpers.js";
+import { variantToFilename } from "../utils/helpers.ts";
 import { replaceInPath } from "./path.js";
+import * as catalog from "./catalog.js";
 
 // Dependency injection for testability (see setMetaDeps / resetMetaDeps)
 function createDefaultMetaDeps() {
@@ -8,7 +9,7 @@ function createDefaultMetaDeps() {
     getZPos,
     variantToFilename,
     replaceInPath,
-    getItemMetadata: (itemId) => window.itemMetadata?.[itemId],
+    getItemMetadata: (itemId) => catalog.getItemMerged(itemId),
   };
 }
 

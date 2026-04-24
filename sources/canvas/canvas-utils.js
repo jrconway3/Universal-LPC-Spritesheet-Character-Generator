@@ -1,5 +1,6 @@
 // Canvas utility functions
 
+import * as catalog from "../state/catalog.js";
 import { debugWarn } from "../utils/debug.js";
 
 /**
@@ -73,7 +74,7 @@ export function hasContentInRegion(ctx, x, y, width, height) {
  * Get zPos for a layer
  */
 export function getZPos(itemId, layerNum = 1) {
-  const meta = window.itemMetadata[itemId];
+  const meta = catalog.getItemMerged(itemId);
   if (!meta) return 100;
 
   const layerKey = `layer_${layerNum}`;

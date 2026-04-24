@@ -1,8 +1,9 @@
 // Credit collection and formatting utilities
 
+import * as catalog from "../state/catalog.js";
 import { state } from "../state/state.js";
 import { replaceInPath } from "../state/path.js";
-import { variantToFilename } from "../utils/helpers.js";
+import { variantToFilename } from "../utils/helpers.ts";
 
 /**
  * Helper function to collect credits from all selected items
@@ -14,7 +15,7 @@ export function getAllCredits(selections, bodyType) {
 
   for (const [, selection] of Object.entries(selections)) {
     const { itemId } = selection;
-    const meta = window.itemMetadata[itemId];
+    const meta = catalog.getItemMerged(itemId);
 
     if (!meta || !meta.credits) continue;
 

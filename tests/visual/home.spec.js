@@ -3,6 +3,7 @@ import { argosScreenshot } from "@argos-ci/playwright";
 import {
   gotoHomepageReady,
   scrollVisualCaptureToTop,
+  waitForCatalogAllReady,
   openHumanMaleSkintonePalette,
   closeSkintonePaletteModal,
   openLicenseAnimationAdvancedAndSearchArm,
@@ -51,6 +52,7 @@ async function argosDesktop(page, name) {
   if (!process.env.ARGOS_TOKEN?.trim()) {
     return;
   }
+  await waitForCatalogAllReady(page);
   await scrollVisualCaptureToTop(page);
   await argosScreenshot(page, name, ARGOS_SCREENSHOT_OPTIONS);
 }

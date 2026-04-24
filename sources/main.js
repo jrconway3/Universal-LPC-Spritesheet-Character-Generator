@@ -1,7 +1,9 @@
 // Main entry point - initializes and mounts the Mithril application
 
+import "./styles/critical-entry.scss";
 import "./vendor-globals.js";
-import "./install-item-metadata.js";
+import { loadAllMetadata } from "./install-item-metadata.js";
+import { catalogReady } from "./state/catalog.js";
 
 // Import debug first so `window.DEBUG` is set before other modules run.
 import { debugLog, getDebugParam } from "./utils/debug.js";
@@ -41,7 +43,7 @@ window.setPaletteRecolorMode = setPaletteRecolorMode;
 window.getPaletteRecolorConfig = getPaletteRecolorConfig;
 
 // Import state management
-import { initState } from "./state/state.js";
+import { initState, state } from "./state/state.js";
 import { initHashChangeListener } from "./state/hash.js";
 
 // Import components
@@ -74,33 +76,55 @@ window.setDefaultSelections = async function () {
   await initState();
 };
 
-// Wait for DOM to be ready, then load Mithril app
-document.addEventListener("DOMContentLoaded", async () => {
-  clearLoadingIndicators();
+// Start metadata chunk fetches as soon as the entry module runs (no DOM required),
+// so download/parse overlaps HTML parse and the rest of this file.
+void loadAllMetadata();
 
-  // Initialize offscreen canvas
-  canvasRenderer.initCanvas();
+void import("./styles/load-deferred-styles.js");
 
-  // Set defaults after canvas is ready
-  if (window.setDefaultSelections) {
-    await window.setDefaultSelections();
-  }
+/** Commit 10 step 1: single-flight hash / init after index + lite are both registered. */
+let hashHydrationInitDone = false;
 
-  // Initialize hash change listener
-  initHashChangeListener();
-
-  // Mount the components
+// Wait for DOM to be ready, then mount UI; catalog may already be loading or ready.
+document.addEventListener("DOMContentLoaded", () => {
   m.mount(document.getElementById("mithril-filters"), App);
   m.mount(document.getElementById("mithril-preview"), AnimationPreview);
   m.mount(
     document.getElementById("mithril-spritesheet-preview"),
     FullSpritesheetPreview,
   );
+
+  clearShellLoadingClass();
+
+  void (async () => {
+    await Promise.all([catalogReady.onIndexReady, catalogReady.onLiteReady]);
+    if (hashHydrationInitDone) return;
+    hashHydrationInitDone = true;
+
+    canvasRenderer.initCanvas();
+
+    initHashChangeListener();
+
+    // Before first render: overlay uses this; during render, `isRenderingCharacter` hides overlay.
+    state.previewBootstrapRenderDone = true;
+
+    if (window.setDefaultSelections) {
+      await window.setDefaultSelections();
+    }
+
+    m.redraw();
+  })();
 });
 
-function clearLoadingIndicators() {
-  const loadingElements = document.querySelectorAll(".loading");
-  for (const element of loadingElements) {
-    element.classList.remove("loading");
+/** Strips shell spinner from Mithril mount roots only (see index.html), not in-component spinners. */
+const SHELL_LOADING_ROOT_IDS = [
+  "mithril-filters",
+  "mithril-preview",
+  "mithril-spritesheet-preview",
+];
+
+function clearShellLoadingClass() {
+  for (const id of SHELL_LOADING_ROOT_IDS) {
+    document.getElementById(id)?.classList.remove("loading");
   }
 }

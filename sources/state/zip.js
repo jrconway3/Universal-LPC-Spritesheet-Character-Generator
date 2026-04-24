@@ -3,7 +3,8 @@ import {
   ANIMATION_CONFIGS,
   FRAME_SIZE,
   DIRECTIONS,
-} from "./constants.js";
+} from "./constants.ts";
+import * as catalog from "./catalog.js";
 import {
   extractAnimationFromCanvas,
   renderSingleItem,
@@ -15,10 +16,10 @@ import {
   addedCustomAnimations,
 } from "../canvas/renderer.js";
 import { getMultiRecolors } from "./palettes.js";
-import { getItemFileName } from "../utils/fileName.js";
+import { getItemFileName } from "../utils/fileName.ts";
 import { loadImage } from "../canvas/load-image.js";
 import { getImageToDraw } from "../canvas/palette-recolor.js";
-import { customAnimations, customAnimationSize } from "../custom-animations.js";
+import { customAnimations, customAnimationSize } from "../custom-animations.ts";
 import { getSortedLayersWithCustomFallback } from "./meta.js";
 import { canvasToBlob } from "../canvas/canvas-utils.js";
 import {
@@ -363,7 +364,7 @@ export const exportSplitItemAnimations = async (deps = {}) => {
       // Export each item for this animation
       for (const [, selection] of Object.entries(state.selections)) {
         const { itemId, variant, name } = selection;
-        const meta = window.itemMetadata[itemId];
+        const meta = catalog.getItemMerged(itemId);
         if (!meta || !meta.animations.includes(anim.value)) {
           debugLog(
             "Skipping item ",

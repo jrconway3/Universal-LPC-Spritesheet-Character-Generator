@@ -2,12 +2,165 @@
   display: block;
   width: 24px;
   height: 24px;
-  border: 3px solid rgba(255,255,255,.3);
+  border: 3px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
   border-top-color: #000;
   animation: spin 1s ease-in-out infinite;
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Gray pulse skeleton rows — placeholders while metadata chunks load (staged tree UI) */
+.skeleton-row {
+  --skeleton-base: #e0e0e0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 1.75rem;
+  padding: 0.25rem 0 0.25rem 1.5rem;
+  pointer-events: none;
+  user-select: none;
+}
+
+.skeleton-row__bar {
+  height: 0.65rem;
+  border-radius: 2px;
+  background-color: var(--skeleton-base);
+  animation: skeleton-pulse 1.15s ease-in-out infinite;
+}
+
+.skeleton-row__bar--short {
+  width: 32%;
+  min-width: 3rem;
+}
+
+.skeleton-row__bar--medium {
+  width: 52%;
+  min-width: 5rem;
+}
+
+.skeleton-row__bar--long {
+  width: 72%;
+  min-width: 7rem;
+}
+
+.skeleton-row__bar--flex {
+  flex: 1;
+  max-width: 14rem;
+}
+
+/* Stacked lines (e.g. item + subtitle) */
+.skeleton-row--stacked {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.35rem;
+}
+
+.skeleton-row--stacked .skeleton-row__bar {
+  max-width: 100%;
+}
+
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-row__bar {
+    animation: none;
+    opacity: 0.72;
+  }
+}
+
+/* Category tree: overlay host is positioned so the outer .box stays static (computed-style parity w/ older builds). */
+.category-tree-loading-host {
+  position: relative;
+  min-height: 14rem;
+}
+
+.category-tree-loading-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  background: rgba(245, 245, 245, 0.72);
+}
+
+.category-tree-loading-overlay .loading {
+  margin: 0 auto;
+}
+
+/* Preview shell: overlays use inset:0 so they match canvas size (no extra band after load). */
+.preview-canvas-area {
+  position: relative;
+}
+
+.preview-canvas-area--spritesheet {
+  min-height: 12rem;
+}
+
+.preview-canvas-root {
+  position: relative;
+  display: inline-block;
+  vertical-align: top;
+  max-width: 100%;
+}
+
+.preview-canvas-busy {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  background: rgba(245, 245, 245, 0.72);
+  border-radius: 4px;
+}
+
+.preview-canvas-loading-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(245, 245, 245, 0.88);
+  border-radius: 4px;
+  pointer-events: auto;
+  overflow: hidden;
+}
+
+.preview-canvas-loading-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  max-width: 100%;
+  padding: 0.125rem 0.35rem;
+  flex-wrap: nowrap;
+}
+
+.preview-canvas-loading-inner .loading {
+  flex-shrink: 0;
+}
+
+.preview-canvas-loading-text {
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }

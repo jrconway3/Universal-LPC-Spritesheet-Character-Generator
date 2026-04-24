@@ -2,13 +2,20 @@
 import classNames from "classnames";
 import { state, getSelectionGroup, selectItem } from "../../state/state.js";
 import { getLayersToLoad } from "../../state/meta.js";
-import { COMPACT_FRAME_SIZE, FRAME_SIZE } from "../../state/constants.js";
-import { capitalize } from "../../utils/helpers.js";
+import { COMPACT_FRAME_SIZE, FRAME_SIZE } from "../../state/constants.ts";
+import { capitalize } from "../../utils/helpers.ts";
 
 export const ItemWithVariants = {
   view: function (vnode) {
-    const { itemId, meta, isSearchMatch, isCompatible, tooltipText } =
-      vnode.attrs;
+    const {
+      itemId,
+      meta,
+      isSearchMatch,
+      isCompatible,
+      tooltipText,
+      showItemTooltips = true,
+    } = vnode.attrs;
+    const rowTitle = showItemTooltips ? tooltipText : undefined;
     const compactDisplay = state.compactDisplay;
     const displayName = meta.name;
     const rootViewNode = vnode;
@@ -46,7 +53,7 @@ export const ItemWithVariants = {
         m(
           "div.tree-label",
           {
-            title: tooltipText,
+            title: rowTitle,
             onclick: () => {
               state.expandedNodes[nodePath] = !isExpanded;
               if (state.expandedNodes[nodePath]) {
@@ -94,7 +101,7 @@ export const ItemWithVariants = {
                           isSelected,
                         "is-not-compatible": !isCompatible,
                       }),
-                      title: tooltipText,
+                      title: rowTitle,
                       onmouseover: (e) => {
                         if (!isCompatible) return;
                         const div = e.currentTarget;

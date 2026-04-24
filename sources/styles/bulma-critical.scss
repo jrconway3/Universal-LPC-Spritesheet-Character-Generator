@@ -1,0 +1,30 @@
+@charset "utf-8";
+
+/*! Critical Bulma: columns, title, box, helpers for static header + preview shell */
+@forward "bulma/sass/utilities";
+@forward "bulma/sass/base/minireset";
+@forward "bulma/sass/base/generic";
+@forward "bulma/sass/grid/columns";
+@forward "bulma/sass/elements/box";
+@forward "bulma/sass/elements/title";
+@forward "bulma/sass/elements/button";
+@forward "bulma/sass/elements/block";
+@forward "bulma/sass/elements/content";
+@forward "bulma/sass/elements/tag";
+@forward "bulma/sass/elements/notification";
+@forward "bulma/sass/form";
+@forward "bulma/sass/grid/grid";
+@forward "bulma/sass/helpers/flexbox";
+@forward "bulma/sass/helpers/spacing";
+@forward "bulma/sass/helpers/typography";
+@forward "bulma/sass/helpers/color";
+@forward "bulma/sass/helpers/gap";
+
+@use "bulma/sass/themes/light";
+@use "bulma/sass/themes/setup";
+
+:root,
+[data-theme="light"] {
+  @include light.light-theme;
+  @include setup.setup-theme;
+}

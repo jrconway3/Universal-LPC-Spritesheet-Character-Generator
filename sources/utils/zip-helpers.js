@@ -3,9 +3,9 @@ import {
   FRAME_SIZE,
   STANDARD_ANIMATION_FRAMES_PER_ROW,
   DIRECTIONS,
-} from "../state/constants.js";
-import { drawFramesToCustomAnimation } from "../canvas/draw-frames.js";
-import { customAnimationSize } from "../custom-animations.js";
+} from "../state/constants.ts";
+import { drawFramesToCustomAnimation } from "../canvas/draw-frames.ts";
+import { customAnimationSize } from "../custom-animations.ts";
 import {
   canvasToBlob,
   get2DContext,

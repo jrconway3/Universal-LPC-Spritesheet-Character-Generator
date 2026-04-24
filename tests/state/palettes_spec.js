@@ -1,5 +1,10 @@
 import { expect } from "chai";
 import { describe, it, beforeEach, afterEach } from "mocha-globals";
+import * as catalog from "../../sources/state/catalog.js";
+import {
+  restoreAppCatalogAfterTest,
+  seedBrowserCatalog,
+} from "../browser-catalog-fixture.js";
 import { state } from "../../sources/state/state.js";
 import {
   getMultiRecolors,
@@ -7,16 +12,13 @@ import {
 } from "../../sources/state/palettes.js";
 
 describe("state/palettes.js", () => {
-  let previousItemMetadata;
-  let previousPaletteMetadata;
   let previousSelections;
 
   beforeEach(() => {
-    previousItemMetadata = window.itemMetadata;
-    previousPaletteMetadata = window.paletteMetadata;
     previousSelections = state.selections;
+    catalog.resetCatalogForTests();
 
-    window.paletteMetadata = {
+    const paletteMetadata = {
       materials: {
         body: {
           default: "ulpc",
@@ -73,7 +75,7 @@ describe("state/palettes.js", () => {
       },
     };
 
-    window.itemMetadata = {
+    const testItemMetadata = {
       body: {
         name: "Body",
         type_name: "body",
@@ -224,13 +226,13 @@ describe("state/palettes.js", () => {
       },
     };
 
+    seedBrowserCatalog(testItemMetadata, { paletteMetadata });
     state.selections = {};
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     state.selections = previousSelections;
-    window.itemMetadata = previousItemMetadata;
-    window.paletteMetadata = previousPaletteMetadata;
+    await restoreAppCatalogAfterTest();
   });
 
   it("falls back to a matching dotted recolor when the exact recolor is missing", () => {
@@ -275,7 +277,7 @@ describe("state/palettes.js", () => {
 
     const [paletteOptions, selectedColors] = getPaletteOptions(
       "head_ears_elven",
-      window.itemMetadata.head_ears_elven,
+      catalog.getItemLite("head_ears_elven"),
     );
 
     expect(selectedColors).to.deep.equal({ ears: "bronze" });

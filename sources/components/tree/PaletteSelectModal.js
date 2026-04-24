@@ -1,9 +1,54 @@
 // PaletteSelectModal.js
 import classNames from "classnames";
 import { drawRecolorPreview } from "../../canvas/palette-recolor.js";
+import * as catalog from "../../state/catalog.js";
 import { state, getSelectionGroup } from "../../state/state.js";
-import { ucwords } from "../../utils/helpers.js";
-import { COMPACT_FRAME_SIZE, FRAME_SIZE } from "../../state/constants.js";
+import { ucwords } from "../../utils/helpers.ts";
+import { COMPACT_FRAME_SIZE, FRAME_SIZE } from "../../state/constants.ts";
+
+/**
+ * Mirrors which variant canvases the modal will mount: default-expands the first version row,
+ * then counts recolor tiles for every expanded `opt.versions` category.
+ * @param {string} itemId
+ * @param {object} opt palette option from `getPaletteOptions`
+ * @returns {number}
+ */
+function prepareAndCountPalettePreviewCanvases(itemId, opt) {
+  const paletteMeta = catalog.getPaletteMetadata();
+  const firstNodePath = `${itemId}-${opt.idx}-${opt.versions[0]}`;
+  if (state.expandedNodes[firstNodePath] === undefined) {
+    state.expandedNodes[firstNodePath] = true;
+  }
+  let n = 0;
+  for (const cat of opt.versions) {
+    const [material, version] = cat.split(".");
+    const nodePath = `${itemId}-${opt.idx}-${cat}`;
+    const materialMeta = paletteMeta?.materials?.[material];
+    const recolors = materialMeta?.palettes?.[version] ?? {};
+    const isExpanded = state.expandedNodes[nodePath] || false;
+    if (isExpanded) {
+      n += Object.keys(recolors).length;
+    }
+  }
+  return n;
+}
+
+/**
+ * When the number of preview canvases changes (modal open, expand/collapse), reset the gate so
+ * stale `drawRecolorPreview` completions are ignored and `data-previews-ready` stays accurate.
+ * @param {import("mithril").Vnode} rootViewNode
+ * @param {number} total
+ */
+function syncPalettePreviewGate(rootViewNode, total) {
+  if (rootViewNode.state._palettePreviewLastTotal === total) {
+    return;
+  }
+  rootViewNode.state.palettePreviewGateSeq =
+    (rootViewNode.state.palettePreviewGateSeq || 0) + 1;
+  rootViewNode.state._palettePreviewLastTotal = total;
+  rootViewNode.state.palettePreviewExpected = total;
+  rootViewNode.state.palettePreviewCompleted = 0;
+}
 
 export const PaletteSelectModal = {
   view: function (vnode) {
@@ -17,14 +62,49 @@ export const PaletteSelectModal = {
       onSelect,
     } = vnode.attrs;
 
-    // Selection Group
-    const meta = window.itemMetadata[itemId];
+    if (!catalog.isPaletteReady()) {
+      return [
+        m("div.palette-modal-overlay", { onclick: onClose }),
+        m(
+          "div.palette-modal",
+          {
+            onclick: (e) => e.stopPropagation(),
+            "data-previews-ready": "false",
+          },
+          m("p.has-text-grey", "Loading palette data…"),
+        ),
+      ];
+    }
+
+    /* Split metadata: sprite paths need lite + layers chunks for getLayersToLoad. */
+    if (!catalog.isLiteReady() || !catalog.isLayersReady()) {
+      return [
+        m("div.palette-modal-overlay", { onclick: onClose }),
+        m(
+          "div.palette-modal",
+          {
+            onclick: (e) => e.stopPropagation(),
+            "data-previews-ready": "false",
+          },
+          m("p.has-text-grey", "Loading layer data…"),
+        ),
+      ];
+    }
+
+    // Selection Group — merged metadata so getLayersToLoad / drawRecolorPreview see layer paths
+    const meta = catalog.getItemMerged(itemId) ?? catalog.getItemLite(itemId);
     const selectionGroup = opt.type_name ?? getSelectionGroup(itemId);
     const selection = state.selections[selectionGroup];
-    const nodePath = `${itemId}-${opt.idx}-${opt.versions[0]}`;
-    if (state.expandedNodes[nodePath] === undefined) {
-      state.expandedNodes[nodePath] = true;
-    }
+    const previewCanvasTotal = prepareAndCountPalettePreviewCanvases(
+      itemId,
+      opt,
+    );
+    syncPalettePreviewGate(rootViewNode, previewCanvasTotal);
+
+    const previewsReady =
+      rootViewNode.state.palettePreviewExpected === 0 ||
+      rootViewNode.state.palettePreviewCompleted >=
+        rootViewNode.state.palettePreviewExpected;
 
     // Overlay for outside click
     const overlay = m("div.palette-modal-overlay", {
@@ -37,6 +117,7 @@ export const PaletteSelectModal = {
         "div.palette-modal",
         {
           onclick: (e) => e.stopPropagation(),
+          "data-previews-ready": previewsReady ? "true" : "false",
         },
         [
           m("header.is-flex", [
@@ -54,124 +135,151 @@ export const PaletteSelectModal = {
             opt.versions.map((cat) => {
               const [material, version] = cat.split(".");
               const nodePath = `${itemId}-${opt.idx}-${cat}`;
-              const paletteMeta = window.paletteMetadata;
-              const paletteVersionMeta = paletteMeta.versions[version];
-              const materialMeta = paletteMeta.materials[material];
-              const recolors = materialMeta.palettes[version];
+              const paletteMeta = catalog.getPaletteMetadata();
+              const paletteVersionMeta = paletteMeta?.versions?.[version];
+              const materialMeta = paletteMeta?.materials?.[material];
+              const recolors = materialMeta?.palettes?.[version] ?? {};
               const isExpanded = state.expandedNodes[nodePath] || false;
-              return [
-                m(
-                  "div.tree-label",
-                  {
-                    onclick: () => {
-                      state.expandedNodes[nodePath] = !isExpanded;
+              return m(
+                "div.palette-modal-version-block",
+                {
+                  key: `${rootViewNode.state.palettePreviewGateSeq}-${nodePath}`,
+                },
+                [
+                  m(
+                    "div.tree-label",
+                    {
+                      onclick: () => {
+                        state.expandedNodes[nodePath] = !isExpanded;
+                      },
                     },
-                  },
-                  [
-                    m("span.tree-arrow", {
-                      class: isExpanded ? "expanded" : "collapsed",
-                    }),
-                    m(
-                      "span.palette-version",
-                      paletteVersionMeta?.label +
-                        (material !== opt.material
-                          ? ` - ${materialMeta?.label}`
-                          : ""),
-                    ),
-                  ],
-                ),
-                isExpanded
-                  ? m("div.variants-container.is-flex.is-flex-wrap-wrap", [
-                      ...Object.entries(recolors).map(([palette, colors]) => {
-                        const gradient = colors.slice().reverse();
-                        const key =
-                          (material !== opt.material ? material + "." : "") +
-                          (version !== opt.default ? version + "." : "") +
-                          palette;
-                        const isSelected =
-                          (selection?.itemId === itemId ||
-                            selectionGroup === opt.type_name) &&
-                          selection?.recolor === key;
-                        const itemColors = {
-                          ...selectedColors,
-                          [selectionGroup]: key,
-                        };
-                        return m("div.cell", [
-                          m(
-                            "div.variant-item.is-flex.is-flex-direction-column.is-align-items-center.is-clickable",
-                            {
-                              class: classNames({
-                                "has-background-link-light has-text-weight-bold has-text-link":
-                                  isSelected,
-                              }),
-                              onmouseover: (e) => {
-                                const div = e.currentTarget;
-                                if (!isSelected)
-                                  div.classList.add("has-background-white-ter");
-                              },
-                              onmouseout: (e) => {
-                                const div = e.currentTarget;
-                                if (!isSelected)
-                                  div.classList.remove(
-                                    "has-background-white-ter",
-                                  );
-                              },
-                              onclick: (e) => {
-                                e.stopPropagation();
-                                onSelect(key);
-                              },
-                            },
-                            [
-                              m(
-                                "span.variant-display-name.has-text-centered.is-size-7",
-                                ucwords(palette.replaceAll("_", " ")),
-                              ),
-                              m("canvas.variant-canvas.box.p-0", {
-                                width: compactDisplay
-                                  ? COMPACT_FRAME_SIZE
-                                  : FRAME_SIZE,
-                                height: compactDisplay
-                                  ? COMPACT_FRAME_SIZE
-                                  : FRAME_SIZE,
-                                class: compactDisplay ? " compact-display" : "",
-                                onremove: (canvasVnode) => {
-                                  canvasVnode.dom._recolorRenderId =
-                                    (canvasVnode.dom._recolorRenderId || 0) + 1;
-                                },
-                                oncreate: (canvasVnode) => {
-                                  const renderId =
-                                    (canvasVnode.dom._recolorRenderId || 0) + 1;
-                                  canvasVnode.dom._recolorRenderId = renderId;
-                                  const imagesLoaded = drawRecolorPreview(
-                                    itemId,
-                                    meta,
-                                    canvasVnode.dom,
-                                    itemColors,
-                                    renderId,
-                                  );
-                                  if (imagesLoaded > 0) {
-                                    rootViewNode.state.imagesLoaded +=
-                                      imagesLoaded;
-                                  }
-                                },
-                              }),
-                              m(
-                                "div.palette-swatch",
-                                gradient.map((color) =>
-                                  m("span", {
-                                    style: {
-                                      backgroundColor: color,
-                                    },
-                                  }),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ]);
+                    [
+                      m("span.tree-arrow", {
+                        class: isExpanded ? "expanded" : "collapsed",
                       }),
-                    ])
-                  : null, // ends expanded variant container
-              ];
+                      m(
+                        "span.palette-version",
+                        paletteVersionMeta?.label +
+                          (material !== opt.material
+                            ? ` - ${materialMeta?.label}`
+                            : ""),
+                      ),
+                    ],
+                  ),
+                  isExpanded
+                    ? m("div.variants-container.is-flex.is-flex-wrap-wrap", [
+                        ...Object.entries(recolors).map(([palette, colors]) => {
+                          const gradient = colors.slice().reverse();
+                          const key =
+                            (material !== opt.material ? material + "." : "") +
+                            (version !== opt.default ? version + "." : "") +
+                            palette;
+                          const isSelected =
+                            (selection?.itemId === itemId ||
+                              selectionGroup === opt.type_name) &&
+                            selection?.recolor === key;
+                          const itemColors = {
+                            ...selectedColors,
+                            [selectionGroup]: key,
+                          };
+                          return m("div.cell", [
+                            m(
+                              "div.variant-item.is-flex.is-flex-direction-column.is-align-items-center.is-clickable",
+                              {
+                                class: classNames({
+                                  "has-background-link-light has-text-weight-bold has-text-link":
+                                    isSelected,
+                                }),
+                                onmouseover: (e) => {
+                                  const div = e.currentTarget;
+                                  if (!isSelected)
+                                    div.classList.add(
+                                      "has-background-white-ter",
+                                    );
+                                },
+                                onmouseout: (e) => {
+                                  const div = e.currentTarget;
+                                  if (!isSelected)
+                                    div.classList.remove(
+                                      "has-background-white-ter",
+                                    );
+                                },
+                                onclick: (e) => {
+                                  e.stopPropagation();
+                                  onSelect(key);
+                                },
+                              },
+                              [
+                                m(
+                                  "span.variant-display-name.has-text-centered.is-size-7",
+                                  ucwords(palette.replaceAll("_", " ")),
+                                ),
+                                m("canvas.variant-canvas.box.p-0", {
+                                  width: compactDisplay
+                                    ? COMPACT_FRAME_SIZE
+                                    : FRAME_SIZE,
+                                  height: compactDisplay
+                                    ? COMPACT_FRAME_SIZE
+                                    : FRAME_SIZE,
+                                  class: compactDisplay
+                                    ? " compact-display"
+                                    : "",
+                                  onremove: (canvasVnode) => {
+                                    canvasVnode.dom._recolorRenderId =
+                                      (canvasVnode.dom._recolorRenderId || 0) +
+                                      1;
+                                  },
+                                  oncreate: (canvasVnode) => {
+                                    const renderId =
+                                      (canvasVnode.dom._recolorRenderId || 0) +
+                                      1;
+                                    canvasVnode.dom._recolorRenderId = renderId;
+                                    const settledGate =
+                                      rootViewNode.state.palettePreviewGateSeq;
+                                    void drawRecolorPreview(
+                                      itemId,
+                                      meta,
+                                      canvasVnode.dom,
+                                      itemColors,
+                                      renderId,
+                                    ).then(() => {
+                                      if (
+                                        settledGate !==
+                                        rootViewNode.state.palettePreviewGateSeq
+                                      ) {
+                                        return;
+                                      }
+                                      if (
+                                        typeof renderId === "number" &&
+                                        canvasVnode.dom._recolorRenderId !==
+                                          renderId
+                                      ) {
+                                        return;
+                                      }
+                                      rootViewNode.state
+                                        .palettePreviewCompleted++;
+                                      m.redraw();
+                                    });
+                                  },
+                                }),
+                                m(
+                                  "div.palette-swatch",
+                                  gradient.map((color) =>
+                                    m("span", {
+                                      style: {
+                                        backgroundColor: color,
+                                      },
+                                    }),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ]);
+                        }),
+                      ])
+                    : null,
+                ],
+              );
             }),
           ),
           m("footer", " "),

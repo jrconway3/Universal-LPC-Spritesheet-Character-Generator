@@ -12,6 +12,11 @@ import {
   setCustomAnimations,
   setCustomAnimationBase,
 } from "../../sources/state/filters.js";
+import { resetCatalogForTests } from "../../sources/state/catalog.js";
+import {
+  restoreAppCatalogAfterTest,
+  seedBrowserCatalog,
+} from "../browser-catalog-fixture.js";
 import { expect } from "chai";
 import { describe, it, beforeEach, afterEach } from "mocha-globals";
 
@@ -101,15 +106,12 @@ describe("state/filters.js", () => {
   });
 
   describe("isItemLicenseCompatible", () => {
-    let originalItemMetadata;
-
     beforeEach(() => {
-      originalItemMetadata = window.itemMetadata;
-      window.itemMetadata = {};
+      resetCatalogForTests();
     });
 
-    afterEach(() => {
-      window.itemMetadata = originalItemMetadata;
+    afterEach(async () => {
+      await restoreAppCatalogAfterTest();
     });
 
     it("should return true if item metadata is missing", () => {
@@ -118,9 +120,9 @@ describe("state/filters.js", () => {
     });
 
     it("should return true if item metadata has no credits", () => {
-      window.itemMetadata = {
+      seedBrowserCatalog({
         item1: { credits: [] },
-      };
+      });
       const result = isItemLicenseCompatible("item1");
       expect(result).to.be.true;
     });
@@ -128,11 +130,11 @@ describe("state/filters.js", () => {
     it("should return false if no licenses are enabled", () => {
       setEnabledLicenses([]);
       setLicenseConfig([{ key: "license1", versions: ["license1 1.0"] }]);
-      window.itemMetadata = {
+      seedBrowserCatalog({
         item1: {
           credits: [{ licenses: ["license1 1.0"] }],
         },
-      };
+      });
       const result = isItemLicenseCompatible("item1");
       expect(result).to.be.false;
     });
@@ -143,11 +145,11 @@ describe("state/filters.js", () => {
         { key: "license1", versions: ["license1 1.0"] },
         { key: "license2", versions: ["license2 1.0"] },
       ]);
-      window.itemMetadata = {
+      seedBrowserCatalog({
         item1: {
           credits: [{ licenses: ["license1 1.0", "license2 1.0"] }],
         },
-      };
+      });
       const result = isItemLicenseCompatible("item1");
       expect(result).to.be.true;
     });
@@ -159,11 +161,11 @@ describe("state/filters.js", () => {
         { key: "license2", versions: ["license2 1.0"] },
         { key: "license3", versions: ["license3 1.0"] },
       ]);
-      window.itemMetadata = {
+      seedBrowserCatalog({
         item1: {
           credits: [{ licenses: ["license1 1.0", "license2 1.0"] }],
         },
-      };
+      });
       const result = isItemLicenseCompatible("item1");
       expect(result).to.be.false;
     });
@@ -171,22 +173,20 @@ describe("state/filters.js", () => {
     it("should trim license strings before comparison", () => {
       setEnabledLicenses(["license1"]);
       setLicenseConfig([{ key: "license1", versions: ["license1 1.0"] }]);
-      window.itemMetadata = {
+      seedBrowserCatalog({
         item1: {
           credits: [{ licenses: [" license1 1.0 "] }],
         },
-      };
+      });
       const result = isItemLicenseCompatible("item1");
       expect(result).to.be.true;
     });
   });
 
   describe("isItemAnimationCompatible", () => {
-    let originalItemMetadata;
-
     beforeEach(() => {
-      originalItemMetadata = window.itemMetadata;
-      window.itemMetadata = {
+      resetCatalogForTests();
+      seedBrowserCatalog({
         item1: {
           animations: ["walk", "run"],
         },
@@ -196,7 +196,13 @@ describe("state/filters.js", () => {
         item3: {
           animations: [],
         },
-      };
+        item4: {
+          animations: ["customRun"],
+        },
+        item5: {
+          animations: ["customFly"],
+        },
+      });
 
       // Reset dependencies
       setAnimations([{ value: "walk" }, { value: "run" }, { value: "jump" }]);
@@ -205,8 +211,8 @@ describe("state/filters.js", () => {
       setCustomAnimationBase(() => null);
     });
 
-    afterEach(() => {
-      window.itemMetadata = originalItemMetadata;
+    afterEach(async () => {
+      await restoreAppCatalogAfterTest();
     });
 
     it("should return true if no animations are enabled", () => {
@@ -233,9 +239,6 @@ describe("state/filters.js", () => {
       });
       setCustomAnimationBase((anim) => anim.base);
       setEnabledAnimations(["run"]);
-      window.itemMetadata.item4 = {
-        animations: ["customRun"],
-      };
       expect(isItemAnimationCompatible("item4")).to.be.true;
     });
 
@@ -245,9 +248,6 @@ describe("state/filters.js", () => {
       });
       setCustomAnimationBase((anim) => anim.base);
       setEnabledAnimations(["run"]);
-      window.itemMetadata.item5 = {
-        animations: ["customFly"],
-      };
       expect(isItemAnimationCompatible("item5")).to.be.false;
     });
 

@@ -1,6 +1,8 @@
 import { debugWarn } from "../utils/debug.js";
 
 let loadedImages = {};
+/** @type {Map<string, Promise<HTMLImageElement>>} In-flight loads: same `src` shares one `Image` and one profiler span. */
+const inFlight = new Map();
 
 /**
  * Clears the in-memory image cache. Browser tests call this so a stubbed
@@ -8,46 +10,63 @@ let loadedImages = {};
  */
 export function resetImageLoadCache() {
   loadedImages = {};
+  inFlight.clear();
 }
 
 /**
  * Load an image
  */
 export function loadImage(src) {
-  return new Promise((resolve, reject) => {
-    if (loadedImages[src]) {
-      resolve(loadedImages[src]);
-      return;
-    }
+  if (loadedImages[src]) {
+    return Promise.resolve(loadedImages[src]);
+  }
+  const existing = inFlight.get(src);
+  if (existing) {
+    return existing;
+  }
 
-    // Mark start of image load for profiling
-    const profiler = window.profiler;
-    if (profiler) {
-      profiler.mark(`image-load:${src}:start`);
-    }
-
-    const img = new Image();
-    img.onload = () => {
-      loadedImages[src] = img;
-
-      // Mark end and measure
-      if (profiler) {
-        profiler.mark(`image-load:${src}:end`);
-        profiler.measure(
-          `image-load:${src}`,
-          `image-load:${src}:start`,
-          `image-load:${src}:end`,
-        );
-      }
-
-      resolve(img);
-    };
-    img.onerror = () => {
-      console.error(`Failed to load image: ${src}`);
-      reject(new Error(`Failed to load ${src}`));
-    };
-    img.src = src;
+  // Register in-flight *before* creating the Image. The Promise constructor runs
+  // the executor synchronously; if we only `set` after `new Promise(...)`, a
+  // second concurrent `loadImage(src)` can miss `inFlight` and create a second
+  // `Image` for the same `src` (fails "share one in-flight request" in tests).
+  let resolve;
+  let reject;
+  const p = new Promise((res, rej) => {
+    resolve = res;
+    reject = rej;
   });
+  inFlight.set(src, p);
+
+  // Mark start of image load (span is actual fetch/decode)
+  const profiler = window.profiler;
+  if (profiler) {
+    profiler.mark(`image-load:${src}:start`);
+  }
+
+  const img = new Image();
+  img.onload = () => {
+    loadedImages[src] = img;
+    inFlight.delete(src);
+
+    if (profiler) {
+      profiler.mark(`image-load:${src}:end`);
+      profiler.measure(
+        `image-load:${src}`,
+        `image-load:${src}:start`,
+        `image-load:${src}:end`,
+      );
+    }
+
+    resolve(img);
+  };
+  img.onerror = () => {
+    inFlight.delete(src);
+    console.error(`Failed to load image: ${src}`);
+    reject(new Error(`Failed to load ${src}`));
+  };
+  img.src = src;
+
+  return p;
 }
 
 /**

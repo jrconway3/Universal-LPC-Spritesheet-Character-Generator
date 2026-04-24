@@ -17,31 +17,35 @@ function isPathInside(filePath, dirPath) {
 }
 
 /**
- * Vite plugin: generates `dist/item-metadata.js` from `sheet_definitions/` and
- * `palette_definitions/` before bundling. Does not fork z-position tooling (CLI only).
+ * Vite plugin: generates five metadata ES modules under `dist/` from `sheet_definitions/`
+ * and `palette_definitions/` before bundling. Does not fork z-position tooling (CLI only).
  * Skips writing `CREDITS.csv` so dev/build do not dirty the repo.
  *
  * @param {"development"|"production"} [env="production"] Passed through to
- *   `buildMetadataJs`: development pretty-prints embedded JSON; production does not.
+ *   `generateSources` / `JSON.stringify` indent: development pretty-prints embedded JSON;
+ *   production emits compact JSON.
+ * @param {{ generateSources?: typeof generateSources }} [pluginOptions] Optional overrides
+ *   (used by Node tests to stub `generateSources`).
  * @returns {import("vite").Plugin}
  */
-export function vitePluginItemMetadata(env = "production") {
+export function vitePluginItemMetadata(env = "production", pluginOptions = {}) {
+  const generateSourcesFn = pluginOptions.generateSources ?? generateSources;
   let root = process.cwd();
   let debounceTimer = null;
 
   function runGenerate() {
     fs.mkdirSync(path.join(root, "dist"), { recursive: true });
     const metadataOutputPath = path.join(root, "dist", "item-metadata.js");
-    generateSources({
+    generateSourcesFn({
       writeMetadata: true,
       metadataOutputPath,
+      env,
       writeFileSync: (filePath, contents) => {
         if (path.basename(filePath) === "CREDITS.csv") {
           return;
         }
         fs.writeFileSync(filePath, contents);
       },
-      env,
     });
   }
 

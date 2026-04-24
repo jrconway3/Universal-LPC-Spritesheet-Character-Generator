@@ -5,16 +5,44 @@ import {
   getSelectionGroup,
   applyMatchBodyColor,
 } from "../../state/state.js";
+import * as catalog from "../../state/catalog.js";
 import { BodyTypeSelector } from "./BodyTypeSelector.js";
 import { TreeNode } from "./TreeNode.js";
 
 export const CategoryTree = {
   view: function () {
-    if (!window.categoryTree) {
-      return m("div.loading");
+    if (!catalog.isIndexReady()) {
+      return m("div.box.has-background-light.category-tree-panel", [
+        m("div.category-tree-loading-host", [
+          m(
+            "div.category-tree-loading-overlay",
+            { "aria-busy": "true", "aria-live": "polite" },
+            m("span.loading", { "aria-label": "Loading category index" }),
+          ),
+          m("h3.title.is-5.mb-3", "Available Items"),
+          m("p.has-text-grey.is-size-7", "Loading category index…"),
+        ]),
+      ]);
     }
 
-    return m("div.box.has-background-light", [
+    const categoryTree = catalog.getCategoryTree();
+    if (!categoryTree) {
+      return m("div.box.has-background-light.category-tree-panel", [
+        m("div.category-tree-loading-host", [
+          m(
+            "div.category-tree-loading-overlay",
+            { "aria-busy": "true" },
+            m("span.loading", { "aria-label": "Loading category index" }),
+          ),
+          m("h3.title.is-5.mb-3", "Available Items"),
+          m("p.has-text-grey.is-size-7", "Loading category index…"),
+        ]),
+      ]);
+    }
+
+    const liteReady = catalog.isLiteReady();
+
+    return m("div.box.has-background-light.category-tree-panel", [
       m(
         "div.is-flex.is-justify-content-space-between.is-align-items-center.mb-3",
         [
@@ -39,12 +67,15 @@ export const CategoryTree = {
             m(
               "button.button.is-small",
               {
+                disabled: !liteReady,
+                title: liteReady ? undefined : "Loading item list…",
                 onclick: () => {
+                  if (!liteReady) return;
                   for (const [, selection] of Object.entries(
                     state.selections,
                   )) {
                     const { itemId } = selection;
-                    const meta = window.itemMetadata[itemId];
+                    const meta = catalog.getItemMerged(itemId);
                     if (meta && meta.path) {
                       let pathSoFar = "";
                       // Expand all path segments (categories)
@@ -118,7 +149,7 @@ export const CategoryTree = {
         // Body Type as first tree item
         m(BodyTypeSelector),
         // Rest of the category tree
-        Object.entries(window.categoryTree.children || {}).map(
+        Object.entries(categoryTree.children || {}).map(
           ([categoryName, categoryNode]) =>
             m(TreeNode, {
               key: categoryName,

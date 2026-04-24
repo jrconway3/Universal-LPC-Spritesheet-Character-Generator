@@ -1,7 +1,8 @@
- LPC Spritesheet Character Generator
- =============================================
+LPC Spritesheet Character Generator
+=============================================
 
- #### Translations
+#### Translations
+
 [![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/liberatedpixelcup/Universal-LPC-Spritesheet-Character-Generator/blob/master/README.md) [![zh](https://img.shields.io/badge/lang-zh-green.svg)](https://github.com/liberatedpixelcup/Universal-LPC-Spritesheet-Character-Generator/blob/master/lang/zh/README_ZH.md)
 
 This generator attempts to include all [LPC](https://lpc.opengameart.org) created character art up to now.
@@ -53,18 +54,18 @@ When using the generator, you can find download a text as csv or plain text file
 
 Alternatively, you can also use the file [CREDITS.csv](/CREDITS.csv).
 
-This file lists the authors, license(s), and links to the original URL(s), for every image inside `spritesheets`. 
+This file lists the authors, license(s), and links to the original URL(s), for every image inside `spritesheets`.
 
 Concluding, to conform to the **attribution** requirement of the used artwork, you can either:
 
 - Distribute the entire [CREDITS.csv](/CREDITS.csv) file along with your project.
-- Distribute a composed list containing the credits for the assets you use in your project. 
+- Distribute a composed list containing the credits for the assets you use in your project.
 
 Make sure this credits file is accessible from within your game or app and can be reasonably discovered by users (for instance, show the information on the "Credits" screen directly, or provide a visible link).
 
 **Importantly, the individual licenses may impose additional restrictions. It's your responsibility to conform to the licenses imposed by the artwork in use.**
 
-If you don't want to *show* the entire credits file directly, should include a statement like this on your credits screen:
+If you don't want to _show_ the entire credits file directly, should include a statement like this on your credits screen:
 
 > - Sprites by: Johannes Sjölund (wulax), Michael Whitlock (bigbeargames), Matthew Krohn (makrohn), Nila122, David Conway Jr. (JaidynReiman), Carlo Enrico Victoria (Nemisys), Thane Brimhall (pennomi), laetissima, bluecarrot16, Luke Mehl, Benjamin K. Smith (BenCreating), MuffinElZangano, Durrani, kheftel, Stephen Challener (Redshrike), William.Thompsonj, Marcel van de Steeg (MadMarcel), TheraHedwig, Evert, Pierre Vigier (pvigier), Eliza Wyatt (ElizaWy), Johannes Sjölund (wulax), Sander Frenken (castelonia), dalonedrau, Lanea Zimmerman (Sharm), Manuel Riecke (MrBeast), Barbara Riviera, Joe White, Mandi Paugh, Shaun Williams, Daniel Eddeland (daneeklu), Emilio J. Sanchez-Sierra, drjamgo, gr3yh47, tskaufma, Fabzy, Yamilian, Skorpio, kheftel, Tuomo Untinen (reemax), Tracy, thecilekli, LordNeo, Stafford McIntyre, PlatForge project, DCSS authors, DarkwallLKE, Charles Sanchez (CharlesGabriel), Radomir Dopieralski, macmanmatty, Cobra Hubbard (BlueVortexGames), Inboxninja, kcilds/Rocetti/Eredah, Napsio (Vitruvian Studio), The Foreman, AntumDeluge
 > - Sprites contributed as part of the Liberated Pixel Cup project from OpenGameArt.org: http://opengameart.org/content/lpc-collection
@@ -157,19 +158,21 @@ If an engine is not listed above, try Google. However, it is very likely that yo
 - **Format:** `npm run format:check` (verify) or `npm run format` (apply)
 - **Tests:** `npm test` (Node checks plus browser tests). Visual regression: `npm run test:visual`. Details are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
-**Generated files:** [CREDITS.csv](CREDITS.csv) is updated by **`node scripts/generate_sources.mjs`** (also **`npm run validate-site-sources`**), together with z-position CSV under **`scripts/zPositioning/`**. The runtime catalog bundle **`dist/item-metadata.js`** is produced by **Vite** (`npm run dev`, `npm run build`); it is gitignored—do not edit it by hand. **`npm run dev`** writes that bundle with pretty-printed embedded JSON; **`npm run build`** writes compact JSON. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full workflow.
+**Generated files:** [CREDITS.csv](CREDITS.csv) is updated by **`node scripts/generate_sources.mjs`** (also **`npm run validate-site-sources`**), together with z-position CSV under **`scripts/zPositioning/`**. The default CLI path uses **`writeMetadata: false`**, so it does not emit the **`dist/`** JavaScript. **Vite** (`npm run dev`, `npm run build`) runs the metadata plugin, writes **five** modules under **`dist/`** (`index-`, `palette-`, `item-`, `credits-`, `layers-metadata.js`), and the app registers them in **`sources/state/catalog.js`**. The **`dist/`** tree is gitignored—do not edit generated files by hand. **`npm run dev`** pretty-prints embedded JSON in **all** of those files; **`npm run build`** writes them compact (see [PR #432](https://github.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/pull/432)). See [CONTRIBUTING.md](CONTRIBUTING.md) for the full workflow, catalog API, and staged loading.
 
 #### Performance Profiling
 
 The generator includes built-in performance profiling tools to help identify rendering bottlenecks and optimize performance. See [PERFORMANCE_PROFILING.md](PERFORMANCE_PROFILING.md) for detailed documentation.
 
 **Quick Start:**
+
 - Profiler is automatically enabled when running on `localhost`
 - Override with `?debug=true` or `?debug=false` in the URL
 - View metrics in Chrome DevTools → Performance tab
 - Run `profiler.report()` in the console for a summary
 
 **What it tracks:**
+
 - Canvas rendering time (drawing, compositing)
 - Image loading performance
 - UI update operations
@@ -185,28 +188,33 @@ The generator uses GPU-accelerated WebGL shaders for real-time palette-based rec
 **Console Commands:**
 
 Check current rendering mode:
+
 ```javascript
-getPaletteRecolorConfig()
+getPaletteRecolorConfig();
 // Returns: { forceCPU: false, useWebGL: true, activeMode: "webgl" }
 ```
 
 View recolor statistics:
+
 ```javascript
-getPaletteRecolorStats()
+getPaletteRecolorStats();
 // Shows breakdown of WebGL vs CPU operations
 ```
 
 Force CPU mode (useful for testing/debugging):
+
 ```javascript
-setPaletteRecolorMode("cpu")
+setPaletteRecolorMode("cpu");
 ```
 
 Switch back to WebGL mode:
+
 ```javascript
-setPaletteRecolorMode("webgl")
+setPaletteRecolorMode("webgl");
 ```
 
 **Technical Details:**
+
 - **WebGL Mode** (default): GPU-accelerated palette swapping using fragment shaders
   - Single shared WebGL context to avoid browser context limits
   - Palette encoded as texture for fast GPU lookups
@@ -219,6 +227,7 @@ setPaletteRecolorMode("webgl")
 The system automatically detects WebGL availability and falls back to CPU mode if needed.
 
 ### Examples
+
 ![example](/readme-images/example.png)
 
 ### Sponsors

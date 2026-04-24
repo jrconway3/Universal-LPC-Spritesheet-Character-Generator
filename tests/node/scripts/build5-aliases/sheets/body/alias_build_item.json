@@ -1,0 +1,21 @@
+{
+  "name": "Alias Build Item",
+  "type_name": "alias_build",
+  "animations": ["walk"],
+  "layer_1": {
+    "male": "body/alias_build/adult/"
+  },
+  "variants": ["adult"],
+  "credits": [
+    {
+      "file": "body/alias_build",
+      "notes": "",
+      "authors": ["Test Author"],
+      "licenses": ["CC0"],
+      "urls": []
+    }
+  ],
+  "aliases": {
+    "legacy_slot": "adult"
+  }
+}

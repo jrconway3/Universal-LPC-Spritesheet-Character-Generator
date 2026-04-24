@@ -1,5 +1,5 @@
 import debugUtils from "../utils/debug.js";
-import { ucwords } from "../../sources/utils/helpers.js";
+import { ucwords } from "../../sources/utils/helpers.ts";
 import { paletteMetadata } from "./state.mjs";
 
 const { debugWarn } = debugUtils;

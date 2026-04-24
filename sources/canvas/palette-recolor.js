@@ -7,10 +7,11 @@ import {
 } from "./webgl-palette-recolor.js";
 import { debugLog, debugWarn } from "../utils/debug.js";
 import { get2DContext } from "./canvas-utils.js";
+import * as catalog from "../state/catalog.js";
 import { state } from "../state/state.js";
 import { getLayersToLoad } from "../state/meta.js";
 import { getPalettesForItem, getTargetPalette } from "../state/palettes.js";
-import { COMPACT_FRAME_SIZE, FRAME_SIZE } from "../state/constants.js";
+import { COMPACT_FRAME_SIZE, FRAME_SIZE } from "../state/constants.ts";
 
 // Configuration flags
 let config = {
@@ -264,7 +265,7 @@ export async function getImageToDraw(img, itemId, recolors, spritePath = null) {
   if (!recolors) {
     return img; // No recolor specified, return original image
   }
-  const meta = window.itemMetadata?.[itemId];
+  const meta = catalog.getItemLite(itemId);
   const paletteConfig = getPalettesForItem(itemId, meta);
   if (!paletteConfig) {
     return img; // Item doesn't use palette recoloring

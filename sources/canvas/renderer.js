@@ -6,19 +6,21 @@ import { getSpritePath } from "../state/path.js";
 import { getImageToDraw } from "./palette-recolor.js";
 import { getMultiRecolors } from "../state/palettes.js";
 import { get2DContext, getZPos } from "./canvas-utils.js";
-import { variantToFilename } from "../utils/helpers.js";
-import { drawFramesToCustomAnimation } from "./draw-frames.js";
+import { variantToFilename } from "../utils/helpers.ts";
+import { drawFramesToCustomAnimation } from "./draw-frames.ts";
 import {
   FRAME_SIZE,
   ANIMATION_OFFSETS,
   ANIMATION_CONFIGS,
-} from "../state/constants.js";
-import { customAnimations, customAnimationBase } from "../custom-animations.js";
+} from "../state/constants.ts";
+import { customAnimations, customAnimationBase } from "../custom-animations.ts";
 import {
   setCurrentCustomAnimations,
   setCustomAnimYPositions,
 } from "./preview-animation.js";
 import { getSortedLayersByAnim } from "../state/meta.js";
+import { catalogReady } from "../state/catalog.js";
+import * as catalog from "../state/catalog.js";
 import { debugWarn } from "../utils/debug.js";
 
 /**
@@ -55,6 +57,8 @@ let layers = [];
 let itemsToDraw = [];
 let addedCustomAnimations = new Set();
 let customAreaItems = {};
+/** True after `initCanvas()` — offscreen buffer exists (main bootstrap runs this after S1∧S2). */
+let offscreenCanvasInitialized = false;
 
 /**
  * Initialize the canvas (creates offscreen canvas)
@@ -64,6 +68,23 @@ export function initCanvas() {
   ctx = get2DContext(canvas);
   canvas.width = SHEET_WIDTH;
   canvas.height = SHEET_HEIGHT;
+  offscreenCanvasInitialized = true;
+}
+
+export function isOffscreenCanvasInitialized() {
+  return offscreenCanvasInitialized;
+}
+
+/** @internal Test helper */
+export function resetOffscreenCanvasStateForTests() {
+  offscreenCanvasInitialized = false;
+  canvas = null;
+  ctx = null;
+}
+
+/** @internal Test helper (e.g. Node without a DOM) */
+export function setOffscreenCanvasInitializedForTests(value) {
+  offscreenCanvasInitialized = value;
 }
 
 export {
@@ -75,8 +96,19 @@ export {
   customAreaItems,
 };
 
+/** Commit 10: one render at a time; new calls wait behind the in-flight one. */
+let renderCharacterSerial = Promise.resolve();
+
+/** @internal */
+export function resetRenderCharacterQueueForTests() {
+  renderCharacterSerial = Promise.resolve();
+}
+
 /**
- * Render character based on selections
+ * Render character based on selections. Waits for layers metadata (S5), then runs serialized so
+ * hash, defaults, and App updates cannot overlap expensive full renders.
+ * The `onLayersReady` wait, dynamic `import` of `state`, and the serialized render queue
+ * are outside the `renderCharacter` performance measure; marks wrap compositing in `runRenderCharacter` only.
  * @param {Object} selections - Selected items
  * @param {string} bodyType - Body type
  * @param {HTMLCanvasElement} targetCanvas - Canvas to render to (defaults to main canvas)
@@ -86,20 +118,34 @@ export async function renderCharacter(
   bodyType,
   targetCanvas = null,
 ) {
-  // Mark start for profiling
+  await catalogReady.onLayersReady;
+
+  const p = renderCharacterSerial.then(() =>
+    runRenderCharacter(selections, bodyType, targetCanvas),
+  );
+  renderCharacterSerial = p.then(
+    () => {},
+    () => {},
+  );
+  return p;
+}
+
+async function runRenderCharacter(selections, bodyType, targetCanvas) {
   const profiler = window.profiler;
-  if (profiler) {
-    profiler.mark("renderCharacter:start");
-  }
 
   // Build list of items to draw
   itemsToDraw = [];
   addedCustomAnimations = new Set(); // Track which custom animations we've added
 
-  // Import state to access custom uploaded image
+  // Import state to access custom uploaded image (kept out of `renderCharacter` profile span)
   const appState = await import("../state/state.js").then((m) => m.state);
   appState.renderCharacter.isRendering = true;
+  appState.isRenderingCharacter = true;
   m.redraw();
+
+  if (profiler) {
+    profiler.mark("renderCharacter:start");
+  }
 
   try {
     // Use provided canvas or default to main canvas
@@ -118,7 +164,7 @@ export async function renderCharacter(
 
     for (const [, selection] of Object.entries(selections)) {
       const { itemId, subId, variant } = selection;
-      const meta = window.itemMetadata[itemId];
+      const meta = catalog.getItemMerged(itemId);
 
       if (!meta || subId) continue;
 
@@ -438,6 +484,7 @@ export async function renderCharacter(
     }
   } finally {
     appState.renderCharacter.isRendering = false;
+    appState.isRenderingCharacter = false;
     m.redraw();
 
     // Mark end and measure
@@ -515,7 +562,7 @@ export async function renderSingleItem(
   singleLayer = null,
   zipProfiler = null,
 ) {
-  const meta = window.itemMetadata[itemId];
+  const meta = catalog.getItemMerged(itemId);
   if (!meta) {
     console.error("Item metadata not found:", itemId);
     return null;
@@ -721,7 +768,7 @@ export async function renderSingleItemAnimation(
   singleLayer = null,
   zipProfiler = null,
 ) {
-  const meta = window.itemMetadata[itemId];
+  const meta = catalog.getItemMerged(itemId);
   if (!meta) {
     console.error("Item metadata not found:", itemId);
     return null;

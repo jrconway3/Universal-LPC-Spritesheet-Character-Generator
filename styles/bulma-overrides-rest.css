@@ -1,0 +1,111 @@
+/*
+ * Remainder of bulma-overrides (post–first-paint / tree / modal / preview readouts).
+ * bulma-overrides-paint.css is also imported in the critical bundle; this file is deferred with main.css.
+ */
+
+/*
+ * CurrentSelections .tags + Body Type .buttons: escape global gap:0; match Bulma 0.9 computed
+ * margin-bottom -8px on both. (Do not combine with margin-top:-8px on the CategoryTree box — that
+ * stacked and caused Argos-wide vertical drift.)
+ */
+#mithril-filters > div > .box:nth-child(2) .collapsible-content > .mb-4:nth-child(3) .tags:not(.has-addons),
+#mithril-filters .box.has-background-light > div:nth-child(3) > div.mb-3 .buttons {
+  gap: revert;
+  row-gap: revert;
+  column-gap: revert;
+  margin-bottom: -8px !important;
+}
+
+/* Bulma 0.9: only non-last .tags children get margin-right (last tag matches master margin-right: 0). */
+#mithril-filters .tags:not(.has-addons) .tag,
+#mithril-preview .tags:not(.has-addons) .tag {
+  margin-right: 0;
+  margin-bottom: 0.5rem;
+}
+
+#mithril-filters .tags:not(.has-addons) .tag:not(:last-child),
+#mithril-preview .tags:not(.has-addons) .tag:not(:last-child) {
+  margin-right: 0.5rem;
+}
+
+/*
+ * Tag remove control: Bulma 1 restyles .delete (flex, white on dark, 16px); 0.9 uses a compact
+ * block glyph with rgba(10,10,10,0.2) on tags.
+ */
+#mithril-filters .tags button.delete,
+#mithril-preview .tags button.delete {
+  background-color: rgba(10, 10, 10, 0.2) !important;
+  border-color: rgb(0, 0, 0) !important;
+  color: rgb(0, 0, 0) !important;
+  display: block !important;
+  font-family:
+    "system-ui", -apple-system, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans",
+    "Droid Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+  font-size: 0 !important;
+  font-weight: 400 !important;
+  line-height: normal !important;
+  outline-color: rgb(0, 0, 0) !important;
+  outline-width: 0 !important;
+  padding: 1px 6px !important;
+}
+
+/*
+ * Animation preview frame-cycle readout: Bulma 1 .button forces --bulma-family-primary; master
+ * inherits monospace from .box / body. Match 0.9 computed-style dump (radius join w/ select,
+ * is-light grey, weight 400) — see computed-style-dump-shared “frame-cycle readout” target.
+ */
+#mithril-preview .field.has-addons .control:last-child .button.is-static {
+  /* ~1px/side extra padding: monospace + 1em lands ~178px control vs master. */
+  --bulma-button-padding-horizontal: calc(1em + 1px);
+  --bulma-button-border-width: 1px;
+  border-radius: 0 4px 4px 0;
+  font-family: monospace;
+  font-size: 1rem;
+  font-weight: 400 !important;
+  line-height: 1.5;
+  color: #7a7a7a;
+}
+
+/*
+ * Skintone / palette modal: Bulma 1 link-light / white-ter vs 0.9 (computed-style palette modal targets).
+ * Title + close: v1 applies body line-height (24px) to h4 and restyles native button (grey, no
+ * padding); match master computed-style dumps (see mediumDesktop-a palette modal header/h4/button).
+ */
+.palette-modal header h4 {
+  font-family: monospace;
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.palette-modal header button {
+  box-sizing: border-box;
+  display: block;
+  margin: 0;
+  /* Header sets monospace; native button on v1 still needs the primary stack to match 0.9 glyph metrics. */
+  font-family: var(--bulma-family-primary);
+  font-size: 1.5em;
+  font-weight: 400;
+  line-height: normal;
+  color: #000;
+  background-color: transparent;
+  border: none;
+  padding: 1px 6px;
+  text-align: center;
+  cursor: pointer;
+}
+
+/*
+ * Selected/hover variant tiles: Bulma 1 uses different link-light / white-ter (and semi-transparent
+ * white-ter). Category tree (#mithril-filters) and skintone modal both use these helpers.
+ */
+#mithril-filters .variant-item.has-background-link-light,
+.palette-modal .variant-item.has-background-link-light {
+  background-color: rgb(239, 241, 250) !important;
+}
+
+#mithril-filters .variant-item.has-background-white-ter,
+.palette-modal .variant-item.has-background-white-ter {
+  background-color: rgb(245, 245, 245) !important;
+}

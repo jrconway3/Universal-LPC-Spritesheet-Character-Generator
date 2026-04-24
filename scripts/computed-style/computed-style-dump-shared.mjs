@@ -11,6 +11,37 @@ import {
   openLicenseAnimationAdvancedAndSearchArm,
 } from "../../tests/visual/home-helpers.js";
 
+/** Appends `?debug=true` (or &debug=true) so `getDebugParam()` turns on `window.DEBUG` after load. */
+export function urlWithDebugEnabled(url) {
+  try {
+    const u = new URL(url);
+    u.searchParams.set("debug", "true");
+    return u.toString();
+  } catch {
+    return url;
+  }
+}
+
+/**
+ * Set `LPC_DEBUG_COMPUTED_STYLE=1` (or `true` / `yes`) to print phase logs and browser `console`
+ * to stderr while `dumpComputedStylesForUrl` runs (see also `compute-style-diff-all.mjs`).
+ */
+export function isLpcComputedStyleDebug() {
+  const v = process.env.LPC_DEBUG_COMPUTED_STYLE;
+  if (v == null || v === "") {
+    return false;
+  }
+  return v === "1" || /^true$/i.test(v) || /^yes$/i.test(v);
+}
+
+/** @param {unknown[]} parts */
+export function lpcComputedStyleLog(...parts) {
+  if (!isLpcComputedStyleDebug()) {
+    return;
+  }
+  process.stderr.write(`[LPC computed-style] ${parts.map(String).join(" ")}\n`);
+}
+
 /**
  * Computed-style dump “pages” — same sequence as tests/visual/home.spec.js / Argos:
  * homepage → human-male-skintone → (close modal) filters-search-arm.
@@ -1098,6 +1129,11 @@ export async function dumpComputedStylesForUrl(url, viewport, options = {}) {
   const deviceScaleFactor =
     Number(process.env.PLAYWRIGHT_DEVICE_SCALE_FACTOR ?? "1") || 1;
 
+  const tAll = Date.now();
+  lpcComputedStyleLog(
+    `start page=${dumpPage} viewport=${viewport.width}x${viewport.height} baseUrl=${url}`,
+  );
+
   const browser = await chromium.launch({ headless: true });
   let context;
   try {
@@ -1106,20 +1142,61 @@ export async function dumpComputedStylesForUrl(url, viewport, options = {}) {
       deviceScaleFactor,
     });
     const page = await context.newPage();
+    if (isLpcComputedStyleDebug()) {
+      page.on("console", (msg) => {
+        let where = "";
+        try {
+          const loc = msg.location();
+          if (loc?.url != null && loc.lineNumber != null) {
+            where = ` ${loc.url}:${loc.lineNumber}`;
+          }
+        } catch {
+          /* some console events have no location */
+        }
+        process.stderr.write(
+          `[LPC computed-style][browser ${msg.type()}] ${msg.text()}${where}\n`,
+        );
+      });
+      page.on("pageerror", (err) => {
+        process.stderr.write(`[LPC computed-style][pageerror] ${String(err)}\n`);
+      });
+    }
     await page.addInitScript(() => {
       // Same flag as tests/visual/home.spec.js (prevents preview animation layout churn).
       globalThis.__DISABLE_PREVIEW_ANIMATION__ = true;
     });
-    await gotoHomepageReady(page, url);
+    const loadUrl = urlWithDebugEnabled(url);
+    const t1 = Date.now();
+    lpcComputedStyleLog(`gotoHomepageReady… ${loadUrl}`);
+    await gotoHomepageReady(page, loadUrl);
+    lpcComputedStyleLog(`gotoHomepageReady done +${Date.now() - t1}ms`);
+
     if (dumpPage === "human-male-skintone") {
-      await openHumanMaleSkintonePalette(page);
+      lpcComputedStyleLog("openHumanMaleSkintonePalette…");
+      const t2 = Date.now();
+      await openHumanMaleSkintonePalette(page, { forComputedStyleDump: true });
+      lpcComputedStyleLog(`openHumanMaleSkintonePalette done +${Date.now() - t2}ms`);
     } else if (dumpPage === "filters-search-arm") {
-      await openHumanMaleSkintonePalette(page);
+      lpcComputedStyleLog("openHumanMaleSkintonePalette (filters path)…");
+      const t2 = Date.now();
+      await openHumanMaleSkintonePalette(page, { forComputedStyleDump: true });
+      lpcComputedStyleLog(`openHumanMaleSkintonePalette done +${Date.now() - t2}ms`);
+      lpcComputedStyleLog("closeSkintonePaletteModal…");
       await closeSkintonePaletteModal(page);
+      lpcComputedStyleLog("openLicenseAnimationAdvancedAndSearchArm…");
+      const t3 = Date.now();
       await openLicenseAnimationAdvancedAndSearchArm(page);
+      lpcComputedStyleLog(
+        `openLicenseAnimationAdvancedAndSearchArm done +${Date.now() - t3}ms`,
+      );
     }
+    lpcComputedStyleLog("collectComputedStyleDump…");
+    const t4 = Date.now();
     const body = await collectComputedStyleDump(page, collectOptions);
-    return makeDumpHeader(viewport, url, dumpPage) + body;
+    lpcComputedStyleLog(
+      `collectComputedStyleDump done +${Date.now() - t4}ms; total +${Date.now() - tAll}ms`,
+    );
+    return makeDumpHeader(viewport, loadUrl, dumpPage) + body;
   } finally {
     if (context) {
       await context.close();

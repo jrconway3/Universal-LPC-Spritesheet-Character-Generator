@@ -9,6 +9,11 @@ import {
   hasContentInRegion,
   image2canvas,
 } from "../../sources/canvas/canvas-utils.js";
+import { resetCatalogForTests } from "../../sources/state/catalog.js";
+import {
+  restoreAppCatalogAfterTest,
+  seedBrowserCatalog,
+} from "../browser-catalog-fixture.js";
 
 function createCanvas(width, height) {
   const canvas = document.createElement("canvas");
@@ -148,66 +153,64 @@ describe("canvas/canvas-utils.js", () => {
   });
 
   describe("getZPos", () => {
-    let previousItemMetadata;
-
     beforeEach(() => {
-      previousItemMetadata = window.itemMetadata;
+      resetCatalogForTests();
     });
 
-    afterEach(() => {
-      window.itemMetadata = previousItemMetadata;
+    afterEach(async () => {
+      await restoreAppCatalogAfterTest();
     });
 
     it("returns 100 when item id is missing from itemMetadata", () => {
-      window.itemMetadata = {};
+      seedBrowserCatalog({});
       expect(getZPos("unknown-id")).to.equal(100);
     });
 
     it("returns layer zPos for the default layer (layer_1)", () => {
-      window.itemMetadata = {
+      seedBrowserCatalog({
         itemA: {
           layers: {
             layer_1: { zPos: 42 },
           },
         },
-      };
+      });
       expect(getZPos("itemA")).to.equal(42);
     });
 
     it("returns zPos for layer_N when layerNum is provided", () => {
-      window.itemMetadata = {
+      seedBrowserCatalog({
         itemB: {
           layers: {
             layer_1: { zPos: 1 },
             layer_2: { zPos: 77 },
           },
         },
-      };
+      });
       expect(getZPos("itemB", 2)).to.equal(77);
     });
 
     it("returns 100 when metadata exists but the layer is missing", () => {
-      window.itemMetadata = {
+      seedBrowserCatalog({
         itemC: { layers: { layer_1: { zPos: 5 } } },
-      };
+      });
       expect(getZPos("itemC", 3)).to.equal(100);
     });
 
     it("returns 100 when the layer has no zPos", () => {
-      window.itemMetadata = {
+      seedBrowserCatalog({
         itemD: {
           layers: {
             layer_1: {},
           },
         },
-      };
+      });
       expect(getZPos("itemD")).to.equal(100);
     });
 
     it("returns 100 when metadata has no layers object", () => {
-      window.itemMetadata = {
+      seedBrowserCatalog({
         itemE: {},
-      };
+      });
       expect(getZPos("itemE")).to.equal(100);
     });
   });
