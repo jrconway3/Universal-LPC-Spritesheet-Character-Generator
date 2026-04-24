@@ -563,16 +563,10 @@ const customAnimationSize = (
 const customAnimationBase = (custAnim: CustomAnimationDefinition): string =>
   custAnim.frames[0][0].split(",")[0].split("-")[0];
 
-const isCustomAnimationBasedOnStandardAnimation = (
-  custAnim: CustomAnimationDefinition,
-  stdAnimName: string,
-): boolean => customAnimationBase(custAnim) === stdAnimName;
-
 // Expose for use in other scripts
 export {
   animationRowsLayout,
   customAnimations,
   customAnimationSize,
   customAnimationBase,
-  isCustomAnimationBasedOnStandardAnimation,
 };
