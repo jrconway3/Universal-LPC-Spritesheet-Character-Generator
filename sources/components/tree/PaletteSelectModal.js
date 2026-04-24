@@ -3,7 +3,7 @@ import classNames from "classnames";
 import { drawRecolorPreview } from "../../canvas/palette-recolor.js";
 import * as catalog from "../../state/catalog.js";
 import { state, getSelectionGroup } from "../../state/state.js";
-import { ucwords } from "../../utils/helpers.js";
+import { ucwords } from "../../utils/helpers.ts";
 import { COMPACT_FRAME_SIZE, FRAME_SIZE } from "../../state/constants.ts";
 
 /**

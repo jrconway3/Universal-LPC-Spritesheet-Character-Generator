@@ -10,7 +10,7 @@ import {
   resetCatalogForTests,
 } from "../../sources/state/catalog.js";
 import { restoreAppCatalogAfterTest } from "../browser-catalog-fixture.js";
-import { es6DynamicTemplate } from "../../sources/utils/helpers.js";
+import { es6DynamicTemplate } from "../../sources/utils/helpers.ts";
 import { expect } from "chai";
 import sinon from "sinon";
 import { describe, it, beforeEach, afterEach } from "mocha-globals";

@@ -13,7 +13,7 @@ import {
   addAnimationToZipFolder,
   addStandardAnimationToZipCustomFolder,
 } from "../../sources/utils/zip-helpers.js";
-import { getItemFileName } from "../../sources/utils/fileName.js";
+import { getItemFileName } from "../../sources/utils/fileName.ts";
 import { getSortedLayers } from "../../sources/state/meta.js";
 import {
   exportIndividualFrames,

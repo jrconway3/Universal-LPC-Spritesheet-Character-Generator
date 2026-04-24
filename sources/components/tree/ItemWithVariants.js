@@ -3,7 +3,7 @@ import classNames from "classnames";
 import { state, getSelectionGroup, selectItem } from "../../state/state.js";
 import { getLayersToLoad } from "../../state/meta.js";
 import { COMPACT_FRAME_SIZE, FRAME_SIZE } from "../../state/constants.ts";
-import { capitalize } from "../../utils/helpers.js";
+import { capitalize } from "../../utils/helpers.ts";
 
 export const ItemWithVariants = {
   view: function (vnode) {

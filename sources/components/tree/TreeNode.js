@@ -10,7 +10,7 @@ import {
   capitalize,
   matchesSearch,
   nodeHasMatches,
-} from "../../utils/helpers.js";
+} from "../../utils/helpers.ts";
 import { ItemWithVariants } from "./ItemWithVariants.js";
 import { ItemWithRecolors } from "./ItemWithRecolors.js";
 
