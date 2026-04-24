@@ -5,7 +5,7 @@ import {
   restoreAppCatalogAfterTest,
   seedBrowserCatalog,
 } from "../browser-catalog-fixture.js";
-import { getItemFileName } from "../../sources/utils/fileName.js";
+import { getItemFileName } from "../../sources/utils/fileName.ts";
 
 describe("getItemFileName", () => {
   beforeEach(() => {

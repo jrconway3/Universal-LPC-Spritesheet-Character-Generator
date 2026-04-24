@@ -11,9 +11,9 @@ import {
   capitalize,
   matchesSearch,
   nodeHasMatches,
-} from "../../sources/utils/helpers.js";
+} from "../../sources/utils/helpers.ts";
 
-describe("utils/helpers.js", () => {
+describe("utils/helpers.ts", () => {
   describe("es6DynamicTemplate", () => {
     it("should replace variables in the template string with values from the object", () => {
       const template = "Hello ${name}, welcome to ${place}!";

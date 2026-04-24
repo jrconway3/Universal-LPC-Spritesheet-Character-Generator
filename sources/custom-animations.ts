@@ -1,8 +1,6 @@
-/**
- * @typedef {Record<string, number>} AnimationRowsLayout
- * @type {AnimationRowsLayout}
- */
-const animationRowsLayout = {
+export type AnimationRowsLayout = Record<string, number>;
+
+const animationRowsLayout: AnimationRowsLayout = {
   "thrust-n": 3,
   "thrust-w": 4,
   "thrust-s": 5,
@@ -29,11 +27,13 @@ const animationRowsLayout = {
   "sit-e": 32,
 };
 
-/**
- * @typedef {{frameSize: number, frames: string[][]}} CustomAnimationDefinition
- * @type {Record<string, CustomAnimationDefinition>}
- */
-const customAnimations = {
+export type CustomAnimationDefinition = {
+  frameSize: number;
+  frames: string[][];
+  skipFirstFrameInPreview?: boolean;
+};
+
+const customAnimations: Record<string, CustomAnimationDefinition> = {
   wheelchair: {
     frameSize: 64,
     frames: [
@@ -553,21 +553,20 @@ const customAnimations = {
   },
 };
 
-/**
- *
- * @param {CustomAnimationDefinition} customAnimation
- * @returns {{width:number, height:number}}
- */
-const customAnimationSize = (customAnimation) => ({
+const customAnimationSize = (
+  customAnimation: CustomAnimationDefinition,
+): { width: number; height: number } => ({
   width: customAnimation.frameSize * customAnimation.frames[0].length,
   height: customAnimation.frameSize * customAnimation.frames.length,
 });
 
-const customAnimationBase = (custAnim) =>
+const customAnimationBase = (custAnim: CustomAnimationDefinition): string =>
   custAnim.frames[0][0].split(",")[0].split("-")[0];
 
-const isCustomAnimationBasedOnStandardAnimation = (custAnim, stdAnimName) =>
-  customAnimationBase(custAnim) === stdAnimName;
+const isCustomAnimationBasedOnStandardAnimation = (
+  custAnim: CustomAnimationDefinition,
+  stdAnimName: string,
+): boolean => customAnimationBase(custAnim) === stdAnimName;
 
 // Expose for use in other scripts
 export {

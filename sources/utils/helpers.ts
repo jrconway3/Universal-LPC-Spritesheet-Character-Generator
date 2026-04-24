@@ -1,16 +1,29 @@
 // Pure utility functions with minimal catalog reads for tree search
 import * as catalog from "../state/catalog.js";
 
+// TODO: catalog.js currently returns `object | undefined` from
+// getItemLite (JSDoc-erased shape). When catalog.js converts to .ts
+// and the generator output shapes it manages are typed, delete this
+// local narrowing and use the real exported type instead.
+type ItemLiteShape = { name?: string };
+
+// Tree shape used by nodeHasMatches. Recursive structure mirrors how
+// categoryTree nodes are organized in the generator output.
+type CategoryTreeNode = {
+  items?: string[];
+  children?: Record<string, CategoryTreeNode>;
+};
+
 /**
  * Simple ES6 template string replacement
  * e.g. es6DynamicTemplate("Hello ${name}", {name: "World"}) => "Hello World"
  * Note: does not support complex expressions, only simple variable replacement
- * @param {string} templateString - Template string with ${var} placeholders
- * @param {Object} templateVariables - Object with variable values
- * @returns {string} - Resulting string with variables replaced
  */
 // copied from https://github.com/mikemaccana/dynamic-template/blob/046fee36aecc1f48cf3dc454d9d36bb0e96e0784/index.js
-export const es6DynamicTemplate = (templateString, templateVariables) =>
+export const es6DynamicTemplate = (
+  templateString: string,
+  templateVariables: Record<string, string>,
+): string =>
   templateString.replace(
     /\${(.*?)}/g,
     (_, g) => templateVariables[g] ?? `\${${g}}`,
@@ -18,42 +31,29 @@ export const es6DynamicTemplate = (templateString, templateVariables) =>
 
 /**
  * Convert variant name to filename format (spaces to underscores)
- * @param {string} variant - Variant name (e.g., "light brown")
- * @returns {string} - Filename format (e.g., "light_brown")
+ * e.g. "light brown" → "light_brown"
  */
-export function variantToFilename(variant) {
+export function variantToFilename(variant: string): string {
   return variant.replaceAll(" ", "_");
 }
 
-/**
- * Helper function to capitalize strings for display
- */
-export function capitalize(str) {
+export function capitalize(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-/**
- * Helper function to capitalize all words in a string for display
- */
-export function ucwords(str) {
+export function ucwords(str: string): string {
   return str
     .split(" ")
     .map((word) => capitalize(word))
     .join(" ");
 }
 
-/**
- * Helper function to check if item matches search query
- */
-export function matchesSearch(text, query) {
+export function matchesSearch(text: string, query: string): boolean {
   if (!query || query.length < 2) return true;
   return text.toLowerCase().includes(query.toLowerCase());
 }
 
-/**
- * Helper function to check if a node or its children contain search matches
- */
-export function nodeHasMatches(node, query) {
+export function nodeHasMatches(node: CategoryTreeNode, query: string): boolean {
   if (!query || query.length < 2) return true;
 
   // Until lite metadata is registered we cannot match item names; keep nodes visible
@@ -65,8 +65,8 @@ export function nodeHasMatches(node, query) {
   if (
     node.items &&
     node.items.some((itemId) => {
-      const meta = catalog.getItemLite(itemId);
-      return meta && matchesSearch(meta.name, query);
+      const meta = catalog.getItemLite(itemId) as ItemLiteShape | undefined;
+      return meta?.name != null && matchesSearch(meta.name, query);
     })
   ) {
     return true;

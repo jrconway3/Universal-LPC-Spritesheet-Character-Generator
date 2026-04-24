@@ -2,7 +2,7 @@ import "../install-item-metadata.js";
 import { ANIMATIONS } from "./constants.ts";
 import { getHashParamsforSelections } from "./hash.js";
 import * as catalog from "./catalog.js";
-import { variantToFilename, es6DynamicTemplate } from "../utils/helpers.js";
+import { variantToFilename, es6DynamicTemplate } from "../utils/helpers.ts";
 import { debugLog } from "../utils/debug.js";
 
 // Dependency injection for testability (see setPathDeps / resetPathDeps)

@@ -5,7 +5,7 @@ import {
   DIRECTIONS,
 } from "../state/constants.ts";
 import { drawFramesToCustomAnimation } from "../canvas/draw-frames.ts";
-import { customAnimationSize } from "../custom-animations.js";
+import { customAnimationSize } from "../custom-animations.ts";
 import {
   canvasToBlob,
   get2DContext,
