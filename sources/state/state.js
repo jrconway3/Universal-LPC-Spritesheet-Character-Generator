@@ -1,12 +1,13 @@
 // Global state and state operations
 import { LICENSE_CONFIG, ANIMATIONS, BODY_TYPES } from "./constants.ts";
 import { syncSelectionsToHash, loadSelectionsFromHash } from "./hash.js";
+import * as catalog from "./catalog.js";
 import { renderCharacter } from "../canvas/renderer.js";
 
 // Dependency injection for testability (see setStateDeps / resetStateDeps)
 function createDefaultStateDeps() {
   return {
-    getItemMetadata: (itemId) => window.itemMetadata?.[itemId],
+    getItemMetadata: (itemId) => catalog.getItemMerged(itemId),
     selectDefaults,
     redraw: () => m.redraw(),
     syncSelectionsToHash,
@@ -48,7 +49,10 @@ export const state = {
   customImageZPos: 0, // z-position for custom uploaded image
   previewCanvasZoomLevel: 1, // zoom level for animation preview canvas
   fullSpritesheetCanvasZoomLevel: 1, // zoom level for full spritesheet preview canvas
-  isRenderingCharacter: false, // true if a character render is in progress
+  /** Set in `main.js` before `setDefaultSelections` / first `renderCharacter` (overlay vs render spinner). */
+  previewBootstrapRenderDone: false,
+  /** Mirrored from `renderCharacter` compositing (see `renderer.js`). */
+  isRenderingCharacter: false,
   // License filters - all enabled by default (derived from LICENSE_CONFIG)
   enabledLicenses: Object.fromEntries(
     LICENSE_CONFIG.map((lic) => [lic.key, true]),

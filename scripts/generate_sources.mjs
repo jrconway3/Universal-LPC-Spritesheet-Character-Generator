@@ -14,7 +14,7 @@ import {
   populateAndSortCategoryTree,
 } from "./generateSources/tree.mjs";
 import {
-  buildMetadataJs,
+  buildAllMetadataModules,
   METADATA_OUTPUT,
   onlyIfTemplate,
   resetGeneratorState,
@@ -22,7 +22,8 @@ import {
   readDirTree,
 } from "./generateSources/state.mjs";
 
-export function generateSources(deps = {}, env = "production") {
+export function generateSources(deps = {}, legacyEnv) {
+  const env = deps.env ?? legacyEnv ?? "production";
   const writeFileSyncFn = deps.writeFileSync ?? fs.writeFileSync;
   const parseTreeFn = deps.parseTreeFn ?? parseTree;
   const parseItemFn = deps.parseItemFn ?? parseItem;
@@ -71,12 +72,15 @@ export function generateSources(deps = {}, env = "production") {
     console.error(err);
   }
 
-  // Build and write item-metadata.js (optional: CLI / tests skip; Vite plugin enables)
+  // Build and write five metadata ES modules (optional: CLI / tests skip; Vite plugin enables)
   if (writeMetadata) {
-    const metadataJS = buildMetadataJs(env);
+    const outDir = path.dirname(metadataOutputPath);
+    const modules = buildAllMetadataModules(env);
     try {
-      writeFileSyncFn(metadataOutputPath, metadataJS);
-      process.stdout.write("Item Metadata JS Updated!\n");
+      for (const [basename, source] of modules) {
+        writeFileSyncFn(path.join(outDir, basename), source);
+      }
+      process.stdout.write("Metadata JS modules updated!\n");
     } catch (err) {
       console.error(err);
     }

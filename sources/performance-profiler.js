@@ -93,7 +93,10 @@ export class PerformanceProfiler {
   }
 
   /**
-   * Measure time between two marks
+   * Measure time between two marks.
+   * `renderCharacter` is bracketed only around compositing work (not dynamic-import latency).
+   * `image-load:…` pairings require unique mark names; duplicate fetches of the same URL are
+   * deduplicated in `load-image.js` so one span per network load.
    */
   measure(measureName, startMark, endMark) {
     if (!this.enabled) return null;

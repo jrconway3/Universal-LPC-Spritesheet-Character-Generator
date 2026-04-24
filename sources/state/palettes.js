@@ -1,5 +1,6 @@
 // Palette utilities
 import { state, getSelectionGroup } from "./state.js";
+import * as catalog from "./catalog.js";
 
 /**
  * Ensure Recolor Exists in Metadata, if Not, Find a Replacement or Delete It
@@ -10,7 +11,7 @@ import { state, getSelectionGroup } from "./state.js";
  */
 export function fixMissingRecolor(itemId, recolor, typeName = null) {
   // Implementation for fixing missing recolor
-  const meta = window.itemMetadata[itemId];
+  const meta = catalog.getItemLite(itemId);
   const palette = meta.recolors.find((r) => r.type_name === typeName);
   if (!palette) return null;
 
@@ -20,7 +21,8 @@ export function fixMissingRecolor(itemId, recolor, typeName = null) {
   }
 
   // Get Material From Palette
-  const materialMeta = window.paletteMetadata?.materials[palette.material];
+  const materialMeta =
+    catalog.getPaletteMetadata()?.materials?.[palette.material];
   const [, , parsedRecolor] = parseRecolorKey(recolor, materialMeta);
 
   // See if Recolor is Non-Standard for the Current Asset
@@ -46,7 +48,7 @@ export function fixMissingRecolor(itemId, recolor, typeName = null) {
  */
 export function getMultiRecolors(itemId, selections) {
   // Implementation for getting multiple recolor options from selections
-  const meta = window.itemMetadata[itemId];
+  const meta = catalog.getItemLite(itemId);
   const types = [meta.type_name];
   for (const recolor of meta.recolors ?? []) {
     if (recolor.type_name && !types.includes(recolor.type_name)) {
@@ -57,7 +59,7 @@ export function getMultiRecolors(itemId, selections) {
   // Filter Selections to Item ID
   const recolors = {};
   for (const [, selection] of Object.entries(selections)) {
-    const subMeta = window.itemMetadata?.[selection.itemId];
+    const subMeta = catalog.getItemLite(selection.itemId);
     const typeName =
       subMeta?.recolors?.[selection.subId]?.type_name ??
       subMeta?.type_name ??
@@ -103,7 +105,7 @@ export function getMultiRecolors(itemId, selections) {
  */
 export function getBodyColor(itemId, selections) {
   // Implementation for finding body color from selections if match body color enabled
-  const meta = window.itemMetadata[itemId];
+  const meta = catalog.getItemLite(itemId);
   if (!meta || !meta.matchBodyColor) {
     return null;
   }
@@ -111,7 +113,7 @@ export function getBodyColor(itemId, selections) {
   // Filter Selections to Item ID
   let bodyColor = null;
   for (const [, selection] of Object.entries(selections)) {
-    const subMeta = window.itemMetadata?.[selection.itemId];
+    const subMeta = catalog.getItemLite(selection.itemId);
     if (subMeta && subMeta.matchBodyColor) {
       bodyColor = selection.recolor;
       break;
@@ -129,7 +131,7 @@ export function getBodyColor(itemId, selections) {
  */
 export function getBasePalette(material, base = null, source = null) {
   // Check Palette Material Exists
-  const materialMeta = window.paletteMetadata?.materials[material];
+  const materialMeta = catalog.getPaletteMetadata()?.materials?.[material];
   if (!materialMeta) {
     console.error(`Palettes for ${material} not found`);
     return null;
@@ -156,7 +158,7 @@ export function getBasePalette(material, base = null, source = null) {
  */
 export function getTargetPalette(material, targetColor) {
   // Check Palette Material Exists
-  let materialMeta = window.paletteMetadata?.materials[material];
+  let materialMeta = catalog.getPaletteMetadata()?.materials?.[material];
   if (!materialMeta) {
     console.error(`Palettes for ${material} not found`);
     return null;
@@ -165,7 +167,7 @@ export function getTargetPalette(material, targetColor) {
   // Parse Recolor Key
   let [newMat, version, recolor] = parseRecolorKey(targetColor, materialMeta);
   if (newMat !== null) {
-    const newMaterialMeta = window.paletteMetadata?.materials[newMat];
+    const newMaterialMeta = catalog.getPaletteMetadata()?.materials?.[newMat];
     if (newMaterialMeta) {
       material = newMat;
       materialMeta = newMaterialMeta;
@@ -262,7 +264,7 @@ export function parseRecolorKey(recolorKey, palette) {
   // Get Material (e.g. body, metal, cloth)
   if (!material) {
     // Check if Version is Actually Material
-    if (window.paletteMetadata.materials[version]) {
+    if (catalog.getPaletteMetadata()?.materials?.[version]) {
       material = version;
       version = null;
     } else {

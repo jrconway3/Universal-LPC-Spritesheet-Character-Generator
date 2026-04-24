@@ -1,4 +1,5 @@
-// Pure utility functions with no state dependencies
+// Pure utility functions with minimal catalog reads for tree search
+import * as catalog from "../state/catalog.js";
 
 /**
  * Simple ES6 template string replacement
@@ -55,11 +56,16 @@ export function matchesSearch(text, query) {
 export function nodeHasMatches(node, query) {
   if (!query || query.length < 2) return true;
 
+  // Until lite metadata is registered we cannot match item names; keep nodes visible
+  if (node.items && node.items.length > 0 && !catalog.isLiteReady()) {
+    return true;
+  }
+
   // Check if any items in this node match
   if (
     node.items &&
     node.items.some((itemId) => {
-      const meta = window.itemMetadata[itemId];
+      const meta = catalog.getItemLite(itemId);
       return meta && matchesSearch(meta.name, query);
     })
   ) {

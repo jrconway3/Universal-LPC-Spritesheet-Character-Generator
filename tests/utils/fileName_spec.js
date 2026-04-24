@@ -1,13 +1,16 @@
 import { expect } from "chai";
-import { describe, it, before, after } from "mocha-globals";
+import { describe, it, beforeEach, afterEach } from "mocha-globals";
+import { resetCatalogForTests } from "../../sources/state/catalog.js";
+import {
+  restoreAppCatalogAfterTest,
+  seedBrowserCatalog,
+} from "../browser-catalog-fixture.js";
 import { getItemFileName } from "../../sources/utils/fileName.js";
 
 describe("getItemFileName", () => {
-  let previousItemMetadata;
-
-  before(() => {
-    previousItemMetadata = window.itemMetadata;
-    window.itemMetadata = {
+  beforeEach(() => {
+    resetCatalogForTests();
+    seedBrowserCatalog({
       1: {
         layers: {
           layer_1: { zPos: 50 },
@@ -19,11 +22,11 @@ describe("getItemFileName", () => {
           layer_1: { zPos: 100 },
         },
       },
-    };
+    });
   });
 
-  after(() => {
-    window.itemMetadata = previousItemMetadata;
+  afterEach(async () => {
+    await restoreAppCatalogAfterTest();
   });
 
   it("should return the correct filename with zPos prefix", () => {

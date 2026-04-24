@@ -3,10 +3,10 @@
  *
  * What it does
  * ------------
- * 1. **Item metadata** — Runs `generate_sources` (same pipeline as Vite) to write
- *    **`dist/item-metadata.js`**, then filters it to only `itemId` values referenced
- *    in the JSON (walks all `"itemId"` keys). Writes a small ES module with
- *    `export default { ... }` so tests can import it.
+ * 1. **Item metadata** — Runs `generate_sources` (same pipeline as Vite) to write all
+ *    **five** `dist/*-metadata.js` modules, then filters merged per-item data to only
+ *    `itemId` values referenced in the JSON (walks all `"itemId"` keys). Writes a
+ *    small ES module with `export default { ... }` so tests can import it.
  * 2. **Selections** — Writes `tests/fixtures/issue-382-selections.js` (`export default`
  *    the parsed JSON) for the browser golden runner and tests.
  * 3. **Golden zip paths** — Unless `--no-golden` is passed, starts a static server and
@@ -22,10 +22,10 @@
  *
  * Prerequisites for golden generation
  * -----------------------------------
- * - **Metadata on disk:** This script regenerates **`dist/item-metadata.js`** before
- *   reading it. For standalone HTML that imports `/dist/item-metadata.js` via a static
- *   server, run **`npm run dev`** or **`vite`** first (or **`npm run build`**) so the
- *   file exists if you are not using this script.
+ * - **Metadata on disk:** This script runs full metadata generation and reads **lite
+ *   items, layers, and credits** from `dist/` (merged in memory) before filtering. If
+ *   you use standalone HTML, run **`npm run dev`**, **`vite`**, or **`npm run build`**
+ *   so those files exist when not using this script.
  * - `npx playwright install chromium` (or full `playwright install`) so headless
  *   Chromium is available.
  * - Network allowed for `npx serve` and the first-run browser download if needed.
@@ -77,11 +77,12 @@ const { debugLog } = require("./utils/debug.js");
 
 const REPO_ROOT = path.join(__dirname, "..");
 const ITEM_METADATA_PATH = path.join(REPO_ROOT, "dist", "item-metadata.js");
+const INDEX_METADATA_PATH = path.join(REPO_ROOT, "dist", "index-metadata.js");
 const TESTS_FIXTURES = path.join(REPO_ROOT, "tests", "fixtures", "issue-382");
 
 /**
- * Writes `dist/item-metadata.js` via the same generator pipeline as `vite` (no root file,
- * no CREDITS.csv write from this path).
+ * Writes all five `dist/*-metadata.js` files via the same generator pipeline as Vite
+ * (no CREDITS.csv write from this path when the custom writer skips it).
  */
 async function ensureDistItemMetadata() {
   const genUrl = pathToFileURL(
@@ -91,7 +92,7 @@ async function ensureDistItemMetadata() {
   const distDir = path.join(REPO_ROOT, "dist");
   fs.mkdirSync(distDir, { recursive: true });
   // eslint-disable-next-line no-console -- progress
-  console.log("Generating dist/item-metadata.js (generate sources)…");
+  console.log("Generating dist/*-metadata.js (generate sources)…");
   generateSources({
     writeMetadata: true,
     metadataOutputPath: ITEM_METADATA_PATH,
@@ -128,12 +129,50 @@ function collectItemIdsFromExport(obj, out = new Set()) {
 }
 
 async function loadFullItemMetadata() {
-  const mod = await import(pathToFileURL(ITEM_METADATA_PATH).href);
-  const meta = mod.itemMetadata;
-  if (!meta || typeof meta !== "object") {
+  const { expandInternedItemLite, isInternedItemLite } = await import(
+    pathToFileURL(
+      path.join(REPO_ROOT, "sources", "state", "resolve-hash-param.js"),
+    ).href
+  );
+  const itemUrl = pathToFileURL(ITEM_METADATA_PATH).href;
+  const indexUrl = pathToFileURL(INDEX_METADATA_PATH).href;
+  const layersPath = path.join(REPO_ROOT, "dist", "layers-metadata.js");
+  const creditsPath = path.join(REPO_ROOT, "dist", "credits-metadata.js");
+  const [itemMod, indexMod, layersMod, creditsMod] = await Promise.all([
+    import(itemUrl),
+    import(indexUrl),
+    import(pathToFileURL(layersPath).href),
+    import(pathToFileURL(creditsPath).href),
+  ]);
+  const lite = itemMod.itemMetadata;
+  const { variantArrays, recolorVariantArrays } =
+    indexMod.metadataIndexes ?? {};
+  const itemLayers = layersMod.itemLayers;
+  const itemCredits = creditsMod.itemCredits;
+  if (!lite || typeof lite !== "object") {
     throw new Error(
       "dist/item-metadata.js did not export itemMetadata as an object",
     );
+  }
+  const meta = {};
+  for (const id of Object.keys(lite)) {
+    let entry = lite[id];
+    if (
+      isInternedItemLite(entry) &&
+      Array.isArray(variantArrays) &&
+      Array.isArray(recolorVariantArrays)
+    ) {
+      entry = expandInternedItemLite(
+        entry,
+        variantArrays,
+        recolorVariantArrays,
+      );
+    }
+    meta[id] = {
+      ...entry,
+      layers: itemLayers[id] ?? {},
+      credits: itemCredits[id] ?? [],
+    };
   }
   return meta;
 }
@@ -218,7 +257,7 @@ async function main() {
   if (missing.length > 0) {
     // eslint-disable-next-line no-console -- missing itemIds should always be visible
     console.warn(
-      "itemId(s) not found in dist/item-metadata.js (skipped):",
+      "itemId(s) not found in generated item metadata (skipped):",
       missing.join(", "),
     );
   }

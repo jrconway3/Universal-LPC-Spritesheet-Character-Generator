@@ -1,5 +1,10 @@
 import { expect } from "chai";
-import { describe, it, before } from "mocha-globals";
+import { describe, it, beforeEach, afterEach } from "mocha-globals";
+import { resetCatalogForTests } from "../../sources/state/catalog.js";
+import {
+  restoreAppCatalogAfterTest,
+  seedBrowserCatalog,
+} from "../browser-catalog-fixture.js";
 import {
   es6DynamicTemplate,
   variantToFilename,
@@ -83,11 +88,16 @@ describe("utils/helpers.js", () => {
   });
 
   describe("nodeHasMatches", () => {
-    before(() => {
-      window.itemMetadata = {
+    beforeEach(() => {
+      resetCatalogForTests();
+      seedBrowserCatalog({
         1: { name: "Sword" },
         2: { name: "Shield" },
-      };
+      });
+    });
+
+    afterEach(async () => {
+      await restoreAppCatalogAfterTest();
     });
 
     it("should return true if the query is empty or less than 2 characters", () => {

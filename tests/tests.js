@@ -19,6 +19,7 @@ import "./components/filters/AnimationFilters_spec.js";
 import "./components/filters/LicenseFilters_spec.js";
 import "./components/filters/SearchControl_spec.js";
 import "./components/tree/BodyTypeSelector_spec.js";
+import "./state/catalog_spec.js";
 import "./state/filters_spec.js";
 import "./state/hash_spec.js";
 import "./state/json_spec.js";

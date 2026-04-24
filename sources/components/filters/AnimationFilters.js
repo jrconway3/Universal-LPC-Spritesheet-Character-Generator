@@ -1,4 +1,5 @@
 // Animation Filters component
+import * as catalog from "../../state/catalog.js";
 import { state } from "../../state/state.js";
 import { isItemAnimationCompatible } from "../../state/filters.js";
 import { ANIMATIONS } from "../../state/constants.ts";
@@ -28,6 +29,8 @@ export const AnimationFilters = {
     vnode.state.isExpanded = false; // Start collapsed by default
   },
   view: function (vnode) {
+    const liteReady = catalog.isLiteReady();
+
     // Function to remove incompatible items from selections
     const removeIncompatibleItems = () => {
       const toRemove = [];
@@ -81,6 +84,9 @@ export const AnimationFilters = {
       ),
       vnode.state.isExpanded
         ? m("div.content.mt-3", [
+            !liteReady
+              ? m("p.is-size-7.has-text-grey.mb-3", "Loading item list…")
+              : null,
             m(
               "ul.tree-list",
               getAnimations().map((anim) =>
@@ -88,6 +94,7 @@ export const AnimationFilters = {
                   m("label.checkbox", [
                     m("input[type=checkbox]", {
                       checked: state.enabledAnimations[anim.value],
+                      disabled: !liteReady,
                       onchange: (e) => {
                         state.enabledAnimations[anim.value] = e.target.checked;
                       },

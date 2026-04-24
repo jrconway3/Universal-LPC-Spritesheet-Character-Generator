@@ -1,3 +1,5 @@
+import * as catalog from "../state/catalog.js";
+
 function addExtensionIfMissing(filename, extension) {
   if (filename.toLowerCase().endsWith(extension.toLowerCase())) {
     return filename;
@@ -15,7 +17,7 @@ export function getItemFileName(
   layerNum = 1,
   zOverride = null,
 ) {
-  const meta = window.itemMetadata[itemId];
+  const meta = catalog.getItemMerged(itemId);
   if (!meta) return addExtensionIfMissing(name, "png");
 
   // Get zPos from specified layer

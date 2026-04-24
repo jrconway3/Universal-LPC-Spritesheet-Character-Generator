@@ -1,0 +1,118 @@
+/*
+ * First-paint layout: header, columns, preview canvas shell (sync with critical Bulma).
+ * Remaining app rules live in main.css (deferred).
+ */
+
+html {
+  font-size: 16px;
+}
+
+body {
+  height: calc(100dvh - 12px);
+  overflow-y: hidden;
+  font-family: monospace;
+  font-size: 16px;
+  line-height: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+h1 {
+  margin: 10px 0px;
+}
+
+h2 {
+  margin: 10px 0px;
+}
+
+h3 {
+  margin: 4px 0px 0px 0px;
+}
+
+p {
+  margin: 10px 0px;
+}
+
+.sticky {
+  position: sticky;
+  top: 0;
+  opacity: 1;
+  background-color: white;
+  z-index: 100;
+}
+
+#header-left {
+  width: calc(100% - 30px);
+  padding: 10px;
+  box-sizing: border-box;
+  min-height: 75px;
+}
+
+#columns-container {
+  align-self: auto;
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+  flex: 1;
+  margin-top: 0;
+  overflow-y: auto;
+}
+
+#chooser-column {
+  padding: 1rem;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  scroll-padding-top: 12px;
+}
+
+#preview-column {
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+#credits-section > .collapsible-content > .content {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+#animations-preview,
+#spritesheet-preview {
+  touch-action: pan-x pan-y;
+}
+
+canvas {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+#previewAnimations,
+#spritesheet-preview {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+.spritesheet-preview {
+  position: relative;
+}
+
+.scrollable-container {
+  overflow: auto;
+  max-width: 100%;
+  max-height: 70vh;
+  cursor: grab;
+  user-select: none;
+}
+
+#sponsors-links {
+  font-family: monospace;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-evenly;
+  gap: 1rem;
+  margin-top: -12px;
+}

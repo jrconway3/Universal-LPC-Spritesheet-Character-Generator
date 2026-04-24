@@ -5,42 +5,46 @@ import {
   creditsToCsv,
   creditsToTxt,
 } from "../../sources/utils/credits.js";
+import { resetCatalogForTests } from "../../sources/state/catalog.js";
+import {
+  restoreAppCatalogAfterTest,
+  seedBrowserCatalog,
+} from "../browser-catalog-fixture.js";
 import { state } from "../../sources/state/state.js";
 
 describe("utils/credits.js", () => {
-  let previousItemMetadata;
   let previousSelectedAnimation;
 
   beforeEach(() => {
-    previousItemMetadata = window.itemMetadata;
     previousSelectedAnimation = state.selectedAnimation;
+    resetCatalogForTests();
   });
 
-  afterEach(() => {
-    window.itemMetadata = previousItemMetadata;
+  afterEach(async () => {
+    await restoreAppCatalogAfterTest();
     state.selectedAnimation = previousSelectedAnimation;
   });
 
   describe("getAllCredits", () => {
     it("returns an empty array when selections is empty", () => {
-      window.itemMetadata = {};
+      seedBrowserCatalog({});
       expect(getAllCredits({}, "male")).to.deep.equal([]);
     });
 
     it("skips items with no metadata or no credits", () => {
-      window.itemMetadata = {
+      seedBrowserCatalog({
         noCredits: {
           animations: ["walk"],
           layers: { layer_1: { male: "a/" } },
         },
-      };
+      });
       expect(
         getAllCredits({ g: { itemId: "noCredits", variant: null } }, "male"),
       ).to.deep.equal([]);
     });
 
     it("includes a credit when the used sprite path matches the credit file prefix", () => {
-      window.itemMetadata = {
+      seedBrowserCatalog({
         item1: {
           animations: ["walk"],
           layers: {
@@ -56,7 +60,7 @@ describe("utils/credits.js", () => {
             },
           ],
         },
-      };
+      });
       state.selectedAnimation = "walk";
 
       const result = getAllCredits(
@@ -73,7 +77,7 @@ describe("utils/credits.js", () => {
     });
 
     it("uses variant path segments when selection has a variant", () => {
-      window.itemMetadata = {
+      seedBrowserCatalog({
         item1: {
           animations: ["walk"],
           layers: {
@@ -88,7 +92,7 @@ describe("utils/credits.js", () => {
             },
           ],
         },
-      };
+      });
       state.selectedAnimation = "walk";
 
       const result = getAllCredits(
@@ -101,7 +105,7 @@ describe("utils/credits.js", () => {
     });
 
     it("uses state.selectedAnimation when building paths", () => {
-      window.itemMetadata = {
+      seedBrowserCatalog({
         item1: {
           animations: ["walk", "run"],
           layers: {
@@ -116,7 +120,7 @@ describe("utils/credits.js", () => {
             },
           ],
         },
-      };
+      });
       state.selectedAnimation = "run";
 
       const result = getAllCredits(
@@ -128,7 +132,7 @@ describe("utils/credits.js", () => {
     });
 
     it("uses the first listed animation when walk is not available", () => {
-      window.itemMetadata = {
+      seedBrowserCatalog({
         item1: {
           animations: ["idle", "jump"],
           layers: {
@@ -143,7 +147,7 @@ describe("utils/credits.js", () => {
             },
           ],
         },
-      };
+      });
       state.selectedAnimation = undefined;
 
       const result = getAllCredits(
@@ -155,7 +159,7 @@ describe("utils/credits.js", () => {
     });
 
     it("matches credit when used path equals credit.file exactly", () => {
-      window.itemMetadata = {
+      seedBrowserCatalog({
         item1: {
           animations: ["walk"],
           layers: {
@@ -170,7 +174,7 @@ describe("utils/credits.js", () => {
             },
           ],
         },
-      };
+      });
       state.selectedAnimation = "walk";
 
       const result = getAllCredits(
@@ -183,7 +187,7 @@ describe("utils/credits.js", () => {
     });
 
     it("does not emit duplicate entries for the same used path", () => {
-      window.itemMetadata = {
+      seedBrowserCatalog({
         item1: {
           animations: ["walk"],
           layers: {
@@ -204,7 +208,7 @@ describe("utils/credits.js", () => {
             },
           ],
         },
-      };
+      });
       state.selectedAnimation = "walk";
 
       const result = getAllCredits(

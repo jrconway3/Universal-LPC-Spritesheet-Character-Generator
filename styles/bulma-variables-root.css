@@ -1,0 +1,53 @@
+/*
+ * Bulma CSS variables + .field spacing (in critical bundle, after bulma-critical).
+ * Parity: bulma-overrides-paint in critical, bulma-overrides-rest in deferred; main.css @imports both via bulma-overrides.css.
+ */
+
+:root {
+  --bulma-scheme-h: 0deg;
+  --bulma-scheme-s: 0%;
+  --bulma-text-h: 0deg;
+  --bulma-text-s: 0%;
+  --bulma-light-h: 0deg;
+  --bulma-light-s: 0%;
+  --bulma-shadow-h: 0deg;
+  --bulma-shadow-s: 0%;
+  --bulma-body-font-size: 16px;
+  --bulma-radius: 4px;
+  --bulma-radius-large: 6px;
+  --bulma-family-primary:
+    BlinkMacSystemFont, -apple-system, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
+    "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", "Helvetica", "Arial",
+    sans-serif;
+  --bulma-family-secondary:
+    BlinkMacSystemFont, -apple-system, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
+    "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", "Helvetica", "Arial",
+    sans-serif;
+  --bulma-primary-h: 171deg;
+  --bulma-primary-s: 100%;
+  --bulma-primary-l: 41%;
+  --bulma-link-h: 229deg;
+  --bulma-link-s: 53%;
+  --bulma-link-l: 53%;
+  --bulma-info-h: 204deg;
+  --bulma-info-s: 59%;
+  --bulma-info-l: 53%;
+  --bulma-success-h: 153deg;
+  --bulma-success-s: 54%;
+  --bulma-success-l: 53%;
+  --bulma-warning-h: 48deg;
+  --bulma-warning-s: 100%;
+  --bulma-warning-l: 77%;
+  --bulma-danger-h: 348deg;
+  --bulma-danger-s: 86%;
+  --bulma-danger-l: 61%;
+  --bulma-block-spacing: 1.5rem;
+  --bulma-field-block-spacing: 0.75rem;
+  --bulma-label-spacing: 0.5em;
+  /* Bulma 1 defaults "bold" to 600; master (0.9) uses 700 for .label and related. */
+  --bulma-weight-bold: 700;
+}
+
+.field {
+  --bulma-field-block-spacing: 0.75rem;
+}

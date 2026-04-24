@@ -1,6 +1,45 @@
 import { state, selectDefaults } from "./state.js";
 import { parseRecolorKey } from "./palettes.js";
 import { debugWarn } from "../utils/debug.js";
+import * as catalog from "./catalog.js";
+import { resolveHashParamFromHashMatch } from "./resolve-hash-param.js";
+
+function createDefaultHashDeps() {
+  return {
+    resolveHashParam: ({ typeName, nameAndVariant }) => {
+      let itemsByTypeName;
+      if (catalog.isIndexReady()) {
+        const idx = catalog.getMetadataIndexes();
+        itemsByTypeName =
+          idx?.hashMatch?.itemsByTypeName ?? idx?.byTypeName ?? {};
+      } else if (catalog.isLiteReady()) {
+        itemsByTypeName = catalog.buildItemsByTypeNameFromRegisteredLite();
+      } else {
+        itemsByTypeName = {};
+      }
+      return resolveHashParamFromHashMatch({
+        typeName,
+        nameAndVariant,
+        itemsByTypeName,
+      });
+    },
+    getItemLite: (itemId) => catalog.getItemLite(itemId),
+  };
+}
+
+let hashDeps = createDefaultHashDeps();
+
+export function setHashDeps(overrides) {
+  Object.assign(hashDeps, overrides);
+}
+
+export function resetHashDeps() {
+  hashDeps = createDefaultHashDeps();
+}
+
+export function getHashDeps() {
+  return hashDeps;
+}
 
 // Dependency injection for testability
 export function getState() {
@@ -90,7 +129,7 @@ export function buildNewSelection(
   subId = null,
 ) {
   // Get Meta Data for Item ID
-  const meta = window.itemMetadata[foundItemId];
+  const meta = hashDeps.getItemLite(foundItemId);
   const subMeta = meta.recolors?.[subId ?? 0];
 
   // Build New Selection
@@ -129,15 +168,16 @@ export function getHashParamsforSelections(selections) {
 
   // Add selections - use old format: type_name=Name_variant
   // Format: "body=Body_color_light", "shoes=Sara_sara"
+  const aliasMetadata = catalog.getAliasMetadata() ?? {};
   for (const [typeName, selection] of Object.entries(selections)) {
-    const meta = window.itemMetadata?.[selection.itemId];
+    const meta = catalog.getItemLite(selection.itemId);
     if (!meta || !meta.type_name) {
       // Check if an alias is overriding this entry (e.g., "sash=Waistband_rose" instead of "waistband=Waistband_rose")
       const name = selection.name.split(" (")[0]; // Get base name without variant (e.g., "Waistband" from "Waistband (rose)")
       const nameAndVariant =
         name.replaceAll(" ", "_") +
         (selection.variant ? `_${selection.variant}` : "");
-      const aliasType = window.aliasMetadata?.[typeName];
+      const aliasType = aliasMetadata[typeName];
       if (!aliasType) continue;
 
       // Check Name and Variant
@@ -206,7 +246,8 @@ export function loadSelectionsFromHash(hashString = null) {
     }
 
     // Check Name and Variant
-    const aliasType = window.aliasMetadata?.[typeName];
+    const aliasMd = catalog.getAliasMetadata() ?? {};
+    const aliasType = aliasMd[typeName];
     const aliasMeta = aliasType?.[nameAndVariant];
     if (aliasMeta) {
       typeName = aliasMeta.typeName;
@@ -229,67 +270,8 @@ export function loadSelectionsFromHash(hashString = null) {
     // e.g., "Human_female_light" -> try "Human_female" + "light" ✓
     // e.g., "Human_female_light|light" -> try "Human_female" + "light" + "light" ✓
 
-    let foundItemId = null;
-    let matchedVariant = "";
-    let matchedRecolor = "";
-
-    // Split on underscores and try different combinations
-    const parts = nameAndVariant.split("_");
-
-    // Try each possible split point (from left to right)
-    for (let i = 1; i <= parts.length; i++) {
-      const nameToMatch = parts.slice(0, i).join("_");
-      const variants = parts.slice(i).join("_");
-      const variantToMatch = variants.split("|")[0];
-      const recolorToMatch = variants.split("|")[1] || "";
-
-      // Search for item with this name and variant
-      for (const [itemId, meta] of Object.entries(window.itemMetadata || {})) {
-        if (meta.type_name !== typeName) continue;
-
-        const metaNameNormalized = meta.name.replaceAll(" ", "_");
-
-        // Check if name matches and variant exists (or no variant required)
-        if (metaNameNormalized.toLowerCase() === nameToMatch.toLowerCase()) {
-          if (meta.variants?.length > 0) {
-            for (const variant of meta.variants) {
-              if (variant.toLowerCase() === variantToMatch.toLowerCase()) {
-                foundItemId = itemId;
-                matchedVariant = variant;
-                matchedRecolor = "";
-                break;
-              }
-            }
-          }
-          if (meta.recolors?.[0]?.variants.length > 0) {
-            for (const variant of meta.recolors[0].variants) {
-              if (
-                (recolorToMatch !== "" &&
-                  variant.toLowerCase() === recolorToMatch.toLowerCase()) ||
-                (recolorToMatch === "" &&
-                  variant.toLowerCase() === variantToMatch.toLowerCase())
-              ) {
-                foundItemId = itemId;
-                matchedVariant = "";
-                matchedRecolor = variant;
-                break;
-              }
-            }
-          }
-          if (variantToMatch === "") {
-            // No variants for this item, so we can match just on name
-            foundItemId = itemId;
-            matchedVariant = "";
-            matchedRecolor = "";
-            break;
-          }
-        }
-
-        if (foundItemId) break;
-      }
-
-      if (foundItemId) break;
-    }
+    const { foundItemId, matchedVariant, matchedRecolor } =
+      hashDeps.resolveHashParam({ typeName, nameAndVariant });
 
     if (!foundItemId) {
       skippedEntries[typeName] = nameAndVariant;
@@ -315,7 +297,7 @@ export function loadSelectionsFromHash(hashString = null) {
   const subItemKeySeparator = "\u0000";
   const subItemLookup = new Map();
   for (const selection of Object.values(newSelections)) {
-    const recolors = window.itemMetadata?.[selection.itemId]?.recolors;
+    const recolors = hashDeps.getItemLite(selection.itemId)?.recolors;
     if (!Array.isArray(recolors)) continue;
 
     for (let recolorIndex = 0; recolorIndex < recolors.length; recolorIndex++) {

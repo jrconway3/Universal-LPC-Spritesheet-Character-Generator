@@ -1,4 +1,9 @@
-import { canvas } from "./renderer.js";
+import {
+  canvas,
+  SHEET_WIDTH,
+  SHEET_HEIGHT,
+  isOffscreenCanvasInitialized,
+} from "./renderer.js";
 import { drawTransparencyBackground, get2DContext } from "./canvas-utils.js";
 import { FRAME_SIZE } from "../state/constants.ts";
 import { applyTransparencyMaskToCanvas } from "./mask.ts";
@@ -19,14 +24,35 @@ export { previewCanvas, previewCtx };
  * @param {boolean} applyTransparencyMask - Whether to apply transparency mask
  * @param {number} zoomLevel - Zoom level to apply (optional, will use CSS zoom)
  */
+/**
+ * Size the DOM spritesheet preview canvas to match the offscreen buffer (or standard sheet size
+ * before init) so layout does not jump when the first copy runs.
+ */
+export function primeSpritesheetPreviewCanvasElement(previewCanvasElement) {
+  if (!previewCanvasElement) {
+    return;
+  }
+  const w =
+    isOffscreenCanvasInitialized() && canvas ? canvas.width : SHEET_WIDTH;
+  const h =
+    isOffscreenCanvasInitialized() && canvas ? canvas.height : SHEET_HEIGHT;
+  previewCanvasElement.width = w;
+  previewCanvasElement.height = h;
+  const ctx = get2DContext(previewCanvasElement);
+  ctx.clearRect(0, 0, w, h);
+}
+
 export function copyToPreviewCanvas(
   previewCanvasElement,
   showTransparencyGrid = false,
   applyTransparencyMask = false,
   zoomLevel = 1,
 ) {
-  if (!canvas || !previewCanvasElement) {
-    console.error("Canvas not initialized");
+  if (!previewCanvasElement) {
+    return;
+  }
+  // Offscreen buffer is created in `initCanvas()` after index+lite register; UI may mount first.
+  if (!canvas) {
     return;
   }
 

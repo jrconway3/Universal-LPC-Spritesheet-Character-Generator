@@ -2,19 +2,19 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   buildPath,
-  extractGlobalObjects,
   loadGeneratorModule,
   runBuild,
   withCapturedConsoleError,
 } from "./generateSources/test_helpers.js";
 import { loadPaletteMetadata } from "../../../scripts/generateSources/palettes.mjs";
 
-test("build1-basic aligns all generated window global objects", async () => {
+test("build1-basic aligns merged metadata and index-metadata.js indexes", async () => {
   const result = await runBuild("build1-basic");
   const metadata = result.globals.itemMetadata;
   const alias = result.globals.aliasMetadata;
   const category = result.globals.categoryTree;
   const palette = result.globals.paletteMetadata;
+  const { metadataIndexes } = result.globals;
 
   assert.equal(metadata.wheelchair.name, "Wheelchair");
   assert.deepEqual(metadata.wheelchair.animations, ["wheelchair"]);
@@ -43,18 +43,24 @@ test("build1-basic aligns all generated window global objects", async () => {
   assert.ok(recolor.variants.includes("lpcr.ashen"));
   assert.ok(recolor.variants.includes("all.lpcr.indigo"));
 
-  const parsed = extractGlobalObjects(result.metadataJS);
-  assert.deepEqual(parsed.itemMetadata, metadata);
-  assert.deepEqual(parsed.aliasMetadata, alias);
-  assert.deepEqual(parsed.categoryTree, category);
-  assert.deepEqual(parsed.paletteMetadata, palette);
-
   assert.deepEqual(metadata.wheelchair.path, ["body", "wheelchair"]);
   assert.deepEqual(metadata.head_nose_big.path, [
     "head",
     "nose",
     "head_nose_big",
   ]);
+
+  const wheelchairTypeRows = metadataIndexes.byTypeName.wheelchair;
+  assert.ok(Array.isArray(wheelchairTypeRows));
+  const wheelchairRow = wheelchairTypeRows.find(
+    (row) => row.itemId === "wheelchair",
+  );
+  assert.ok(wheelchairRow);
+  assert.equal(wheelchairRow.name, "Wheelchair");
+  assert.strictEqual(
+    metadataIndexes.hashMatch.itemsByTypeName,
+    metadataIndexes.byTypeName,
+  );
 });
 
 test("build1-basic includes expected csv rows and skips noExport animations", async () => {
@@ -74,6 +80,7 @@ test("ignored-only sheets build can produce empty item metadata", async () => {
   );
 
   assert.deepEqual(result.globals.itemMetadata, {});
+  assert.deepEqual(result.globals.metadataIndexes.byTypeName, {});
   assert.deepEqual(result.globals.categoryTree.items, []);
   assert.ok(
     errors.some((entry) =>
@@ -190,4 +197,34 @@ test("build4-expansive loads broad tree/palette coverage and captures fixture er
       entry.includes("Skipping ignored item: ignored_item_expansive"),
     ),
   );
+});
+
+test("build5-aliases emits non-empty aliasMetadata and pretty index when env is development", async () => {
+  const result = await runBuild("build5-aliases", "build1-basic", {
+    env: "development",
+  });
+
+  const alias = result.globals.aliasMetadata;
+  assert.ok(Object.keys(alias).length >= 1);
+  assert.deepEqual(alias.alias_build.legacy_slot, {
+    typeName: "alias_build",
+    name: "Alias_Build_Item",
+    variant: "adult",
+  });
+
+  const indexSrc = result.writes.get("index-metadata.js") ?? "";
+  assert.ok(
+    indexSrc.includes("\n  "),
+    "development index-metadata.js should pretty-print JSON",
+  );
+  assert.match(indexSrc, /"alias_build"/);
+
+  const rows = result.globals.metadataIndexes.byTypeName.alias_build;
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].itemId, "alias_build_item");
+  assert.ok(!Object.prototype.hasOwnProperty.call(rows[0], "layers"));
+  assert.ok(!Object.prototype.hasOwnProperty.call(rows[0], "credits"));
+  assert.ok(!Object.prototype.hasOwnProperty.call(rows[0], "path"));
+  assert.ok(Array.isArray(rows[0].variants));
+  assert.ok(Array.isArray(rows[0].recolors));
 });

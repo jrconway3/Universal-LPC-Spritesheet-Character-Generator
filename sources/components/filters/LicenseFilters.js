@@ -1,5 +1,6 @@
 // License Filters component
 import { state } from "../../state/state.js";
+import * as catalog from "../../state/catalog.js";
 import { isItemLicenseCompatible } from "../../state/filters.js";
 import { LICENSE_CONFIG } from "../../state/constants.ts";
 
@@ -28,6 +29,8 @@ export const LicenseFilters = {
     vnode.state.isExpanded = false; // Start collapsed by default
   },
   view: function (vnode) {
+    const liteReady = catalog.isLiteReady();
+
     // Function to remove incompatible items from selections
     const removeIncompatibleItems = () => {
       const toRemove = [];
@@ -47,11 +50,16 @@ export const LicenseFilters = {
       }
     };
 
-    // Check if there are any incompatible selected items
-    const incompatibleSelections = Object.values(state.selections).filter(
-      (selection) => !isLicenseCompatible(selection.itemId),
-    );
-    const hasIncompatibleItems = incompatibleSelections.length > 0;
+    const creditsReady = catalog.isCreditsReady();
+
+    // Check if there are any incompatible selected items (needs credits chunk)
+    const incompatibleSelections = creditsReady
+      ? Object.values(state.selections).filter(
+          (selection) => !isLicenseCompatible(selection.itemId),
+        )
+      : [];
+    const hasIncompatibleItems =
+      creditsReady && incompatibleSelections.length > 0;
 
     // Count how many licenses are enabled
     const enabledCount = Object.values(state.enabledLicenses).filter(
@@ -80,6 +88,15 @@ export const LicenseFilters = {
       ),
       vnode.state.isExpanded
         ? m("div.content.mt-3", [
+            !liteReady
+              ? m("p.is-size-7.has-text-grey.mb-3", "Loading item list…")
+              : null,
+            !creditsReady
+              ? m(
+                  "p.is-size-7.has-text-grey.mb-3",
+                  "Loading asset license data…",
+                )
+              : null,
             m(
               "ul.tree-list",
               getLicenseConfig().map((license) =>
@@ -87,6 +104,7 @@ export const LicenseFilters = {
                   m("label.checkbox", [
                     m("input[type=checkbox]", {
                       checked: state.enabledLicenses[license.key],
+                      disabled: !liteReady,
                       onchange: (e) => {
                         state.enabledLicenses[license.key] = e.target.checked;
                       },

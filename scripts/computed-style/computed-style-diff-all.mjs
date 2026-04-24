@@ -14,6 +14,7 @@
  * Output: 8 presets × 3 pages × 2 URLs = 48 .txt files; 8 × 3 unified .diff files + all.diff.
  *
  * Override with env COMPUTED_STYLE_URL_A / COMPUTED_STYLE_URL_B or --url-a / --url-b.
+ * Verbose stderr: `LPC_DEBUG_COMPUTED_STYLE=1` (phase timings + browser console in dump shared).
  *
  * Usage:
  *   node scripts/computed-style-diff-all.mjs
@@ -28,6 +29,7 @@ import {
   VIEWPORT_PRESETS,
   COMPUTED_STYLE_DUMP_PAGES,
   dumpComputedStylesForUrl,
+  lpcComputedStyleLog,
 } from "./computed-style-dump-shared.mjs";
 
 const PRESET_ORDER = ["mobile", "tablet", "mediumDesktop", "hugeDesktop", "mobileLong", "tabletLong", "mediumDesktopLong", "hugeDesktopLong"];
@@ -67,6 +69,8 @@ Options:
   --out-dir <dir>   Output directory (default: ./computed-style-diff-output)
   --no-fail-on-diff Exit 0 even when unified diffs are non-empty
   --help, -h
+
+  Verbose: LPC_DEBUG_COMPUTED_STYLE=1  (phase logs + browser console on stderr)
 
 Writes per preset and page (${COMPUTED_STYLE_DUMP_PAGES.join(", ")}):
   <preset>-<page>-a.txt, <preset>-<page>-b.txt, <preset>-<page>.diff
@@ -112,8 +116,17 @@ async function main() {
       );
 
       const dumpOpts = { page: dumpPage };
+      lpcComputedStyleLog(
+        `diff-all: ${preset} page=${dumpPage} → url-a (baseline) ${args.urlA}`,
+      );
       const textA = await dumpComputedStylesForUrl(args.urlA, vp, dumpOpts);
+      lpcComputedStyleLog(
+        `diff-all: ${preset} page=${dumpPage} → url-b (compare) ${args.urlB}`,
+      );
       const textB = await dumpComputedStylesForUrl(args.urlB, vp, dumpOpts);
+      lpcComputedStyleLog(
+        `diff-all: ${preset} page=${dumpPage} → both dumps finished`,
+      );
 
       const stem = `${preset}-${dumpPage}`;
       const pathA = path.join(args.outDir, `${stem}-a.txt`);

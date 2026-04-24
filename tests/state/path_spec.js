@@ -5,6 +5,11 @@ import {
   setPathDeps,
   resetPathDeps,
 } from "../../sources/state/path.js";
+import {
+  loadCatalogFromFixtures,
+  resetCatalogForTests,
+} from "../../sources/state/catalog.js";
+import { restoreAppCatalogAfterTest } from "../browser-catalog-fixture.js";
 import { es6DynamicTemplate } from "../../sources/utils/helpers.js";
 import { expect } from "chai";
 import sinon from "sinon";
@@ -12,11 +17,13 @@ import { describe, it, beforeEach, afterEach } from "mocha-globals";
 
 describe("state/path.js", () => {
   beforeEach(() => {
+    resetCatalogForTests();
     resetPathDeps();
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     resetPathDeps();
+    await restoreAppCatalogAfterTest();
   });
 
   describe("getNameWithoutVariant", () => {
@@ -65,6 +72,47 @@ describe("state/path.js", () => {
     });
 
     it("resolves ${} segments using stubbed hash params and meta.replace_in_path", () => {
+      setPathDeps({
+        getHashParamsforSelections: () => ({ head: "human_head" }),
+      });
+      const meta = {
+        replace_in_path: {
+          head: { human: "humanoid" },
+        },
+      };
+      expect(replaceInPath("base/${head}/tail", {}, meta)).to.equal(
+        "base/humanoid/tail",
+      );
+    });
+
+    it("resolves ${} using catalog byTypeName for name stripping", () => {
+      loadCatalogFromFixtures({
+        itemMetadata: {
+          x: {
+            type_name: "head",
+            name: "Human",
+            variants: ["head", "red"],
+            layers: {},
+            credits: [],
+          },
+        },
+        aliasMetadata: {},
+        categoryTree: { items: [], children: {} },
+        metadataIndexes: {
+          byTypeName: {
+            head: [
+              {
+                itemId: "x",
+                type_name: "head",
+                name: "Human",
+                variants: ["head", "red"],
+                recolors: [],
+              },
+            ],
+          },
+        },
+        paletteMetadata: { versions: {}, materials: {} },
+      });
       setPathDeps({
         getHashParamsforSelections: () => ({ head: "human_head" }),
       });

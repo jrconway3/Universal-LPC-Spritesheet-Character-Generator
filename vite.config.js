@@ -2,8 +2,12 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
 import { getSpritesheetsPlugin } from "./vite/get-spritesheets-plugin.js";
+import { vitePluginPreviewServeDistSpritesheets } from "./vite/vite-plugin-preview-serve-dist-spritesheets.js";
 import { vitePluginBundledCssAfterBulma } from "./vite/vite-plugin-bundled-css-after-bulma.js";
+import { vitePluginPurgeCriticalCss } from "./vite/vite-plugin-purge-critical-css.js";
+import { vitePluginMetadataModulePreload } from "./vite/vite-plugin-metadata-modulepreload.js";
 import {
+  itemMetadataCodeSplittingGroups,
   itemMetadataPlugins,
   itemMetadataResolveAliases,
 } from "./vite/wiring.js";
@@ -11,9 +15,10 @@ import {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /**
- * Item-metadata pipeline (plan step 4): `vite/wiring.js` registers the pre-plugin and
- * `resolve.alias` for both **serve** and **build**. Testem’s Vite middleware loads this file
- * via `configFile` so browser tests get the same behavior. Other plugins stay below.
+ * Item-metadata pipeline (Commit 4): `vite/wiring.js` registers the pre-plugin,
+ * `resolve.alias`, and Rolldown chunk groups for generated metadata modules. Testem’s Vite
+ * middleware loads this file via `configFile` so browser tests get the same behavior. Other
+ * plugins stay below.
  */
 
 export default defineConfig(({ command }) => ({
@@ -46,14 +51,7 @@ export default defineConfig(({ command }) => ({
               test: /node_modules/,
               priority: 10,
             },
-            {
-              name: "item-metadata",
-              test: /[/\\]item-metadata\.js$/,
-              priority: 100,
-              minSize: 0,
-              maxSize: 10_000_000,
-              maxModuleSize: 10_000_000,
-            },
+            ...itemMetadataCodeSplittingGroups(),
           ],
         },
       },
@@ -65,8 +63,11 @@ export default defineConfig(({ command }) => ({
     target: false,
   },
   plugins: [
+    vitePluginPreviewServeDistSpritesheets(),
     ...itemMetadataPlugins(command),
+    vitePluginMetadataModulePreload(),
     vitePluginBundledCssAfterBulma(),
     getSpritesheetsPlugin(command),
+    vitePluginPurgeCriticalCss(),
   ],
 }));

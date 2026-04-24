@@ -16,9 +16,14 @@ import {
   exportIndividualFrames,
 } from "../../state/zip.js";
 import { debugLog } from "../../utils/debug.js";
+import { isLayersReady } from "../../state/catalog.js";
+
+const zipExportDisabled = () => !isLayersReady();
+const zipExportTitle = "Wait for layer data to finish loading";
 
 export const Download = {
   view: function () {
+    const zipDisabled = zipExportDisabled();
     // Export to clipboard
     const exportToClipboard = async () => {
       if (!window.canvasRenderer) return;
@@ -104,25 +109,41 @@ export const Download = {
           ),
           m(
             "button.button.is-small.is-info",
-            { onclick: exportSplitAnimations },
+            {
+              disabled: zipDisabled,
+              title: zipDisabled ? zipExportTitle : undefined,
+              onclick: exportSplitAnimations,
+            },
             "ZIP: Split by animation",
           ),
           state.zipByAnimation.isRunning ? m("span.loading") : null,
           m(
             "button.button.is-small.is-info",
-            { onclick: exportSplitItemSheets },
+            {
+              disabled: zipDisabled,
+              title: zipDisabled ? zipExportTitle : undefined,
+              onclick: exportSplitItemSheets,
+            },
             "ZIP: Split by item",
           ),
           state.zipByItem.isRunning ? m("span.loading") : null,
           m(
             "button.button.is-small.is-info",
-            { onclick: exportSplitItemAnimations },
+            {
+              disabled: zipDisabled,
+              title: zipDisabled ? zipExportTitle : undefined,
+              onclick: exportSplitItemAnimations,
+            },
             "ZIP: Split by animation and item",
           ),
           state.zipByAnimimationAndItem.isRunning ? m("span.loading") : null,
           m(
             "button.button.is-small.is-info",
-            { onclick: exportIndividualFrames },
+            {
+              disabled: zipDisabled,
+              title: zipDisabled ? zipExportTitle : undefined,
+              onclick: exportIndividualFrames,
+            },
             "ZIP: Split by animation and frame",
           ),
           state.zipIndividualFrames && state.zipIndividualFrames.isRunning

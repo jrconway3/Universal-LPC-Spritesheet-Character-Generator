@@ -1,16 +1,11 @@
 import "chai";
 import "../sources/vendor-globals.js";
-import {
-  itemMetadata,
-  aliasMetadata,
-  categoryTree,
-  paletteMetadata,
-} from "../item-metadata.js";
+import { catalogReady } from "../sources/state/catalog.js";
+// `install-item-metadata` runs `loadAllMetadata()` on the Testem/Vite test page and registers
+// all five `dist/*-metadata.js` chunks with `catalog` before this module’s body runs.
+import "../sources/install-item-metadata.js";
+
+await catalogReady.onAllReady;
 
 window.__TEST_DEBUG_LOCKED__ = true;
 window.DEBUG = import.meta.env.VITEST_DEBUG === "true";
-
-window.itemMetadata = itemMetadata;
-window.aliasMetadata = aliasMetadata;
-window.categoryTree = categoryTree;
-window.paletteMetadata = paletteMetadata;
