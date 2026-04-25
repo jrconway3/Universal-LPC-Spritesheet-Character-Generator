@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="/sources/main.css" />
     <!-- Prebuilt UMD bundle (not the package main); avoids Node `process` in Vite’s optimizer. -->
     <script src="/node_modules/mocha/mocha.js"></script>
+    <!-- Testem browser client from the testem package (not repo-root testem.cjs). -->
     <script src="/testem.js"></script>
     <script>
       mocha.setup("bdd");

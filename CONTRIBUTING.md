@@ -144,12 +144,12 @@ Install these on your machine before you run builds or tests. Versions match wha
 **Git**  
 Used for clone, branch, and PR workflow. [Download Git](https://git-scm.com/downloads) or use your OS package manager (`git` is often pre-installed on macOS and Linux).
 
-**Node.js 22 and npm**  
-The project targets **Node.js 22** (npm **10.x** ships with it). Install from [nodejs.org](https://nodejs.org/) or a version manager such as [fnm](https://github.com/Schniz/fnm) or [nvm](https://github.com/nvm-sh/nvm), then confirm:
+**Node.js 24 and npm**  
+CI uses **Node.js 24** (see [`.github/workflows/`](.github/workflows/)). Install from [nodejs.org](https://nodejs.org/) or a version manager such as [fnm](https://github.com/Schniz/fnm) or [nvm](https://github.com/nvm-sh/nvm), then confirm your runtime matches or is compatible with CI:
 
 ```bash
-node -v   # expect v22.x
-npm -v    # expect 10.x
+node -v   # expect v24.x
+npm -v    # npm ships with Node
 ```
 
 After cloning, install JavaScript dependencies from the repo root:
@@ -158,6 +158,9 @@ After cloning, install JavaScript dependencies from the repo root:
 npm ci
 # or, for everyday work: npm install
 ```
+
+**JavaScript module format (Node)**  
+The root **`package.json`** sets **`"type": "module"`**, so first-party **`.js`** files are **ESM**—use **`import`** and **`export`**, not **`require`** or **`module.exports`**, for new Node scripts and tooling under **`scripts/`**, **`vite/`**, **`tests/node/`**, and similar paths. One exception: the Testem configuration is **[`testem.cjs`](testem.cjs)** (CommonJS). [Testem](https://github.com/testem/testem) discovers **`testem.cjs`** automatically (same as **`testem.js`**, after **`testem.json` / `testem.yml`**, if those exist). Use **`--file testem.cjs`** only to force a path when you have multiple config files or need a non-default name.
 
 **Copying `spritesheets/` into `dist/` (build)**  
 **`npm run build`** copies the large **`spritesheets/`** tree into **`dist/`** as part of the Vite build (see `vite.config.js`). Which tool runs depends on the OS:
@@ -250,7 +253,9 @@ From the project root:
 npm test
 ```
 
-This runs **`node ./node_modules/testem/testem.js ci -f testem.cjs`**, which executes **`before_tests`** (`node ./tests/node/run-node-tests.js`) then the browser suite (**Chrome** and **Firefox** in CI).
+This runs **`node ./node_modules/testem/testem.js ci`**, which loads **[`testem.cjs`](testem.cjs)** (via Testem’s default config search), executes **`before_tests`** (`node ./tests/node/run-node-tests.js`) then the browser suite (**Chrome** and **Firefox** in CI).
+
+**Testem client URL vs config:** [`tests_run.html`](tests_run.html) loads **`<script src="/testem.js">`**. That path is the **Testem in-browser client** served by the Testem server from the **`testem`** npm package; it is **not** the repo’s config file. Local Testem settings live in **[`testem.cjs`](testem.cjs)** at the repository root.
 
 **`DEBUG` environment variable (optional):** When `DEBUG` is `1` or `true`, the Vite middleware used by Testem defines `import.meta.env.VITEST_DEBUG === "true"`, and [`tests/vitest-setup.js`](tests/vitest-setup.js) turns on test-friendly verbose behavior aligned with `sources/utils/debug.js`.
 
