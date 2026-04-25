@@ -1,4 +1,5 @@
 // Search control component
+import m from "mithril";
 import * as catalog from "../../state/catalog.js";
 import { state } from "../../state/state.js";
 

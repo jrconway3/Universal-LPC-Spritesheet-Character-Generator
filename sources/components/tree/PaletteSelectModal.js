@@ -1,4 +1,5 @@
 // PaletteSelectModal.js
+import m from "mithril";
 import classNames from "classnames";
 import { drawRecolorPreview } from "../../canvas/palette-recolor.js";
 import * as catalog from "../../state/catalog.js";

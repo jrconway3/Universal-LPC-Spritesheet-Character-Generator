@@ -1,4 +1,5 @@
 // Item with recolors component
+import m from "mithril";
 import classNames from "classnames";
 import { state, getSelectionGroup, selectItem } from "../../state/state.js";
 import * as catalog from "../../state/catalog.js";

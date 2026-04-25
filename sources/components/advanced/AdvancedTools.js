@@ -1,4 +1,5 @@
 // Advanced Tools component - Custom file upload with z-position
+import m from "mithril";
 import { state } from "../../state/state.js";
 import { CollapsibleSection } from "../CollapsibleSection.js";
 

@@ -1,4 +1,5 @@
 // License Filters component
+import m from "mithril";
 import { state } from "../../state/state.js";
 import * as catalog from "../../state/catalog.js";
 import { isItemLicenseCompatible } from "../../state/filters.js";
