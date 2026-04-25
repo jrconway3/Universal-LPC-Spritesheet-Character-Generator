@@ -1,9 +1,9 @@
 /**
- * Compare two ZIP-profile JSON files (from `zip-export-profile.mjs` or `profile:zip`).
+ * Compare two ZIP-profile JSON files (from `zip-export-profile.js` or `profile:zip`).
  *
  * Usage:
- *   node scripts/zip/diff-zip-profile.mjs <before.json> <after.json>
- *   node scripts/zip/diff-zip-profile.mjs --before tmp/baseline.json --after tmp/current.json
+ *   node scripts/zip/diff-zip-profile.js <before.json> <after.json>
+ *   node scripts/zip/diff-zip-profile.js --before tmp/baseline.json --after tmp/current.json
  *
  * Prints per-export-kind phase deltas (after − before). Positive Δ means slower.
  * Exit code 0 always (reporting tool).
@@ -30,8 +30,8 @@ function parseArgs(argv) {
     afterPath = path.resolve(REPO_ROOT, args[1]);
   } else {
     throw new Error(
-      "Usage: diff-zip-profile.mjs <before.json> <after.json>\n" +
-        "   or: diff-zip-profile.mjs --before <before.json> --after <after.json>",
+      "Usage: diff-zip-profile.js <before.json> <after.json>\n" +
+        "   or: diff-zip-profile.js --before <before.json> --after <after.json>",
     );
   }
   return { beforePath, afterPath };
@@ -61,9 +61,11 @@ function main() {
   const lines = [];
   lines.push("ZIP profile diff");
   lines.push(`  before: ${path.relative(REPO_ROOT, beforePath)}`);
-  if (before.generatedAt) lines.push(`           generatedAt: ${before.generatedAt}`);
+  if (before.generatedAt)
+    lines.push(`           generatedAt: ${before.generatedAt}`);
   lines.push(`  after:  ${path.relative(REPO_ROOT, afterPath)}`);
-  if (after.generatedAt) lines.push(`           generatedAt: ${after.generatedAt}`);
+  if (after.generatedAt)
+    lines.push(`           generatedAt: ${after.generatedAt}`);
   lines.push("");
 
   const meta =
@@ -121,10 +123,7 @@ function main() {
       w.before = Math.max(w.before, fmt(mb[ph]).length);
       w.after = Math.max(w.after, fmt(ma[ph]).length);
       const d = (ma[ph] ?? 0) - (mb[ph] ?? 0);
-      w.delta = Math.max(
-        w.delta,
-        `${d >= 0 ? "+" : ""}${fmt(d)}`.length,
-      );
+      w.delta = Math.max(w.delta, `${d >= 0 ? "+" : ""}${fmt(d)}`.length);
     }
 
     const pad = (s, n) => s + " ".repeat(Math.max(0, n - s.length));

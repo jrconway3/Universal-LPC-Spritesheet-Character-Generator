@@ -8,7 +8,7 @@
  * via `issue382-golden-runner.html` (see `scripts/fixture-builder.js`).
  *
  * @see scripts/fixture-builder.js
- * @see scripts/issue382-golden-playwright.mjs
+ * @see scripts/issue382-golden-playwright.js
  * @see issue382-golden-runner.html
  */
 

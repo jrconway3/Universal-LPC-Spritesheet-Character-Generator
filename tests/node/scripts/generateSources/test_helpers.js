@@ -5,21 +5,21 @@ import {
   METADATA_MODULE_BASENAMES,
   readDirTree,
   resetGeneratorState,
-} from "../../../../scripts/generateSources/state.mjs";
-import { loadPaletteMetadata } from "../../../../scripts/generateSources/palettes.mjs";
+} from "../../../../scripts/generateSources/state.js";
+import { loadPaletteMetadata } from "../../../../scripts/generateSources/palettes.js";
 import {
   expandInternedItemLite,
   expandMetadataIndexesWithInternedArrays,
 } from "../../../../sources/state/resolve-hash-param.js";
-import { parseTree } from "../../../../scripts/generateSources/tree.mjs";
-import { parseItem } from "../../../../scripts/generateSources/items.mjs";
-import { processItemCredits } from "../../../../scripts/generateSources/credits.mjs";
+import { parseTree } from "../../../../scripts/generateSources/tree.js";
+import { parseItem } from "../../../../scripts/generateSources/items.js";
+import { processItemCredits } from "../../../../scripts/generateSources/credits.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, "..", "..", "..", "..");
 const generatorModuleUrl = pathToFileURL(
-  projectPath("scripts", "generate_sources.mjs"),
+  projectPath("scripts", "generate_sources.js"),
 ).href;
 
 let moduleLoadCounter = 0;

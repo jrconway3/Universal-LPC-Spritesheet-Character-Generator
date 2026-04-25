@@ -1,6 +1,6 @@
 import debugUtils from "../utils/debug.js";
 import { ucwords } from "../../sources/utils/helpers.ts";
-import { paletteMetadata } from "./state.mjs";
+import { paletteMetadata } from "./state.js";
 
 const { debugWarn } = debugUtils;
 
@@ -55,7 +55,8 @@ function resolvePaletteToken(paletteToken, fallbackMaterial) {
 function applyRecolorDefaults(recolor, materialMeta) {
   recolor.default = materialMeta.default;
   recolor.type_name = recolor.type_name ?? null;
-  recolor.label = recolor.label ?? materialMeta.label ?? ucwords(recolor.material);
+  recolor.label =
+    recolor.label ?? materialMeta.label ?? ucwords(recolor.material);
 
   if (!recolor.base) {
     recolor.base = `${materialMeta.default}.${materialMeta.base}`;

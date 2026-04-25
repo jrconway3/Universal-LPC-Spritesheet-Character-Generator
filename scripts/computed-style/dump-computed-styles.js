@@ -4,13 +4,13 @@
  * (e.g. master vs update_bulma) served from two worktrees on different ports.
  *
  * Usage:
- *   node scripts/dump-computed-styles.mjs http://127.0.0.1:4173 > /tmp/master.txt
- *   node scripts/dump-computed-styles.mjs http://127.0.0.1:4174 > /tmp/branch.txt
+ *   node scripts/dump-computed-styles.js http://127.0.0.1:4173 > /tmp/master.txt
+ *   node scripts/dump-computed-styles.js http://127.0.0.1:4174 > /tmp/branch.txt
  *   diff -u /tmp/master.txt /tmp/branch.txt
  *
  * Or with labels and an output directory:
- *   node scripts/dump-computed-styles.mjs --out-dir /tmp/cmp --label master http://127.0.0.1:4173
- *   node scripts/dump-computed-styles.mjs --out-dir /tmp/cmp --label branch http://127.0.0.1:4174
+ *   node scripts/dump-computed-styles.js --out-dir /tmp/cmp --label master http://127.0.0.1:4173
+ *   node scripts/dump-computed-styles.js --out-dir /tmp/cmp --label branch http://127.0.0.1:4174
  *
  * Options:
  *   --viewport WxH        Explicit size (default 1440x900 = Argos medium desktop)
@@ -19,12 +19,12 @@
  *   --out-dir <dir>       Implies --label required; writes <dir>/<label>.txt
  *
  * Mobile / responsive debugging (e.g. full-width Download buttons):
- *   node scripts/dump-computed-styles.mjs --preset mobile http://127.0.0.1:4173 > /tmp/master-mobile.txt
- *   node scripts/dump-computed-styles.mjs --preset mobile http://127.0.0.1:4174 > /tmp/branch-mobile.txt
+ *   node scripts/dump-computed-styles.js --preset mobile http://127.0.0.1:4173 > /tmp/master-mobile.txt
+ *   node scripts/dump-computed-styles.js --preset mobile http://127.0.0.1:4174 > /tmp/branch-mobile.txt
  *   diff -u /tmp/master-mobile.txt /tmp/branch-mobile.txt
  *
  * All presets + diffs at once:
- *   node scripts/computed-style-diff-all.mjs
+ *   node scripts/computed-style-diff-all.js
  *
  * Verbose stderr (timings + browser console): LPC_DEBUG_COMPUTED_STYLE=1
  */
@@ -36,7 +36,7 @@ import {
   VIEWPORT_PRESETS,
   COMPUTED_STYLE_DUMP_PAGES,
   dumpComputedStylesForUrl,
-} from "./computed-style-dump-shared.mjs";
+} from "./computed-style-dump-shared.js";
 
 function parseArgs(argv) {
   const out = {
@@ -87,7 +87,7 @@ function parseArgs(argv) {
 
 function printHelp() {
   console.error(`Usage:
-  node scripts/dump-computed-styles.mjs [options] <url>
+  node scripts/dump-computed-styles.js [options] <url>
 
 Options:
   --out <file>           Write dump to file (default: stdout)
@@ -100,12 +100,12 @@ Options:
   --help, -h
 
 Examples:
-  node scripts/dump-computed-styles.mjs http://127.0.0.1:4173 > /tmp/master.txt
-  node scripts/dump-computed-styles.mjs --preset mobile http://127.0.0.1:4173 > /tmp/master-mobile.txt
-  node scripts/dump-computed-styles.mjs --out /tmp/branch.txt http://127.0.0.1:4174
+  node scripts/dump-computed-styles.js http://127.0.0.1:4173 > /tmp/master.txt
+  node scripts/dump-computed-styles.js --preset mobile http://127.0.0.1:4173 > /tmp/master-mobile.txt
+  node scripts/dump-computed-styles.js --out /tmp/branch.txt http://127.0.0.1:4174
   diff -u /tmp/master.txt /tmp/branch.txt
 
-  node scripts/computed-style-diff-all.mjs   # all presets vs default ports
+  node scripts/computed-style-diff-all.js   # all presets vs default ports
 `);
 }
 

@@ -1,6 +1,6 @@
 /**
  * Shared fake JSZip for ZIP export tests and the issue #382 golden runner
- * (`issue382-golden-runner.mjs`).
+ * (`issue382-golden-runner.js`).
  */
 
 /**

@@ -23,7 +23,7 @@ export const aliasMetadata = {};
 export const categoryTree = { items: [], children: {} };
 
 const METADATA_FILE_BANNER = `// THIS FILE IS AUTO-GENERATED. PLEASE DON'T ALTER IT MANUALLY
-// Generated from sheet_definitions/*.json by scripts/generate_sources.mjs
+// Generated from sheet_definitions/*.json by scripts/generate_sources.js
 `;
 
 function clearObject(obj) {
@@ -213,7 +213,10 @@ function stripRecolorEntryZeroVariantsForEmit(recolors) {
  * @param {Record<string, { v: number, r: number, itemId: string }[]>} internedByTypeName
  * @return {Record<string, object>}
  */
-function buildInternedItemMetadataLiteMap(itemMetadataLite, internedByTypeName) {
+function buildInternedItemMetadataLiteMap(
+  itemMetadataLite,
+  internedByTypeName,
+) {
   const itemIdToVr = new Map();
   for (const rows of Object.values(internedByTypeName)) {
     for (const row of rows) {

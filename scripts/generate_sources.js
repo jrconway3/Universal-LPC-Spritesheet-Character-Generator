@@ -6,13 +6,13 @@ import {
   CREDITS_OUTPUT,
   generateCreditsCsv,
   processItemCredits,
-} from "./generateSources/credits.mjs";
-import { loadPaletteMetadata } from "./generateSources/palettes.mjs";
-import { parseItem } from "./generateSources/items.mjs";
+} from "./generateSources/credits.js";
+import { loadPaletteMetadata } from "./generateSources/palettes.js";
+import { parseItem } from "./generateSources/items.js";
 import {
   parseTree,
   populateAndSortCategoryTree,
-} from "./generateSources/tree.mjs";
+} from "./generateSources/tree.js";
 import {
   buildAllMetadataModules,
   METADATA_OUTPUT,
@@ -20,7 +20,7 @@ import {
   resetGeneratorState,
   SHEETS_DIR,
   readDirTree,
-} from "./generateSources/state.mjs";
+} from "./generateSources/state.js";
 
 export function generateSources(deps = {}, legacyEnv) {
   const env = deps.env ?? legacyEnv ?? "production";
@@ -28,7 +28,8 @@ export function generateSources(deps = {}, legacyEnv) {
   const parseTreeFn = deps.parseTreeFn ?? parseTree;
   const parseItemFn = deps.parseItemFn ?? parseItem;
   const processItemCreditsFn = deps.processItemCreditsFn ?? processItemCredits;
-  const loadPaletteMetadataFn = deps.loadPaletteMetadataFn ?? loadPaletteMetadata;
+  const loadPaletteMetadataFn =
+    deps.loadPaletteMetadataFn ?? loadPaletteMetadata;
   const readDirTreeFn = deps.readDirTreeFn ?? readDirTree;
   const writeMetadata = deps.writeMetadata ?? false;
   const metadataOutputPath = deps.metadataOutputPath ?? METADATA_OUTPUT;

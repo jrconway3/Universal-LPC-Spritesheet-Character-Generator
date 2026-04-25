@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { generateSources } from "../scripts/generate_sources.mjs";
+import { generateSources } from "../scripts/generate_sources.js";
 
 /**
  * @param {string} filePath

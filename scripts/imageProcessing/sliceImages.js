@@ -1,6 +1,6 @@
-const fs = require("fs");
-const { execSync } = require("child_process");
-const { debugLog } = require("../utils/debug.js");
+import fs from "node:fs";
+import { execSync } from "node:child_process";
+import { debugLog } from "../utils/debug.js";
 
 const universalFrameSize = 64;
 

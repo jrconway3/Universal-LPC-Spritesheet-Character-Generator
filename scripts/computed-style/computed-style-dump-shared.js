@@ -1,6 +1,6 @@
 /**
- * Shared computed-style dump config + helpers for dump-computed-styles.mjs
- * and computed-style-diff-all.mjs.
+ * Shared computed-style dump config + helpers for dump-computed-styles.js
+ * and computed-style-diff-all.js.
  */
 
 import { chromium } from "playwright";
@@ -24,7 +24,7 @@ export function urlWithDebugEnabled(url) {
 
 /**
  * Set `LPC_DEBUG_COMPUTED_STYLE=1` (or `true` / `yes`) to print phase logs and browser `console`
- * to stderr while `dumpComputedStylesForUrl` runs (see also `compute-style-diff-all.mjs`).
+ * to stderr while `dumpComputedStylesForUrl` runs (see also `compute-style-diff-all.js`).
  */
 export function isLpcComputedStyleDebug() {
   const v = process.env.LPC_DEBUG_COMPUTED_STYLE;
@@ -218,7 +218,8 @@ export const COMPUTED_STYLE_TARGETS = [
     selector: "#mithril-filters",
   },
   {
-    label: "mithril-filters app stack (Download+Filters+Credits+Advanced wrapper)",
+    label:
+      "mithril-filters app stack (Download+Filters+Credits+Advanced wrapper)",
     selector: "#mithril-filters > div",
     includeRect: true,
   },
@@ -238,7 +239,10 @@ export const COMPUTED_STYLE_TARGETS = [
     label: "download buttons (each .button)",
     selector: "#download-buttons .button",
   },
-  { label: "download primary button", selector: "#download-buttons .button.is-primary" },
+  {
+    label: "download primary button",
+    selector: "#download-buttons .button.is-primary",
+  },
   {
     label: "download first is-info button",
     selector: "#download-buttons .button.is-info",
@@ -565,22 +569,28 @@ export const COMPUTED_STYLE_TARGETS = [
   },
   {
     label: "advanced tools z-position field",
-    selector: "#mithril-filters > div > .box:nth-child(4) .collapsible-content .field",
+    selector:
+      "#mithril-filters > div > .box:nth-child(4) .collapsible-content .field",
   },
   {
     label: "advanced tools z-position input",
-    selector: "#mithril-filters > div > .box:nth-child(4) .collapsible-content .control > input",
+    selector:
+      "#mithril-filters > div > .box:nth-child(4) .collapsible-content .control > input",
   },
   {
     label: "advanced tools help text",
-    selector: "#mithril-filters > div > .box:nth-child(4) .collapsible-content .help",
+    selector:
+      "#mithril-filters > div > .box:nth-child(4) .collapsible-content .help",
   },
   {
     label: "filters panel inner box (first nested .box in filters)",
     selector: "#mithril-filters .filters-column .box",
   },
   { label: "filters search input", selector: "#mithril-filters input.input" },
-  { label: "filters select control", selector: "#mithril-filters .select select" },
+  {
+    label: "filters select control",
+    selector: "#mithril-filters .select select",
+  },
   { label: "filters tag example", selector: "#mithril-filters .tag" },
   { label: "filters label", selector: "#mithril-filters .label" },
   { label: "body type button", selector: "#mithril-filters .buttons .button" },
@@ -599,7 +609,8 @@ export const COMPUTED_STYLE_TARGETS = [
     omitProps: ["background-color"],
   },
   {
-    label: "CategoryTree .search-result row (first; filters-search-arm / search)",
+    label:
+      "CategoryTree .search-result row (first; filters-search-arm / search)",
     selector: "#chooser-column .search-result",
     includeRect: true,
     rectPrecision: "fine",
@@ -776,8 +787,7 @@ export const COMPUTED_STYLE_TARGETS = [
   },
   {
     label: "spritesheet zoom field-body",
-    selector:
-      "#mithril-spritesheet-preview .field.is-horizontal .field-body",
+    selector: "#mithril-spritesheet-preview .field.is-horizontal .field-body",
   },
   { label: "scrollable container (first)", selector: ".scrollable-container" },
   { label: "animation canvas", selector: "#previewAnimations" },
@@ -946,7 +956,9 @@ export async function collectComputedStyleDump(page, options = {}) {
               const rj = crs[j];
               segs.push(`${rj.top.toFixed(2)}-${rj.bottom.toFixed(2)}`);
             }
-            lines.push(`  __client_rects: n=${crs.length} [${segs.join("; ")}]`);
+            lines.push(
+              `  __client_rects: n=${crs.length} [${segs.join("; ")}]`,
+            );
           }
           if (t.includeContentBounds) {
             try {
@@ -1020,15 +1032,22 @@ export async function collectComputedStyleDump(page, options = {}) {
       headerToCheckboxBlockGap(animBox, "animation");
 
       if (doFont) {
-        lines.push("=== font diagnostics (FontFace API + canvas measureText) ===");
-        if (document.fonts && typeof document.fonts.ready?.then === "function") {
+        lines.push(
+          "=== font diagnostics (FontFace API + canvas measureText) ===",
+        );
+        if (
+          document.fonts &&
+          typeof document.fonts.ready?.then === "function"
+        ) {
           try {
             await document.fonts.ready;
           } catch {
             /* ignore */
           }
         }
-        lines.push(`  document.fonts.size: ${document.fonts ? document.fonts.size : "(no document.fonts)"}`);
+        lines.push(
+          `  document.fonts.size: ${document.fonts ? document.fonts.size : "(no document.fonts)"}`,
+        );
 
         if (document.fonts && document.fonts.size > 0) {
           const faces = [];
@@ -1063,7 +1082,9 @@ export async function collectComputedStyleDump(page, options = {}) {
             );
           }
           if (faces.length > maxLines) {
-            lines.push(`  … (${faces.length - maxLines} more FontFace entries omitted)`);
+            lines.push(
+              `  … (${faces.length - maxLines} more FontFace entries omitted)`,
+            );
           }
         }
 
@@ -1072,13 +1093,17 @@ export async function collectComputedStyleDump(page, options = {}) {
         lines.push(`  body resolved font (shorthand): ${bodyFont}`);
         try {
           if (document.fonts?.check) {
-            lines.push(`  document.fonts.check(body): ${document.fonts.check(bodyFont)}`);
+            lines.push(
+              `  document.fonts.check(body): ${document.fonts.check(bodyFont)}`,
+            );
           }
         } catch {
           lines.push("  document.fonts.check(body): (threw)");
         }
 
-        lines.push("  --- measureText widths (2d canvas, ctx.font = resolved shorthand) ---");
+        lines.push(
+          "  --- measureText widths (2d canvas, ctx.font = resolved shorthand) ---",
+        );
         for (const probe of probes) {
           const node = document.querySelector(probe.selector);
           if (!node) {
@@ -1158,7 +1183,9 @@ export async function dumpComputedStylesForUrl(url, viewport, options = {}) {
         );
       });
       page.on("pageerror", (err) => {
-        process.stderr.write(`[LPC computed-style][pageerror] ${String(err)}\n`);
+        process.stderr.write(
+          `[LPC computed-style][pageerror] ${String(err)}\n`,
+        );
       });
     }
     await page.addInitScript(() => {
@@ -1175,12 +1202,16 @@ export async function dumpComputedStylesForUrl(url, viewport, options = {}) {
       lpcComputedStyleLog("openHumanMaleSkintonePalette…");
       const t2 = Date.now();
       await openHumanMaleSkintonePalette(page, { forComputedStyleDump: true });
-      lpcComputedStyleLog(`openHumanMaleSkintonePalette done +${Date.now() - t2}ms`);
+      lpcComputedStyleLog(
+        `openHumanMaleSkintonePalette done +${Date.now() - t2}ms`,
+      );
     } else if (dumpPage === "filters-search-arm") {
       lpcComputedStyleLog("openHumanMaleSkintonePalette (filters path)…");
       const t2 = Date.now();
       await openHumanMaleSkintonePalette(page, { forComputedStyleDump: true });
-      lpcComputedStyleLog(`openHumanMaleSkintonePalette done +${Date.now() - t2}ms`);
+      lpcComputedStyleLog(
+        `openHumanMaleSkintonePalette done +${Date.now() - t2}ms`,
+      );
       lpcComputedStyleLog("closeSkintonePaletteModal…");
       await closeSkintonePaletteModal(page);
       lpcComputedStyleLog("openLicenseAnimationAdvancedAndSearchArm…");

@@ -17,9 +17,9 @@
  * Verbose stderr: `LPC_DEBUG_COMPUTED_STYLE=1` (phase timings + browser console in dump shared).
  *
  * Usage:
- *   node scripts/computed-style-diff-all.mjs
- *   node scripts/computed-style-diff-all.mjs --out-dir /tmp/cmp --url-a http://127.0.0.1:4174 --url-b http://127.0.0.1:4175
- *   node scripts/computed-style-diff-all.mjs --no-fail-on-diff   # exit 0 even when diffs exist
+ *   node scripts/computed-style-diff-all.js
+ *   node scripts/computed-style-diff-all.js --out-dir /tmp/cmp --url-a http://127.0.0.1:4174 --url-b http://127.0.0.1:4175
+ *   node scripts/computed-style-diff-all.js --no-fail-on-diff   # exit 0 even when diffs exist
  */
 
 import fs from "node:fs";
@@ -30,9 +30,18 @@ import {
   COMPUTED_STYLE_DUMP_PAGES,
   dumpComputedStylesForUrl,
   lpcComputedStyleLog,
-} from "./computed-style-dump-shared.mjs";
+} from "./computed-style-dump-shared.js";
 
-const PRESET_ORDER = ["mobile", "tablet", "mediumDesktop", "hugeDesktop", "mobileLong", "tabletLong", "mediumDesktopLong", "hugeDesktopLong"];
+const PRESET_ORDER = [
+  "mobile",
+  "tablet",
+  "mediumDesktop",
+  "hugeDesktop",
+  "mobileLong",
+  "tabletLong",
+  "mediumDesktopLong",
+  "hugeDesktopLong",
+];
 
 function parseArgs(argv) {
   const out = {
@@ -61,7 +70,7 @@ function parseArgs(argv) {
 
 function printHelp() {
   console.error(`Usage:
-  node scripts/computed-style-diff-all.mjs [options]
+  node scripts/computed-style-diff-all.js [options]
 
 Options:
   --url-a <url>     First site (default: $COMPUTED_STYLE_URL_A or http://127.0.0.1:4174)
@@ -85,7 +94,12 @@ function unifiedDiff(pathA, pathB) {
       maxBuffer: 50 * 1024 * 1024,
     });
   } catch (e) {
-    if (e && typeof e === "object" && e.status === 1 && typeof e.stdout === "string") {
+    if (
+      e &&
+      typeof e === "object" &&
+      e.status === 1 &&
+      typeof e.stdout === "string"
+    ) {
       return e.stdout;
     }
     throw e;
@@ -165,7 +179,11 @@ async function main() {
     `any differences: ${anyDiff ? "yes" : "no"}`,
     `output: ${args.outDir}`,
   ].join("\n");
-  fs.writeFileSync(path.join(args.outDir, "summary.txt"), summary + "\n", "utf8");
+  fs.writeFileSync(
+    path.join(args.outDir, "summary.txt"),
+    summary + "\n",
+    "utf8",
+  );
 
   process.stderr.write(`\nWrote ${args.outDir}\n`);
   process.stderr.write(summary + "\n");

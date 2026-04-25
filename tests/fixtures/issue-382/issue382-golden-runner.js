@@ -1,10 +1,10 @@
 /**
- * Browser harness used only by scripts/issue382-golden-playwright.mjs (fixture-builder).
+ * Browser harness used only by scripts/issue382-golden-playwright.js (fixture-builder).
  * The HTML page sets `<base href="/">` so relative `spritesheets/...` URLs resolve like
  * `tests_run.html` even though this file lives under `tests/fixtures/issue-382/`.
  *
  * @see scripts/fixture-builder.js
- * @see scripts/issue382-golden-playwright.mjs
+ * @see scripts/issue382-golden-playwright.js
  * @see issue382-golden-runner.html
  */
 

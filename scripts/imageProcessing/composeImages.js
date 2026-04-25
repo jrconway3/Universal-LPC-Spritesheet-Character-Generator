@@ -3,9 +3,9 @@
 // spellcast, thrust, walk ,slash, shoot, hurt into a new image file
 // The new image can be found at the /universal folder of the asset with the variant name.
 
-const fs = require("fs");
-const { execSync } = require("child_process");
-const { debugLog } = require("../utils/debug.js");
+import fs from "node:fs";
+import { execSync } from "node:child_process";
+import { debugLog } from "../utils/debug.js";
 
 const walk = function (dir) {
   var results = [];

@@ -5,16 +5,16 @@
  * under `tmp/` by default, and prints the same JSON to stdout.
  *
  * Usage:
- *   node scripts/zip/zip-export-profile.mjs
- *   node scripts/zip/zip-export-profile.mjs --quick
- *   node scripts/zip/zip-export-profile.mjs --only splitAnimations
- *   node scripts/zip/zip-export-profile.mjs --out custom/path.json
+ *   node scripts/zip/zip-export-profile.js
+ *   node scripts/zip/zip-export-profile.js --quick
+ *   node scripts/zip/zip-export-profile.js --only splitAnimations
+ *   node scripts/zip/zip-export-profile.js --out custom/path.json
  *
  * Environment:
  *   ZIP_PROFILE_PORT — TCP port for `npx serve` (default 9877).
  *
  * @see scripts/zip/zip-export-profile-runner.html
- * @see scripts/zip/zip-export-profile-runner.mjs
+ * @see scripts/zip/zip-export-profile-runner.js
  */
 
 /* eslint-disable no-undef -- Playwright page callbacks run in browser context */
@@ -25,7 +25,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { chromium } from "playwright";
 
-import { ZIP_PROFILE_DEFAULT_HASH } from "./zip-profile-default-hash.mjs";
+import { ZIP_PROFILE_DEFAULT_HASH } from "./zip-profile-default-hash.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.join(__dirname, "..", "..");
@@ -66,9 +66,7 @@ function parseArgs(argv) {
   if (onlyIdx !== -1 && args[onlyIdx + 1]) {
     only = args[onlyIdx + 1];
     if (!EXPORT_KINDS.has(only)) {
-      throw new Error(
-        `--only must be one of: ${[...EXPORT_KINDS].join(", ")}`,
-      );
+      throw new Error(`--only must be one of: ${[...EXPORT_KINDS].join(", ")}`);
     }
   }
   const defaultOut = path.join(
@@ -128,10 +126,9 @@ async function main() {
       },
     );
 
-    await page.waitForFunction(
-      () => window.__ZIP_PROFILE_READY__ === true,
-      { timeout: 600000 },
-    );
+    await page.waitForFunction(() => window.__ZIP_PROFILE_READY__ === true, {
+      timeout: 600000,
+    });
 
     const errText = await page.evaluate(() => window.__ZIP_PROFILE_ERROR__);
     if (errText) {
@@ -159,9 +156,7 @@ async function main() {
     const json = JSON.stringify(payload, null, 2);
     mkdirSync(path.dirname(outPath), { recursive: true });
     writeFileSync(outPath, json, "utf8");
-    process.stderr.write(
-      `Wrote ${path.relative(REPO_ROOT, outPath)}\n`,
-    );
+    process.stderr.write(`Wrote ${path.relative(REPO_ROOT, outPath)}\n`);
     process.stdout.write(`${json}\n`);
   } finally {
     if (browser) {

@@ -23,7 +23,7 @@ import {
   readDirTree,
   parseJson,
   splitItemMetadataMaps,
-} from "../../../../scripts/generateSources/state.mjs";
+} from "../../../../scripts/generateSources/state.js";
 import { buildPath, resetTestState } from "./test_helpers.js";
 
 test("state exports expected constant directory suffixes", () => {

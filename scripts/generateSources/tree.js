@@ -6,7 +6,7 @@ import {
   itemMetadata,
   onlyIfTemplate,
   SHEETS_DIR,
-} from "./state.mjs";
+} from "./state.js";
 
 const { debugLog } = debugUtils;
 
@@ -36,7 +36,10 @@ export function parseTree(filePath, fileName, options = {}) {
   const { label, priority, required, animations } = meta;
 
   let current = categoryTree;
-  const categoryPath = path.relative(sheetsDir, filePath).split(path.sep).filter(Boolean);
+  const categoryPath = path
+    .relative(sheetsDir, filePath)
+    .split(path.sep)
+    .filter(Boolean);
   const treeId = filePath.split(path.sep).pop();
 
   for (const segment of categoryPath) {

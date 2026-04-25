@@ -6,9 +6,9 @@ import path from "node:path";
 import {
   loadPaletteMetadata,
   parsePalette,
-} from "../../../../scripts/generateSources/palettes.mjs";
-import { normalizeRecolors } from "../../../../scripts/generateSources/item-helper.mjs";
-import { paletteMetadata } from "../../../../scripts/generateSources/state.mjs";
+} from "../../../../scripts/generateSources/palettes.js";
+import { normalizeRecolors } from "../../../../scripts/generateSources/item-helper.js";
+import { paletteMetadata } from "../../../../scripts/generateSources/state.js";
 import { buildPath, resetTestState } from "./test_helpers.js";
 
 function writeTempPaletteFile(root, subDir, fileName, content) {
