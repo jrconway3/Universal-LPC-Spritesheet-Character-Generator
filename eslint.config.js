@@ -90,7 +90,6 @@ export default [
       globals: {
         ...globals.browser,
         ...globals.es2021,
-        m: "readonly",
       },
     },
   },
@@ -100,7 +99,6 @@ export default [
       globals: {
         ...globals.browser,
         ...globals.es2021,
-        m: "readonly",
       },
     },
     rules: commonRulesTs,
