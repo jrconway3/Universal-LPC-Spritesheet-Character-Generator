@@ -1,8 +1,9 @@
-const fs = require("fs").promises; // Use promises-based fs for async operations
-const path = require("path");
-const { debugLog } = require("./utils/debug.js");
-const { promisify } = require("util");
-const exec = require("child_process").exec;
+import fs from "node:fs/promises";
+import path from "node:path";
+import { promisify } from "node:util";
+import { exec } from "node:child_process";
+import { debugLog } from "./utils/debug.js";
+
 const execAsync = promisify(exec);
 
 const otherBranch = "master";

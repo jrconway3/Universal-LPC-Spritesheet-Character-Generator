@@ -5,11 +5,11 @@ import {
   parseTree,
   sortCategoryTree,
   populateAndSortCategoryTree,
-} from "../../../../scripts/generateSources/tree.mjs";
+} from "../../../../scripts/generateSources/tree.js";
 import {
   categoryTree,
   itemMetadata,
-} from "../../../../scripts/generateSources/state.mjs";
+} from "../../../../scripts/generateSources/state.js";
 import { buildPath, resetTestState } from "./test_helpers.js";
 
 test("parseTree creates a category node from valid meta", () => {

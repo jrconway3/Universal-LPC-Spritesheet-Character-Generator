@@ -412,7 +412,7 @@ Regenerate the catalog bundle with Vite so `dist/item-metadata.js` includes the 
 npm run dev
 ```
 
-(or `npm run build` once). `node scripts/generate_sources.mjs` updates **CREDITS.csv** and z-positions but does not write `dist/item-metadata.js`. After **`npm run dev`**, open **`dist/item-metadata.js`** to inspect the catalog with readable indentation; after **`npm run build`**, the same file is compact (no pretty-printed JSON).
+(or `npm run build` once). `node scripts/generate_sources.js` updates **CREDITS.csv** and z-positions but does not write `dist/item-metadata.js`. After **`npm run dev`**, open **`dist/item-metadata.js`** to inspect the catalog with readable indentation; after **`npm run build`**, the same file is compact (no pretty-printed JSON).
 
 ### Step 5: Ensure Source Variant Exists
 

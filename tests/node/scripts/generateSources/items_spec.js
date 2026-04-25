@@ -9,13 +9,13 @@ import {
   getRequiredSexes,
   buildTreePath,
   collectLayers,
-} from "../../../../scripts/generateSources/items.mjs";
-import { loadPaletteMetadata } from "../../../../scripts/generateSources/palettes.mjs";
+} from "../../../../scripts/generateSources/items.js";
+import { loadPaletteMetadata } from "../../../../scripts/generateSources/palettes.js";
 import {
   aliasMetadata,
   itemMetadata,
   parseJson,
-} from "../../../../scripts/generateSources/state.mjs";
+} from "../../../../scripts/generateSources/state.js";
 import { buildPath, resetTestState } from "./test_helpers.js";
 
 function writeTempJson(tempRoot, fileName, jsonContent, subdir = "body") {

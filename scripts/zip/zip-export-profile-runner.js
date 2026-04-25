@@ -1,15 +1,15 @@
 /* eslint-disable no-undef -- browser harness (window, document, m) */
 
 /**
- * Browser harness for `scripts/zip/zip-export-profile.mjs`.
- * Loads selections from the URL hash (see `zip-profile-default-hash.mjs`) so
+ * Browser harness for `scripts/zip/zip-export-profile.js`.
+ * Loads selections from the URL hash (see `zip-profile-default-hash.js`) so
  * layered gear and custom sprites are present; runs ZIP export(s) with real
  * canvas + optional real JSZip.
  *
  * Query: `only=splitAnimations` | `splitItemSheets` | `splitItemAnimations` | `individualFrames`
  * — omit to run all four. `quick=1` uses fake JSZip.
  *
- * @see scripts/zip/zip-export-profile.mjs
+ * @see scripts/zip/zip-export-profile.js
  */
 
 import {
@@ -26,9 +26,12 @@ import {
   exportSplitItemAnimations,
   exportSplitItemSheets,
 } from "../../sources/state/zip.js";
-import { loadSelectionsFromHash, resetState } from "../../sources/state/hash.js";
+import {
+  loadSelectionsFromHash,
+  resetState,
+} from "../../sources/state/hash.js";
 import { state } from "../../sources/state/state.js";
-import { ZIP_PROFILE_DEFAULT_HASH } from "./zip-profile-default-hash.mjs";
+import { ZIP_PROFILE_DEFAULT_HASH } from "./zip-profile-default-hash.js";
 
 /** @type {readonly string[]} */
 export const ZIP_PROFILE_EXPORT_KINDS = [
@@ -98,7 +101,8 @@ async function runProfiles(opts = {}) {
 
   const RealJSZip = window.JSZip;
   if (!useRealJsZip) {
-    const { createFakeJSZip } = await import("../../tests/helpers/fake-jszip.js");
+    const { createFakeJSZip } =
+      await import("../../tests/helpers/fake-jszip.js");
     window.JSZip = function FakeJSZip() {
       return createFakeJSZip();
     };
@@ -144,7 +148,7 @@ async function runProfiles(opts = {}) {
   const profiles = window.__zipExportProfiles || {};
   return {
     profiles,
-    selectionLabel: "zip-profile-default-hash.mjs",
+    selectionLabel: "zip-profile-default-hash.js",
     useRealJsZip,
     only: only === null ? "all" : only,
   };

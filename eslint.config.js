@@ -1,9 +1,9 @@
 /* Run: npm i && npx eslint . (or enable ESLint in your IDE) */
-const js = require("@eslint/js");
-const tseslint = require("typescript-eslint");
-const babelParser = require("@babel/eslint-parser");
-const globals = require("globals");
-const eslintPluginPrettierRecommended = require("eslint-plugin-prettier/recommended");
+import js from "@eslint/js";
+import tseslint from "typescript-eslint";
+import babelParser from "@babel/eslint-parser";
+import globals from "globals";
+import eslintPluginPrettierRecommended from "eslint-plugin-prettier/recommended";
 
 const sharedParserOptions = {
   requireConfigFile: false,
@@ -46,7 +46,7 @@ const commonRulesTs = {
   ],
 };
 
-module.exports = [
+export default [
   {
     ignores: [
       // Built by Vite to dist/item-metadata.js (gitignored)
@@ -71,7 +71,7 @@ module.exports = [
       parser: babelParser,
       parserOptions: {
         ...sharedParserOptions,
-        sourceType: "commonjs",
+        sourceType: "module",
       },
       globals: {
         ...globals.node,
@@ -90,7 +90,6 @@ module.exports = [
       globals: {
         ...globals.browser,
         ...globals.es2021,
-        m: "readonly",
       },
     },
   },
@@ -100,7 +99,6 @@ module.exports = [
       globals: {
         ...globals.browser,
         ...globals.es2021,
-        m: "readonly",
       },
     },
     rules: commonRulesTs,
@@ -163,23 +161,22 @@ module.exports = [
     },
   },
   {
-    files: ["scripts/**/*.mjs"],
+    files: ["**/*.cjs"],
     languageOptions: {
+      parser: babelParser,
       parserOptions: {
         ...sharedParserOptions,
-        sourceType: "module",
+        sourceType: "commonjs",
       },
       globals: {
         ...globals.node,
         ...globals.es2021,
       },
     },
-    rules: {
-      ...commonRules,
-    },
+    rules: commonRules,
   },
   {
-    files: ["issue382-golden-runner.mjs"],
+    files: ["issue382-golden-runner.js"],
     languageOptions: {
       parserOptions: {
         ...sharedParserOptions,
@@ -195,6 +192,6 @@ module.exports = [
   },
   {
     ...eslintPluginPrettierRecommended,
-    files: ["**/*.{js,ts}"],
+    files: ["**/*.{js,cjs,ts}"],
   },
 ];

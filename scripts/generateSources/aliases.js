@@ -1,5 +1,5 @@
 import debugUtils from "../utils/debug.js";
-import { aliasMetadata } from "./state.mjs";
+import { aliasMetadata } from "./state.js";
 
 const { debugWarn } = debugUtils;
 

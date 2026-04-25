@@ -34,6 +34,7 @@ import {
   zipExportTimestamp,
   zipGenerateBlobWithProfiler,
 } from "../utils/zip-helpers.js";
+import m from "mithril";
 import { debugLog, debugWarn } from "../utils/debug.js";
 import { createZipExportProfiler } from "../performance-profiler.js";
 import {

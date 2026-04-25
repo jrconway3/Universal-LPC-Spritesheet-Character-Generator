@@ -1,3 +1,4 @@
+import m from "mithril";
 import { state, selectDefaults } from "./state.js";
 import { parseRecolorKey } from "./palettes.js";
 import { debugWarn } from "../utils/debug.js";

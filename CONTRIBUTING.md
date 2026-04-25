@@ -144,12 +144,12 @@ Install these on your machine before you run builds or tests. Versions match wha
 **Git**  
 Used for clone, branch, and PR workflow. [Download Git](https://git-scm.com/downloads) or use your OS package manager (`git` is often pre-installed on macOS and Linux).
 
-**Node.js 22 and npm**  
-The project targets **Node.js 22** (npm **10.x** ships with it). Install from [nodejs.org](https://nodejs.org/) or a version manager such as [fnm](https://github.com/Schniz/fnm) or [nvm](https://github.com/nvm-sh/nvm), then confirm:
+**Node.js 24 and npm**  
+CI uses **Node.js 24** (see [`.github/workflows/`](.github/workflows/)). Install from [nodejs.org](https://nodejs.org/) or a version manager such as [fnm](https://github.com/Schniz/fnm) or [nvm](https://github.com/nvm-sh/nvm), then confirm your runtime matches or is compatible with CI:
 
 ```bash
-node -v   # expect v22.x
-npm -v    # expect 10.x
+node -v   # expect v24.x
+npm -v    # npm ships with Node
 ```
 
 After cloning, install JavaScript dependencies from the repo root:
@@ -158,6 +158,9 @@ After cloning, install JavaScript dependencies from the repo root:
 npm ci
 # or, for everyday work: npm install
 ```
+
+**JavaScript module format (Node)**  
+The root **`package.json`** sets **`"type": "module"`**, so first-party **`.js`** files are **ESM**—use **`import`** and **`export`**, not **`require`** or **`module.exports`**, for new Node scripts and tooling under **`scripts/`**, **`vite/`**, **`tests/node/`**, and similar paths. One exception: the Testem configuration is **[`testem.cjs`](testem.cjs)** (CommonJS). [Testem](https://github.com/testem/testem) discovers **`testem.cjs`** automatically (same as **`testem.js`**, after **`testem.json` / `testem.yml`**, if those exist). Use **`--file testem.cjs`** only to force a path when you have multiple config files or need a non-default name.
 
 **Copying `spritesheets/` into `dist/` (build)**  
 **`npm run build`** copies the large **`spritesheets/`** tree into **`dist/`** as part of the Vite build (see `vite.config.js`). Which tool runs depends on the OS:
@@ -192,7 +195,7 @@ If you develop on **macOS** or **Linux**, install **rsync 3.x** and ensure it is
 
 **Browsers**
 
-- **`npm test`** (browser suite via [Testem](https://github.com/testem/testem) + [Vite](https://vitejs.dev/)) uses **Chrome** and **Firefox** as configured in [`testem.js`](testem.js). CI installs them with **`browser-actions/setup-chrome`** and **`browser-actions/setup-firefox`** (see [`.github/workflows/ci.yml`](.github/workflows/ci.yml)).
+- **`npm test`** (browser suite via [Testem](https://github.com/testem/testem) + [Vite](https://vitejs.dev/)) uses **Chrome** and **Firefox** as configured in [`testem.cjs`](testem.cjs). CI installs them with **`browser-actions/setup-chrome`** and **`browser-actions/setup-firefox`** (see [`.github/workflows/ci.yml`](.github/workflows/ci.yml)).
 
 - **`npm run test:visual`** uses Playwright. After `npm ci`, install the browser binaries at least once (or after upgrading `@playwright/test`):
 
@@ -223,7 +226,7 @@ The app loads them with **parallel `import()`** and registers each chunk in **[`
 **Credits, z-positions, and when `dist/` is written** — From the project root:
 
 ```bash
-node scripts/generate_sources.mjs
+node scripts/generate_sources.js
 ```
 
 or:
@@ -234,13 +237,13 @@ npm run validate-site-sources
 
 These commands update **[CREDITS.csv](/CREDITS.csv)** and run **`scripts/zPositioning/parse_zpos.js`** in the background so **[scripts/zPositioning/z_positions.csv](/scripts/zPositioning/z_positions.csv)** stays aligned with the JSON. By default the script uses **`writeMetadata: false`**, so it does **not** emit the five `dist/*-metadata.js` files. To **regenerate** those modules locally (for example after changing sheet definitions), run **`npm run dev`** once or **`npm run build`**. The Vite plugin passes **`env`** (`development` vs `production`) into **`generateSources`** and controls indentation for all metadata outputs.
 
-**`index.html`** is the Vite entry shell (layout, stylesheets, `sources/main.js`). It is not emitted by `generate_sources.mjs`. Change it only when you mean to adjust the page structure or global assets.
+**`index.html`** is the Vite entry shell (layout, stylesheets, `sources/main.js`). It is not emitted by `generate_sources.js`. Change it only when you mean to adjust the page structure or global assets.
 
 The **Validate site sources** workflow (`.github/workflows/validate-site-sources.yml`) runs the same **`generate_sources`** command and fails if the working tree is dirty afterward. PRs that touch definitions must include regenerated **`CREDITS.csv`** and **`scripts/zPositioning/z_positions.csv`** whenever those files change.
 
 #### Running Tests
 
-Browser specs run in real browsers via [Testem](https://github.com/testem/testem). Vite is embedded in middleware mode via [`vite-plugin-testem`](https://www.npmjs.com/package/vite-plugin-testem) (see [`testem.js`](testem.js)) so specs can `import` ESM from `sources/`. **`testem.js`** runs **Node** checks first (`before_tests`), then loads **[`tests_run.html`](tests_run.html)** with Mocha and [`tests/tests.js`](tests/tests.js).
+Browser specs run in real browsers via [Testem](https://github.com/testem/testem). Vite is embedded in middleware mode via [`vite-plugin-testem`](https://www.npmjs.com/package/vite-plugin-testem) (see [`testem.cjs`](testem.cjs)) so specs can `import` ESM from `sources/`. **`testem.cjs`** runs **Node** checks first (`before_tests`), then loads **[`tests_run.html`](tests_run.html)** with Mocha and [`tests/tests.js`](tests/tests.js).
 
 **Run the full suite**
 
@@ -250,7 +253,9 @@ From the project root:
 npm test
 ```
 
-This runs **`node ./node_modules/testem/testem.js ci`**, which executes **`before_tests`** (`node ./tests/node/run-node-tests.js`) then the browser suite (**Chrome** and **Firefox** in CI).
+This runs **`node ./node_modules/testem/testem.js ci`**, which loads **[`testem.cjs`](testem.cjs)** (via Testem’s default config search), executes **`before_tests`** (`node ./tests/node/run-node-tests.js`) then the browser suite (**Chrome** and **Firefox** in CI).
+
+**Testem client URL vs config:** [`tests_run.html`](tests_run.html) loads **`<script src="/testem.js">`**. That path is the **Testem in-browser client** served by the Testem server from the **`testem`** npm package; it is **not** the repo’s config file. Local Testem settings live in **[`testem.cjs`](testem.cjs)** at the repository root.
 
 **`DEBUG` environment variable (optional):** When `DEBUG` is `1` or `true`, the Vite middleware used by Testem defines `import.meta.env.VITEST_DEBUG === "true"`, and [`tests/vitest-setup.js`](tests/vitest-setup.js) turns on test-friendly verbose behavior aligned with `sources/utils/debug.js`.
 
@@ -349,7 +354,7 @@ The same script is also available as **`npm run z-positions`**.
 
 This [CSV file](/scripts/zPositioning/z_positions.csv) is regenerated whenever you run:
 
-`node scripts/generate_sources.mjs`
+`node scripts/generate_sources.js`
 
 Therefore, before creating a PR, make sure you have committed the CSV to the repo as well.
 

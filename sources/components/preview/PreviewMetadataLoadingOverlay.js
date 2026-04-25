@@ -1,4 +1,5 @@
 // Semi-transparent layer over the preview canvas until layers + offscreen canvas + bootstrap draw.
+import m from "mithril";
 import { getPreviewCanvasLoadingMessage } from "../../state/preview-canvas-loading.js";
 
 export const PreviewMetadataLoadingOverlay = {

@@ -7,14 +7,14 @@ import {
   parseCredits,
   processItemCredits,
   sortCsvList,
-} from "../../../../scripts/generateSources/credits.mjs";
+} from "../../../../scripts/generateSources/credits.js";
 import { ANIMATIONS } from "../../../../sources/state/constants.ts";
 import {
   categoryTree,
   csvList,
   itemMetadata,
   licensesFound,
-} from "../../../../scripts/generateSources/state.mjs";
+} from "../../../../scripts/generateSources/state.js";
 import { buildPath, resetTestState } from "./test_helpers.js";
 
 function buildCredit(file) {

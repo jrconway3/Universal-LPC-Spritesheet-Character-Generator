@@ -1,4 +1,5 @@
 // Full Spritesheet Preview component
+import m from "mithril";
 import { state } from "../../state/state.js";
 import { CollapsibleSection } from "../CollapsibleSection.js";
 import PinchToZoom from "./PinchToZoom.js";

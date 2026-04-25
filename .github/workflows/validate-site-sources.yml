@@ -25,7 +25,7 @@ jobs:
 
       - name: Validate site sources generation
         run: |
-          node scripts/generate_sources.mjs
+          node scripts/generate_sources.js
 
       - name: Assert git diff
         run: |

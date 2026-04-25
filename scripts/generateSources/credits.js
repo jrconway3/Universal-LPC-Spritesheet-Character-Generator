@@ -8,7 +8,7 @@ import {
   licensesFound,
   onlyIfTemplate,
   SHEETS_DIR,
-} from "./state.mjs";
+} from "./state.js";
 
 const { debugLog } = debugUtils;
 export const CREDITS_OUTPUT = "CREDITS.csv";
@@ -27,7 +27,10 @@ function searchCredit(fileName, credits, origFileName) {
     return undefined;
   }
   if (credits.length === 1) {
-    if (!credits[0].file.includes(fileName) && !fileName.includes(credits[0].file)) {
+    if (
+      !credits[0].file.includes(fileName) &&
+      !fileName.includes(credits[0].file)
+    ) {
       console.error("Wrong credit at filename:", fileName);
       return undefined;
     }
@@ -56,7 +59,6 @@ function searchCredit(fileName, credits, origFileName) {
   return undefined;
 }
 
-
 /**
  * Builds CSV credit row data for a specific rendered frame and tracks encountered licenses.
  * @param {string} fileName Render path to resolve credit information for.
@@ -66,14 +68,16 @@ function searchCredit(fileName, credits, origFileName) {
  * @return {[Object|null, string, string]} Updated selected credit, generated CSV line text, and image filename token.
  * @throws {Error} If no matching credit can be resolved for the requested filename.
  */
-export function parseCredits(fileName, credits, listCreditToUse, addedCreditsFor) {
+export function parseCredits(
+  fileName,
+  credits,
+  listCreditToUse,
+  addedCreditsFor,
+) {
   // Find Credit or Throw Error
-  const creditToUse = searchCredit(
-    fileName,
-    credits,
-    fileName,
-  );
-  if (creditToUse === undefined) throw Error(`missing credit inside ${fileName}`);
+  const creditToUse = searchCredit(fileName, credits, fileName);
+  if (creditToUse === undefined)
+    throw Error(`missing credit inside ${fileName}`);
 
   // Append Licenses
   for (const license of creditToUse.licenses) {
@@ -112,10 +116,7 @@ export function parseCredits(fileName, credits, listCreditToUse, addedCreditsFor
  * @return {{listCreditToUse: Object|null, listItemsCSV: Array<{priority: (number|null|undefined), lineText: string}>}} Generated CSV row payloads and selected credit.
  * @throws {Error} Propagates missing-credit errors from parseCredits.
  */
-export function collectCreditsCsvRows(
-  definition,
-  meta,
-) {
+export function collectCreditsCsvRows(definition, meta) {
   let listCreditToUse = null;
   const listItemsCSV = [];
   const addedCreditsFor = [];

@@ -1,5 +1,6 @@
 // Main entry point - initializes and mounts the Mithril application
 
+import m from "mithril";
 import "./styles/critical-entry.scss";
 import "./vendor-globals.js";
 import { loadAllMetadata } from "./install-item-metadata.js";

@@ -1,4 +1,5 @@
 // Credits/Attribution component
+import m from "mithril";
 import { state } from "../../state/state.js";
 import {
   getAllCredits,

@@ -21,6 +21,7 @@ import {
 import { getSortedLayersByAnim } from "../state/meta.js";
 import { catalogReady } from "../state/catalog.js";
 import * as catalog from "../state/catalog.js";
+import m from "mithril";
 import { debugWarn } from "../utils/debug.js";
 
 /**
@@ -138,7 +139,7 @@ async function runRenderCharacter(selections, bodyType, targetCanvas) {
   addedCustomAnimations = new Set(); // Track which custom animations we've added
 
   // Import state to access custom uploaded image (kept out of `renderCharacter` profile span)
-  const appState = await import("../state/state.js").then((m) => m.state);
+  const appState = await import("../state/state.js").then((mod) => mod.state);
   appState.renderCharacter.isRendering = true;
   appState.isRenderingCharacter = true;
   m.redraw();

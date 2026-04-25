@@ -1,5 +1,10 @@
 import path from "path";
-import { PALETTES_DIR, paletteMetadata, parseJson, readDirTree } from "./state.mjs";
+import {
+  PALETTES_DIR,
+  paletteMetadata,
+  parseJson,
+  readDirTree,
+} from "./state.js";
 
 /**
  * Parses one palette JSON file and merges it into shared palette metadata state.

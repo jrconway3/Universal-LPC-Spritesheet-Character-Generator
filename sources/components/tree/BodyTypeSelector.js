@@ -1,4 +1,5 @@
 // Body type selector component (styled as tree category)
+import m from "mithril";
 import { state } from "../../state/state.js";
 import { BODY_TYPES } from "../../state/constants.ts";
 import { capitalize } from "../../utils/helpers.ts";

@@ -1,4 +1,5 @@
 // Download component
+import m from "mithril";
 import { state } from "../../state/state.js";
 import { layers } from "../../canvas/renderer.js";
 import {

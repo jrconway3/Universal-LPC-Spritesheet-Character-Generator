@@ -2,7 +2,7 @@
 /* eslint-disable no-console -- CLI helper prints hints to stdout */
 /**
  * Prints class-name hints for vite/purgecss-critical-safelist.js (manual merge).
- * Usage: node scripts/generate-purgecss-safelist-hints.mjs
+ * Usage: node scripts/generate-purgecss-safelist-hints.js
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -49,5 +49,8 @@ for (const file of walkJsFiles(path.join(root, "sources"))) {
 }
 
 console.log(
-  [...classes].sort().map((c) => `      "${c}",`).join("\n"),
+  [...classes]
+    .sort()
+    .map((c) => `      "${c}",`)
+    .join("\n"),
 );

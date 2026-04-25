@@ -1,4 +1,5 @@
 // Item with variants component
+import m from "mithril";
 import classNames from "classnames";
 import { state, getSelectionGroup, selectItem } from "../../state/state.js";
 import { getLayersToLoad } from "../../state/meta.js";

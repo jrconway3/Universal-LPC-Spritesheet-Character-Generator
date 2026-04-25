@@ -4,14 +4,14 @@ import {
   ANIMATION_DEFAULTS,
   BODY_TYPES,
 } from "../../sources/state/constants.ts";
-import { writeAliases } from "./aliases.mjs";
-import { normalizeRecolors } from "./item-helper.mjs";
+import { writeAliases } from "./aliases.js";
+import { normalizeRecolors } from "./item-helper.js";
 import {
   itemMetadata,
   onlyIfTemplate,
   parseJson,
   SHEETS_DIR,
-} from "./state.mjs";
+} from "./state.js";
 
 const { debugLog } = debugUtils;
 
@@ -38,7 +38,10 @@ export function getRequiredSexes(definition) {
  * @return {string[]} Path segments from sheets root to the item.
  */
 export function buildTreePath(filePath, itemId, sheetsDir) {
-  const treePath = path.relative(sheetsDir, filePath).split(path.sep).filter(Boolean);
+  const treePath = path
+    .relative(sheetsDir, filePath)
+    .split(path.sep)
+    .filter(Boolean);
   treePath.push(itemId);
   return treePath;
 }
@@ -89,7 +92,8 @@ export function parseItem(filePath, fileName, options = {}) {
 
   // Build unique itemId from filename (not from path or type_name)
   // This ensures each item has a unique ID even if they share the same type_name
-  const treePath = definition.path ?? buildTreePath(filePath, itemId, sheetsDir);
+  const treePath =
+    definition.path ?? buildTreePath(filePath, itemId, sheetsDir);
 
   // Collect layer information (file paths and zPos)
   const layers = collectLayers(definition);

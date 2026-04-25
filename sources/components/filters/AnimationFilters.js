@@ -1,4 +1,5 @@
 // Animation Filters component
+import m from "mithril";
 import * as catalog from "../../state/catalog.js";
 import { state } from "../../state/state.js";
 import { isItemAnimationCompatible } from "../../state/filters.js";

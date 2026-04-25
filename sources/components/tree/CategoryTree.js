@@ -1,4 +1,5 @@
 // Main tree component
+import m from "mithril";
 import {
   state,
   resetAll,

@@ -1,4 +1,5 @@
 // Recursive tree node component
+import m from "mithril";
 import { state, getSelectionGroup } from "../../state/state.js";
 import * as catalog from "../../state/catalog.js";
 import {
