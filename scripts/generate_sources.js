@@ -1,6 +1,5 @@
 import fs from "fs";
 import path from "path";
-import { fork } from "child_process";
 import { fileURLToPath } from "url";
 import {
   CREDITS_OUTPUT,
@@ -32,6 +31,7 @@ export function generateSources(deps = {}, legacyEnv) {
     deps.loadPaletteMetadataFn ?? loadPaletteMetadata;
   const readDirTreeFn = deps.readDirTreeFn ?? readDirTree;
   const writeMetadata = deps.writeMetadata ?? false;
+  const writeCredits = deps.writeCredits ?? true;
   const metadataOutputPath = deps.metadataOutputPath ?? METADATA_OUTPUT;
 
   resetGeneratorState();
@@ -65,12 +65,14 @@ export function generateSources(deps = {}, legacyEnv) {
   populateAndSortCategoryTree();
 
   // Write Credits CSV Output
-  const csvGenerated = generateCreditsCsv();
-  try {
-    writeFileSyncFn(CREDITS_OUTPUT, csvGenerated);
-    process.stdout.write("CSV Updated!\n");
-  } catch (err) {
-    console.error(err);
+  if (writeCredits) {
+    const csvGenerated = generateCreditsCsv();
+    try {
+      writeFileSyncFn(CREDITS_OUTPUT, csvGenerated);
+      process.stdout.write("CSV Updated!\n");
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   // Build and write five metadata ES modules (optional: CLI / tests skip; Vite plugin enables)
@@ -94,6 +96,8 @@ function isDirectExecution() {
 }
 
 if (isDirectExecution()) {
-  fork("scripts/zPositioning/parse_zpos.js");
-  generateSources({ writeMetadata: false });
+  process.stderr.write(
+    "This file is a library entry. To regenerate CREDITS.csv and z_positions.csv, run:\n  npm run validate-site-sources\n",
+  );
+  process.exit(1);
 }

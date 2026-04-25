@@ -207,7 +207,7 @@ For visual tests only, **`npx playwright install chromium`** is enough. The Argo
 
 #### File Generation
 
-**Generated metadata modules (`dist/`, gitignored)** — The Vite metadata plugin (see [`vite/vite-plugin-item-metadata.js`](vite/vite-plugin-item-metadata.js)) runs **`generateSources`** on dev/build and writes **five** ES modules under **`dist/`** from the sheet JSON under **`sheet_definitions/`** (and related inputs). Do not edit them by hand.
+**Generated metadata modules (`dist/`, gitignored)** — The Vite metadata plugin (see [`vite/vite-plugin-item-metadata.js`](vite/vite-plugin-item-metadata.js)) runs **`generateSources`** on dev/build and writes **five** ES modules under **`dist/`** from the sheet JSON under **`sheet_definitions/`** and **`palette_definitions/`**. It hashes both trees; if the hash matches a gitignored [`.cache/`](.cache/) copy from the last run and **`dist/index-metadata.js` already exists**, it **skips** all generation. Otherwise it also regenerates **[CREDITS.csv](CREDITS.csv)** and **[scripts/zPositioning/z_positions.csv](scripts/zPositioning/z_positions.csv)** in line with `npm run validate-site-sources`. Set **`VITE_REGENERATE_SOURCES=1`** to always run the full pipeline. Do not edit the generated `dist` files by hand.
 
 | File                      | Main exports (named)                                                                                    |
 | ------------------------- | ------------------------------------------------------------------------------------------------------- |
@@ -223,23 +223,19 @@ The app loads them with **parallel `import()`** and registers each chunk in **[`
 
 **Dev vs production JSON in generated files ([PR #432](https://github.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/pull/432))** — Payloads are embedded with `JSON.stringify(..., null, indent)`: **pretty-printed** when Vite runs in development (**`npm run dev`**) and **compact** when you run a production build (**`npm run build`**). The same rule applies to **all five** metadata modules, not only `item-metadata.js`. Inspect any of the files under **`dist/`** after a dev run to read structured JSON; CI and release builds use the compact form.
 
-**Credits, z-positions, and when `dist/` is written** — From the project root:
-
-```bash
-node scripts/generate_sources.js
-```
-
-or:
+**Credits, z-positions, and when `dist/` is written** — To refresh **[CREDITS.csv](/CREDITS.csv)** and **[scripts/zPositioning/z_positions.csv](/scripts/zPositioning/z_positions.csv)** (without the `dist` modules), from the project root run:
 
 ```bash
 npm run validate-site-sources
 ```
 
-These commands update **[CREDITS.csv](/CREDITS.csv)** and run **`scripts/zPositioning/parse_zpos.js`** in the background so **[scripts/zPositioning/z_positions.csv](/scripts/zPositioning/z_positions.csv)** stays aligned with the JSON. By default the script uses **`writeMetadata: false`**, so it does **not** emit the five `dist/*-metadata.js` files. To **regenerate** those modules locally (for example after changing sheet definitions), run **`npm run dev`** once or **`npm run build`**. The Vite plugin passes **`env`** (`development` vs `production`) into **`generateSources`** and controls indentation for all metadata outputs.
+That uses **`concurrently`** to run **`generate_credits.js`** and **`parse_zpos.js`** (same as writing **`z_positions.csv`** from the JSON) in parallel. Alternatively, run **`node scripts/generate_credits.js`** and **`node scripts/zPositioning/parse_zpos.js`** separately. Do not run **`node scripts/generate_sources.js`** as a CLI; it only prints a pointer to **`npm run validate-site-sources`** (the file’s role is to export **`generateSources`** for Vite and tests).
+
+Vite is responsible for the five `dist/*-metadata.js` files when the plugin runs (and may update **CREDITS** / **z_positions** in the “inputs changed or first run / missing `dist` metadata” case). The plugin passes **`env`** (`development` vs `production`) into **`generateSources`** and controls JSON indentation in metadata.
 
 **`index.html`** is the Vite entry shell (layout, stylesheets, `sources/main.js`). It is not emitted by `generate_sources.js`. Change it only when you mean to adjust the page structure or global assets.
 
-The **Validate site sources** workflow (`.github/workflows/validate-site-sources.yml`) runs the same **`generate_sources`** command and fails if the working tree is dirty afterward. PRs that touch definitions must include regenerated **`CREDITS.csv`** and **`scripts/zPositioning/z_positions.csv`** whenever those files change.
+The **Validate site sources** workflow (`.github/workflows/validate-site-sources.yml`) runs **`npm run validate-site-sources`** and fails if the working tree is dirty afterward. PRs that touch definitions must include regenerated **`CREDITS.csv`** and **`scripts/zPositioning/z_positions.csv`** whenever those files change.
 
 #### Running Tests
 
@@ -354,7 +350,7 @@ The same script is also available as **`npm run z-positions`**.
 
 This [CSV file](/scripts/zPositioning/z_positions.csv) is regenerated whenever you run:
 
-`node scripts/generate_sources.js`
+`npm run validate-site-sources`
 
 Therefore, before creating a PR, make sure you have committed the CSV to the repo as well.
 
