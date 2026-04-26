@@ -12,46 +12,14 @@ const testPageFromEnv =
     ? "tests_run.html"
     : "tests_run.html?debug=false";
 
-// Extra --pref flags (Testem still writes its default user.js via firefoxSetup unless firefox_user_js is set).
-const firefoxQuietPrefs = [
-  "--pref",
-  "browser.aboutwelcome.enabled=false",
-  "--pref",
-  "browser.startup.homepage=about:blank",
-  "--pref",
-  "browser.startup.page=0",
-  "--pref",
-  "browser.startup.firstrunSkipsHomepage=true",
-  "--pref",
-  "browser.startup.homepage_override.mstone=ignore",
-  "--pref",
-  "browser.startup.homepage_welcome_url=",
-  "--pref",
-  "browser.startup.homepage_welcome_url.additional=",
-  "--pref",
-  "browser.startup.cohort=ignore",
-  "--pref",
-  "browser.messaging-system.prompts.enabled=false",
-  "--pref",
-  "browser.onboarding.enabled=false",
-  "--pref",
-  "browser.tour.enabled=false",
-  "--pref",
-  "browser.startup.upgradeDialog.enabled=false",
-  "--pref",
-  "browser.uiCustomization.skipDefaultState=true",
-  "--pref",
-  "toolkit.telemetry.enabled=false",
-  "--pref",
-  "toolkit.telemetry.unified=false",
-];
-
 const vitestDebugEnv =
   process.env.DEBUG === "true" || process.env.DEBUG === "1" ? "true" : "false";
 
 let viteClose;
 
 let testemConfig = {
+  // Firefox prefs: see tests/testem-firefox-user.js (replaces Testem’s default user.js).
+  firefox_user_js: path.join(__dirname, "tests/testem-firefox-user.js"),
   framework: "mocha+chai",
   // Override when 7357 is busy: `TESTEM_PORT=7360 npm test`
   port: Number.parseInt(process.env.TESTEM_PORT ?? "7357", 10),
@@ -108,18 +76,9 @@ let testemConfig = {
       ].filter(Boolean),
     },
     Firefox: {
-      dev: firefoxQuietPrefs,
-      ci: [
-        "-headless",
-        "--no-sandbox",
-        ...firefoxQuietPrefs,
-        "--pref",
-        "gfx.direct2d.disabled=true",
-        "--pref",
-        "layers.acceleration.disabled=true",
-        "--pref",
-        "media.hardware-video-decoding.enabled=false",
-      ],
+      dev: [],
+      // No Chromium-only flags (e.g. --no-sandbox). Prefs live in tests/testem-firefox-user.js.
+      ci: ["-headless"],
     },
   },
 };
