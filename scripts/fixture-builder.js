@@ -96,13 +96,9 @@ async function ensureDistItemMetadata() {
   console.log("Generating dist/*-metadata.js (generate sources)…");
   generateSources({
     writeMetadata: true,
+    writeCredits: false,
     metadataOutputPath: ITEM_METADATA_PATH,
-    writeFileSync: (filePath, contents) => {
-      if (path.basename(filePath) === "CREDITS.csv") {
-        return;
-      }
-      fs.writeFileSync(filePath, contents);
-    },
+    writeFileSync: fs.writeFileSync,
   });
 }
 

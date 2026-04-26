@@ -7,6 +7,7 @@ blob-report/
 .idea/
 .eslintcache
 tmp/
+.cache/
 computed-style-diff-output/
 /dist/
 **/__screenshots__/
