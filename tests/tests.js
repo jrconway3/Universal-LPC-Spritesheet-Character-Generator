@@ -19,6 +19,7 @@ import "./components/filters/AnimationFilters_spec.js";
 import "./components/filters/LicenseFilters_spec.js";
 import "./components/filters/SearchControl_spec.js";
 import "./components/tree/BodyTypeSelector_spec.js";
+import "./components/tree/CategoryTree_spec.js";
 import "./components/preview/ScrollableContainer_spec.js";
 import "./components/preview/PreviewMetadataLoadingOverlay_spec.js";
 import "./components/preview/PinchToZoom_spec.js";
