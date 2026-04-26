@@ -22,6 +22,7 @@ import "./components/tree/BodyTypeSelector_spec.js";
 import "./components/preview/ScrollableContainer_spec.js";
 import "./components/preview/PreviewMetadataLoadingOverlay_spec.js";
 import "./components/preview/PinchToZoom_spec.js";
+import "./components/selections/CurrentSelections_spec.js";
 import "./state/catalog_spec.js";
 import "./state/filters_spec.js";
 import "./state/hash_spec.js";
