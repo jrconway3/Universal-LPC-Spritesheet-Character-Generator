@@ -3,8 +3,8 @@
 import m from "mithril";
 import "./styles/critical-entry.scss";
 import "./vendor-globals.js";
-import { loadAllMetadata } from "./install-item-metadata.js";
-import { catalogReady } from "./state/catalog.js";
+import { loadAllMetadata } from "./install-item-metadata.ts";
+import { catalogReady } from "./state/catalog.ts";
 
 // Import debug first so `window.DEBUG` is set before other modules run.
 import { debugLog, getDebugParam } from "./utils/debug.js";
@@ -44,7 +44,7 @@ window.setPaletteRecolorMode = setPaletteRecolorMode;
 window.getPaletteRecolorConfig = getPaletteRecolorConfig;
 
 // Import state management
-import { initState, state } from "./state/state.js";
+import { initState, state } from "./state/state.ts";
 import { initHashChangeListener } from "./state/hash.js";
 
 // Import components

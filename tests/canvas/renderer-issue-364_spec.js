@@ -23,12 +23,12 @@ import {
 } from "../../sources/canvas/renderer.js";
 import { resetImageLoadCache } from "../../sources/canvas/load-image.js";
 import { resetState } from "../../sources/state/hash.js";
-import { resetCatalogForTests } from "../../sources/state/catalog.js";
+import { resetCatalogForTests } from "../../sources/state/catalog.ts";
 import {
   restoreAppCatalogAfterTest,
   seedBrowserCatalog,
 } from "../browser-catalog-fixture.js";
-import { state } from "../../sources/state/state.js";
+import { state } from "../../sources/state/state.ts";
 
 const ISSUE_364_METADATA = {
   issue364_wheel_item: {

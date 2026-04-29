@@ -14,7 +14,7 @@ import {
   addStandardAnimationToZipCustomFolder,
 } from "../../sources/utils/zip-helpers.js";
 import { getItemFileName } from "../../sources/utils/fileName.ts";
-import { getSortedLayers } from "../../sources/state/meta.js";
+import { getSortedLayers } from "../../sources/state/meta.ts";
 import {
   exportIndividualFrames,
   exportSplitAnimations,
@@ -22,7 +22,7 @@ import {
   exportSplitItemSheets,
 } from "../../sources/state/zip.js";
 import { resetState } from "../../sources/state/hash.js";
-import { state } from "../../sources/state/state.js";
+import { state } from "../../sources/state/state.ts";
 import { ANIMATIONS, DIRECTIONS } from "../../sources/state/constants.ts";
 import { createFakeJSZip } from "../helpers/fake-jszip.js";
 import {
@@ -46,6 +46,7 @@ const ZIP_SPEC_ITEM_METADATA = {
     type_name: "body",
     required: ["male", "female", "teen", "child", "muscular", "pregnant"],
     animations: ["walk"],
+    recolors: [],
     layers: {
       layer_1: {
         zPos: 10,
@@ -58,6 +59,7 @@ const ZIP_SPEC_ITEM_METADATA = {
     type_name: "head",
     required: ["male", "female", "teen", "muscular", "pregnant"],
     animations: ["walk"],
+    recolors: [],
     layers: {
       layer_1: {
         zPos: 100,
@@ -70,6 +72,7 @@ const ZIP_SPEC_ITEM_METADATA = {
     type_name: "weapon",
     required: ["male", "female", "teen", "muscular", "pregnant"],
     animations: ["walk"],
+    recolors: [],
     layers: {
       layer_1: {
         custom_animation: "walk_128",
@@ -83,7 +86,7 @@ const ZIP_SPEC_ITEM_METADATA = {
 /**
  * Item whose layers are exclusively custom_animation (no standard sheet rows).
  * LiberatedPixelCup#364 / PR "Fixed Item Split and Animation Split Exports":
- * export must fall back when getSortedLayers(id, true) is empty.
+ * export must fall back when getSortedLayers(id, true)._unsafeUnwrap() is empty.
  */
 const CUSTOM_ANIMATION_ONLY_ITEM_METADATA = {
   custom_only_whip: {
@@ -331,7 +334,7 @@ describe("state/zip.js", () => {
         addAnimationToZipFolder: addSpy,
       });
 
-      const bodyLayers = getSortedLayers("body", true);
+      const bodyLayers = getSortedLayers("body", true)._unsafeUnwrap();
       expect(bodyLayers, "body item should have layers in itemMetadata").to.be
         .ok;
       expect(bodyLayers.length).to.be.at.least(1);
@@ -372,7 +375,7 @@ describe("state/zip.js", () => {
         renderSingleItem: renderStub,
       });
 
-      const bodyLayers = getSortedLayers("body", true);
+      const bodyLayers = getSortedLayers("body", true)._unsafeUnwrap();
       const expectedFileName = getItemFileName(
         "body",
         "light",
@@ -420,8 +423,11 @@ describe("state/zip.js", () => {
 
       await exportSplitItemSheets({ renderSingleItem: renderStub });
 
-      const bodyLayers = getSortedLayers("body", true);
-      const headLayers = getSortedLayers("heads_human_male", true);
+      const bodyLayers = getSortedLayers("body", true)._unsafeUnwrap();
+      const headLayers = getSortedLayers(
+        "heads_human_male",
+        true,
+      )._unsafeUnwrap();
       const firstFileName = getItemFileName(
         "body",
         "light",
@@ -475,10 +481,13 @@ describe("state/zip.js", () => {
 
       await exportSplitItemSheets({ renderSingleItem: renderStub });
 
-      const bodyLayers = getSortedLayers("body", true);
-      const headLayers = getSortedLayers("heads_human_male", true);
-      const weaponLayers = getSortedLayers("longsword", true);
-      const realWeaponLayers = getSortedLayers("longsword");
+      const bodyLayers = getSortedLayers("body", true)._unsafeUnwrap();
+      const headLayers = getSortedLayers(
+        "heads_human_male",
+        true,
+      )._unsafeUnwrap();
+      const weaponLayers = getSortedLayers("longsword", true)._unsafeUnwrap();
+      const realWeaponLayers = getSortedLayers("longsword")._unsafeUnwrap();
       const firstFileName = getItemFileName(
         "body",
         "light",
@@ -520,10 +529,12 @@ describe("state/zip.js", () => {
 
       it("exportSplitItemSheets calls renderSingleItem and writes items/ when every layer is custom_animation (standard-only layer list empty)", async () => {
         expect(
-          getSortedLayers("custom_only_whip", true),
+          getSortedLayers("custom_only_whip", true)._unsafeUnwrap(),
           "precondition: standard-only layers must be empty for this fixture",
         ).to.have.length(0);
-        expect(getSortedLayers("custom_only_whip", false)).to.have.length(1);
+        expect(
+          getSortedLayers("custom_only_whip", false)._unsafeUnwrap(),
+        ).to.have.length(1);
 
         const renderStub = sandbox.stub().resolves(nonEmptyItemCanvas());
         const addSpy = sinon.spy(addAnimationToZipFolder);
@@ -533,7 +544,10 @@ describe("state/zip.js", () => {
           addAnimationToZipFolder: addSpy,
         });
 
-        const allLayers = getSortedLayers("custom_only_whip", false);
+        const allLayers = getSortedLayers(
+          "custom_only_whip",
+          false,
+        )._unsafeUnwrap();
         const expectedFileName = getItemFileName(
           "custom_only_whip",
           "light",
@@ -702,7 +716,7 @@ describe("state/zip.js", () => {
         addAnimationToZipFolder: addSpy,
       });
 
-      const bodyLayers = getSortedLayers("body", true);
+      const bodyLayers = getSortedLayers("body", true)._unsafeUnwrap();
       expect(bodyLayers, "body item should have layers in itemMetadata").to.be
         .ok;
       expect(bodyLayers.length).to.be.at.least(1);
@@ -747,7 +761,7 @@ describe("state/zip.js", () => {
       expect(metadataEntry, "metadata.json should exist").to.exist;
       const metadata = JSON.parse(metadataEntry);
 
-      const bodyLayers = getSortedLayers("body", true);
+      const bodyLayers = getSortedLayers("body", true)._unsafeUnwrap();
       const expectedFileName = getItemFileName(
         "body",
         "light",
@@ -858,8 +872,11 @@ describe("state/zip.js", () => {
         renderSingleItemAnimation: renderStub,
       });
 
-      const bodyLayers = getSortedLayers("body", true);
-      const headLayers = getSortedLayers("heads_human_male", true);
+      const bodyLayers = getSortedLayers("body", true)._unsafeUnwrap();
+      const headLayers = getSortedLayers(
+        "heads_human_male",
+        true,
+      )._unsafeUnwrap();
       const bodyFileName = getItemFileName(
         "body",
         "light",
@@ -932,17 +949,17 @@ describe("state/zip.js", () => {
           addStandardAnimationToZipCustomFolderSpy,
       });
 
-      const bodyLayers = getSortedLayers("body");
+      const bodyLayers = getSortedLayers("body")._unsafeUnwrap();
       expect(bodyLayers, "body item should have layers in itemMetadata").to.be
         .ok;
       expect(bodyLayers.length).to.be.at.least(1);
 
-      const headLayers = getSortedLayers("heads_human_male");
+      const headLayers = getSortedLayers("heads_human_male")._unsafeUnwrap();
       expect(headLayers, "head item should have layers in itemMetadata").to.be
         .ok;
       expect(headLayers.length).to.be.at.least(1);
 
-      const swordLayers = getSortedLayers("longsword");
+      const swordLayers = getSortedLayers("longsword")._unsafeUnwrap();
       expect(swordLayers, "longsword item should have layers in itemMetadata")
         .to.be.ok;
       expect(swordLayers.length).to.be.at.least(1);
@@ -1073,7 +1090,7 @@ describe("state/zip.js", () => {
 
       it("exportSplitItemAnimations calls renderSingleItemAnimation under standard/<anim>/ when every layer is custom_animation (standard-only layer list empty)", async () => {
         expect(
-          getSortedLayers("custom_only_whip", true),
+          getSortedLayers("custom_only_whip", true)._unsafeUnwrap(),
           "precondition: standard-only layers must be empty for this fixture",
         ).to.have.length(0);
 
@@ -1085,7 +1102,10 @@ describe("state/zip.js", () => {
           addAnimationToZipFolder: addSpy,
         });
 
-        const allLayers = getSortedLayers("custom_only_whip", false);
+        const allLayers = getSortedLayers(
+          "custom_only_whip",
+          false,
+        )._unsafeUnwrap();
         const walkCalls = addSpy
           .getCalls()
           .filter((c) => c.args[0]?.root === "standard/walk/");

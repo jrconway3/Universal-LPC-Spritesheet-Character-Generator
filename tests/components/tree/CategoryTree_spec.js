@@ -2,12 +2,12 @@ import m from "mithril";
 import { assert } from "chai";
 import { describe, it, beforeEach, afterEach } from "mocha-globals";
 import { CategoryTree } from "../../../sources/components/tree/CategoryTree.js";
-import { state } from "../../../sources/state/state.js";
+import { state } from "../../../sources/state/state.ts";
 import {
   resetCatalogForTests,
   registerFromIndexModule,
   registerFromPaletteModule,
-} from "../../../sources/state/catalog.js";
+} from "../../../sources/state/catalog.ts";
 import { BODY_TYPES } from "../../../sources/state/constants.ts";
 import { resetState } from "../../../sources/state/filters.js";
 import {

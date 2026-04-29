@@ -1,8 +1,8 @@
 // Item with variants component
 import m from "mithril";
 import classNames from "classnames";
-import { state, getSelectionGroup, selectItem } from "../../state/state.js";
-import { getLayersToLoad } from "../../state/meta.js";
+import { state, getSelectionGroup, selectItem } from "../../state/state.ts";
+import { getLayersToLoad } from "../../state/meta.ts";
 import { COMPACT_FRAME_SIZE, FRAME_SIZE } from "../../state/constants.ts";
 import { capitalize } from "../../utils/helpers.ts";
 
