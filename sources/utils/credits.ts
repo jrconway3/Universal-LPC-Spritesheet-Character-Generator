@@ -1,34 +1,10 @@
 // Credit collection and formatting utilities
 
-import * as catalog from "../state/catalog.js";
-import { state } from "../state/state.js";
-import { replaceInPath } from "../state/path.js";
+import { getItemMerged, type Credit } from "../state/catalog.ts";
+import { state } from "../state/state.ts";
+import type { Selections } from "../state/state.ts";
+import { replaceInPath } from "../state/path.ts";
 import { variantToFilename } from "../utils/helpers.ts";
-
-// TODO: the shapes below duplicate data coming from catalog (itemMeta with
-// layers/credits/animations) and from the selection state. When catalog.js
-// and state.js convert to .ts, delete these local narrowings and use the
-// real exported types.
-type Credit = {
-  file: string;
-  authors: string[];
-  licenses: string[];
-  urls: string[];
-  notes?: string;
-};
-
-type LayerShape = Record<string, string | undefined>;
-
-type ItemMergedForCredits = {
-  credits?: Credit[];
-  layers?: Record<string, LayerShape | undefined>;
-  animations?: string[];
-};
-
-type Selection = {
-  itemId: string;
-  variant?: string;
-};
 
 type CreditWithFileName = Credit & { fileName: string };
 
@@ -37,7 +13,7 @@ type CreditWithFileName = Credit & { fileName: string };
  * actually being used based on current bodyType.
  */
 export function getAllCredits(
-  selections: Record<string, Selection>,
+  selections: Selections,
   bodyType: string,
 ): CreditWithFileName[] {
   const allCredits: CreditWithFileName[] = [];
@@ -45,11 +21,10 @@ export function getAllCredits(
 
   for (const [, selection] of Object.entries(selections)) {
     const { itemId } = selection;
-    const meta = catalog.getItemMerged(itemId) as
-      | ItemMergedForCredits
-      | undefined;
-
-    if (!meta || !meta.credits) continue;
+    const metaResult = getItemMerged(itemId);
+    if (metaResult.isErr()) continue;
+    const meta = metaResult.value;
+    if (meta.credits.length === 0) continue;
 
     // Build set of actual file paths being used for this item
     const usedPaths = new Set<string>();
@@ -60,8 +35,10 @@ export function getAllCredits(
       const layer = meta.layers?.[layerKey];
       if (!layer) break;
 
-      // Get the base path for current body type
-      let basePath = layer[bodyType];
+      // Get the base path for current body type. `LayerEntry`'s index
+      // signature widens body-type values to `string | number`; the
+      // body-type keys hold paths (always strings).
+      let basePath = layer[bodyType] as string | undefined;
       if (!basePath) continue;
 
       // Replace template variables like ${head} if present

@@ -4,7 +4,6 @@
  * Debug logging for Node scripts under `scripts/`.
  * Enable with `DEBUG=1` (or `true`, `yes`) in the environment:
  *
- *   DEBUG=1 node scripts/generate_sources.mjs
  *   DEBUG=1 npm run validate-site-sources
  *
  * Disable explicitly with `DEBUG=0` or `DEBUG=false`.
@@ -35,8 +34,6 @@ function debugWarn(...args) {
   }
 }
 
-module.exports = {
-  isDebugEnabled,
-  debugLog,
-  debugWarn,
-};
+const debugUtils = { isDebugEnabled, debugLog, debugWarn };
+export default debugUtils;
+export { isDebugEnabled, debugLog, debugWarn };

@@ -5,12 +5,12 @@ import {
   creditsToCsv,
   creditsToTxt,
 } from "../../sources/utils/credits.ts";
-import { resetCatalogForTests } from "../../sources/state/catalog.js";
+import { resetCatalogForTests } from "../../sources/state/catalog.ts";
 import {
   restoreAppCatalogAfterTest,
   seedBrowserCatalog,
 } from "../browser-catalog-fixture.js";
-import { state } from "../../sources/state/state.js";
+import { state } from "../../sources/state/state.ts";
 
 describe("utils/credits.ts", () => {
   let previousSelectedAnimation;

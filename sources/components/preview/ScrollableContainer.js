@@ -1,4 +1,5 @@
 // Scrollable container with drag-to-scroll support
+import m from "mithril";
 export const ScrollableContainer = {
   oninit: function (vnode) {
     vnode.state.isDragging = false;

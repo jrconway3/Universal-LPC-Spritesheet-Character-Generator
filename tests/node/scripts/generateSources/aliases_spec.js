@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { writeAliases } from "../../../../scripts/generateSources/aliases.mjs";
-import { aliasMetadata } from "../../../../scripts/generateSources/state.mjs";
+import { writeAliases } from "../../../../scripts/generateSources/aliases.js";
+import { aliasMetadata } from "../../../../scripts/generateSources/state.js";
 import { resetTestState } from "./test_helpers.js";
 
 test("writeAliases maps wildcard aliases with explicit target type", () => {

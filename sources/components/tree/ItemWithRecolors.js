@@ -1,7 +1,8 @@
 // Item with recolors component
+import m from "mithril";
 import classNames from "classnames";
-import { state, getSelectionGroup, selectItem } from "../../state/state.js";
-import * as catalog from "../../state/catalog.js";
+import { state, getSelectionGroup, selectItem } from "../../state/state.ts";
+import { isPaletteReady } from "../../state/catalog.ts";
 import { drawRecolorPreview } from "../../canvas/palette-recolor.js";
 import { getPaletteOptions } from "../../state/palettes.js";
 import { PaletteSelectModal } from "./PaletteSelectModal.js";
@@ -32,7 +33,7 @@ export const ItemWithRecolors = {
     const selection = state.selections[selectionGroup];
     const isSelected = selection?.itemId === itemId;
 
-    const paletteReady = catalog.isPaletteReady();
+    const paletteReady = isPaletteReady();
 
     // Build palette/color options for all recolor fields
     const [paletteOptions, selectedColors] = getPaletteOptions(itemId, meta);

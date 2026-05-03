@@ -144,12 +144,12 @@ Install these on your machine before you run builds or tests. Versions match wha
 **Git**  
 Used for clone, branch, and PR workflow. [Download Git](https://git-scm.com/downloads) or use your OS package manager (`git` is often pre-installed on macOS and Linux).
 
-**Node.js 22 and npm**  
-The project targets **Node.js 22** (npm **10.x** ships with it). Install from [nodejs.org](https://nodejs.org/) or a version manager such as [fnm](https://github.com/Schniz/fnm) or [nvm](https://github.com/nvm-sh/nvm), then confirm:
+**Node.js 24 and npm**  
+CI uses **Node.js 24** (see [`.github/workflows/`](.github/workflows/)). Install from [nodejs.org](https://nodejs.org/) or a version manager such as [fnm](https://github.com/Schniz/fnm) or [nvm](https://github.com/nvm-sh/nvm), then confirm your runtime matches or is compatible with CI:
 
 ```bash
-node -v   # expect v22.x
-npm -v    # expect 10.x
+node -v   # expect v24.x
+npm -v    # npm ships with Node
 ```
 
 After cloning, install JavaScript dependencies from the repo root:
@@ -158,6 +158,9 @@ After cloning, install JavaScript dependencies from the repo root:
 npm ci
 # or, for everyday work: npm install
 ```
+
+**JavaScript module format (Node)**  
+The root **`package.json`** sets **`"type": "module"`**, so first-party **`.js`** files are **ESM**—use **`import`** and **`export`**, not **`require`** or **`module.exports`**, for new Node scripts and tooling under **`scripts/`**, **`vite/`**, **`tests/node/`**, and similar paths. One exception: the Testem configuration is **[`testem.cjs`](testem.cjs)** (CommonJS). [Testem](https://github.com/testem/testem) discovers **`testem.cjs`** automatically (same as **`testem.js`**, after **`testem.json` / `testem.yml`**, if those exist). Use **`--file testem.cjs`** only to force a path when you have multiple config files or need a non-default name.
 
 **Copying `spritesheets/` into `dist/` (build)**  
 **`npm run build`** copies the large **`spritesheets/`** tree into **`dist/`** as part of the Vite build (see `vite.config.js`). Which tool runs depends on the OS:
@@ -192,7 +195,7 @@ If you develop on **macOS** or **Linux**, install **rsync 3.x** and ensure it is
 
 **Browsers**
 
-- **`npm test`** (browser suite via [Testem](https://github.com/testem/testem) + [Vite](https://vitejs.dev/)) uses **Chrome** and **Firefox** as configured in [`testem.js`](testem.js). CI installs them with **`browser-actions/setup-chrome`** and **`browser-actions/setup-firefox`** (see [`.github/workflows/ci.yml`](.github/workflows/ci.yml)).
+- **`npm test`** (browser suite via [Testem](https://github.com/testem/testem) + [Vite](https://vitejs.dev/)) uses **Chrome** and **Firefox** as configured in [`testem.cjs`](testem.cjs). CI installs them with **`browser-actions/setup-chrome`** and **`browser-actions/setup-firefox`** (see [`.github/workflows/ci.yml`](.github/workflows/ci.yml)).
 
 - **`npm run test:visual`** uses Playwright. After `npm ci`, install the browser binaries at least once (or after upgrading `@playwright/test`):
 
@@ -204,7 +207,7 @@ For visual tests only, **`npx playwright install chromium`** is enough. The Argo
 
 #### File Generation
 
-**Generated metadata modules (`dist/`, gitignored)** — The Vite metadata plugin (see [`vite/vite-plugin-item-metadata.js`](vite/vite-plugin-item-metadata.js)) runs **`generateSources`** on dev/build and writes **five** ES modules under **`dist/`** from the sheet JSON under **`sheet_definitions/`** (and related inputs). Do not edit them by hand.
+**Generated metadata modules (`dist/`, gitignored)** — The Vite metadata plugin (see [`vite/vite-plugin-item-metadata.js`](vite/vite-plugin-item-metadata.js)) runs **`generateSources`** on dev/build and writes **five** ES modules under **`dist/`** from the sheet JSON under **`sheet_definitions/`** and **`palette_definitions/`**. It hashes both trees; if the hash matches a gitignored [`.cache/`](.cache/) copy from the last run and **`dist/index-metadata.js` already exists**, it **skips** all generation. Otherwise it also regenerates **[CREDITS.csv](CREDITS.csv)** and **[scripts/zPositioning/z_positions.csv](scripts/zPositioning/z_positions.csv)** in line with `npm run validate-site-sources`. Set **`VITE_REGENERATE_SOURCES=1`** to always run the full pipeline. Do not edit the generated `dist` files by hand.
 
 | File                      | Main exports (named)                                                                                    |
 | ------------------------- | ------------------------------------------------------------------------------------------------------- |
@@ -214,33 +217,29 @@ For visual tests only, **`npx playwright install chromium`** is enough. The Argo
 | **`credits-metadata.js`** | `itemCredits` — map `itemId → credits[]`                                                                |
 | **`layers-metadata.js`**  | `itemLayers` — map `itemId → layer objects`                                                             |
 
-The app loads them with **parallel `import()`** and registers each chunk in **[`sources/state/catalog.js`](sources/state/catalog.js)** (entry: [`sources/install-item-metadata.js`](sources/install-item-metadata.js)). Production code should use the **catalog getters** (`getCategoryTree`, `getItemLite`, `getItemLayers`, `getItemCredits`, `getPaletteMetadata`, `getMetadataIndexes`, …), not ad hoc globals.
+The app loads them with **parallel `import()`** and registers each chunk in **[`sources/state/catalog.ts`](sources/state/catalog.ts)** (entry: [`sources/install-item-metadata.js`](sources/install-item-metadata.js)). Production code should use the **catalog getters** (`getCategoryTree`, `getItemLite`, `getItemLayers`, `getItemCredits`, `getPaletteMetadata`, `getMetadataIndexes`, …), not ad hoc globals.
 
-**Staged loading** — The catalog exposes **`isIndexReady`**, **`isLiteReady`**, **`isCreditsReady`**, **`isPaletteReady`**, **`isLayersReady`**, and helpers like **`isHashHydrationReady`**. The export **`catalogReady`** provides **`onIndexReady`**, **`onLiteReady`**, …, and **`onAllReady`** (each a **`Promise<void>`** that resolves once). The UI and bootstrap can treat **index** (tree skeleton), **lite** (item rows, hash), **credits** (license text), **palette**, and **layers** (canvas, sprite paths) as separate readiness stages. Browser tests await **`catalogReady.onAllReady`** in [`tests/vitest-setup.js`](tests/vitest-setup.js) after the metadata imports.
+**Staged loading** — The catalog exposes **`isIndexReady`**, **`isLiteReady`**, **`isCreditsReady`**, **`isPaletteReady`**, and **`isLayersReady`** as synchronous predicates. The export **`catalogReady`** provides **`onIndexReady`**, **`onLiteReady`**, …, and **`onAllReady`** (each a **`Promise<void>`** that resolves once). The UI and bootstrap can treat **index** (tree skeleton), **lite** (item rows, hash), **credits** (license text), **palette**, and **layers** (canvas, sprite paths) as separate readiness stages. Browser tests await **`catalogReady.onAllReady`** in [`tests/vitest-setup.js`](tests/vitest-setup.js) after the metadata imports.
 
 **Dev vs production JSON in generated files ([PR #432](https://github.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/pull/432))** — Payloads are embedded with `JSON.stringify(..., null, indent)`: **pretty-printed** when Vite runs in development (**`npm run dev`**) and **compact** when you run a production build (**`npm run build`**). The same rule applies to **all five** metadata modules, not only `item-metadata.js`. Inspect any of the files under **`dist/`** after a dev run to read structured JSON; CI and release builds use the compact form.
 
-**Credits, z-positions, and when `dist/` is written** — From the project root:
-
-```bash
-node scripts/generate_sources.mjs
-```
-
-or:
+**Credits, z-positions, and when `dist/` is written** — To refresh **[CREDITS.csv](/CREDITS.csv)** and **[scripts/zPositioning/z_positions.csv](/scripts/zPositioning/z_positions.csv)** (without the `dist` modules), from the project root run:
 
 ```bash
 npm run validate-site-sources
 ```
 
-These commands update **[CREDITS.csv](/CREDITS.csv)** and run **`scripts/zPositioning/parse_zpos.js`** in the background so **[scripts/zPositioning/z_positions.csv](/scripts/zPositioning/z_positions.csv)** stays aligned with the JSON. By default the script uses **`writeMetadata: false`**, so it does **not** emit the five `dist/*-metadata.js` files. To **regenerate** those modules locally (for example after changing sheet definitions), run **`npm run dev`** once or **`npm run build`**. The Vite plugin passes **`env`** (`development` vs `production`) into **`generateSources`** and controls indentation for all metadata outputs.
+That uses **`concurrently`** to run **`generate_credits.js`** and **`parse_zpos.js`** (same as writing **`z_positions.csv`** from the JSON) in parallel. Alternatively, run **`node scripts/generate_credits.js`** and **`node scripts/zPositioning/parse_zpos.js`** separately. Do not run **`node scripts/generate_sources.js`** as a CLI; it only prints a pointer to **`npm run validate-site-sources`** (the file’s role is to export **`generateSources`** for Vite and tests).
 
-**`index.html`** is the Vite entry shell (layout, stylesheets, `sources/main.js`). It is not emitted by `generate_sources.mjs`. Change it only when you mean to adjust the page structure or global assets.
+Vite is responsible for the five `dist/*-metadata.js` files when the plugin runs (and may update **CREDITS** / **z_positions** in the “inputs changed or first run / missing `dist` metadata” case). The plugin passes **`env`** (`development` vs `production`) into **`generateSources`** and controls JSON indentation in metadata.
 
-The **Validate site sources** workflow (`.github/workflows/validate-site-sources.yml`) runs the same **`generate_sources`** command and fails if the working tree is dirty afterward. PRs that touch definitions must include regenerated **`CREDITS.csv`** and **`scripts/zPositioning/z_positions.csv`** whenever those files change.
+**`index.html`** is the Vite entry shell (layout, stylesheets, `sources/main.js`). It is not emitted by `generate_sources.js`. Change it only when you mean to adjust the page structure or global assets.
+
+The **Validate site sources** workflow (`.github/workflows/validate-site-sources.yml`) runs **`npm run validate-site-sources`** and fails if the working tree is dirty afterward. PRs that touch definitions must include regenerated **`CREDITS.csv`** and **`scripts/zPositioning/z_positions.csv`** whenever those files change.
 
 #### Running Tests
 
-Browser specs run in real browsers via [Testem](https://github.com/testem/testem). Vite is embedded in middleware mode via [`vite-plugin-testem`](https://www.npmjs.com/package/vite-plugin-testem) (see [`testem.js`](testem.js)) so specs can `import` ESM from `sources/`. **`testem.js`** runs **Node** checks first (`before_tests`), then loads **[`tests_run.html`](tests_run.html)** with Mocha and [`tests/tests.js`](tests/tests.js).
+Browser specs run in real browsers via [Testem](https://github.com/testem/testem). Vite is embedded in middleware mode via [`vite-plugin-testem`](https://www.npmjs.com/package/vite-plugin-testem) (see [`testem.cjs`](testem.cjs)) so specs can `import` ESM from `sources/`. **`testem.cjs`** runs **Node** checks first (`before_tests`), then loads **[`tests_run.html`](tests_run.html)** with Mocha and [`tests/tests.js`](tests/tests.js).
 
 **Run the full suite**
 
@@ -250,7 +249,9 @@ From the project root:
 npm test
 ```
 
-This runs **`node ./node_modules/testem/testem.js ci`**, which executes **`before_tests`** (`node ./tests/node/run-node-tests.js`) then the browser suite (**Chrome** and **Firefox** in CI).
+This runs **`node ./node_modules/testem/testem.js ci`**, which loads **[`testem.cjs`](testem.cjs)** (via Testem’s default config search), executes **`before_tests`** (`node ./tests/node/run-node-tests.js`) then the browser suite (**Chrome** and **Firefox** in CI).
+
+**Testem client URL vs config:** [`tests_run.html`](tests_run.html) loads **`<script src="/testem.js">`**. That path is the **Testem in-browser client** served by the Testem server from the **`testem`** npm package; it is **not** the repo’s config file. Local Testem settings live in **[`testem.cjs`](testem.cjs)** at the repository root.
 
 **`DEBUG` environment variable (optional):** When `DEBUG` is `1` or `true`, the Vite middleware used by Testem defines `import.meta.env.VITEST_DEBUG === "true"`, and [`tests/vitest-setup.js`](tests/vitest-setup.js) turns on test-friendly verbose behavior aligned with `sources/utils/debug.js`.
 
@@ -299,7 +300,7 @@ Full-page screenshots live under [`tests/visual/`](tests/visual/) and use [`play
 
 [`tests/tests.js`](tests/tests.js) imports every `tests/**/*_spec.js` file (except files only used from **`tests/node/`**). **`tests/node/`** is exercised by **`before_tests`** and by **`npm run test:node`** directly.
 
-[`tests/vitest-setup.js`](tests/vitest-setup.js) loads **`sources/vendor-globals.js`**, sets test flags on **`window`**, imports [`sources/install-item-metadata.js`](sources/install-item-metadata.js) (which **dynamic-imports** the five `dist/*-metadata.js` modules on the test runner page and **registers** them with [`sources/state/catalog.js`](sources/state/catalog.js)), and **`await`s** **`catalogReady.onAllReady`** so the browser suite runs with the same **catalog** state as the app. Specs that need isolation use **`resetCatalogForTests`**, [`seedBrowserCatalog`](tests/browser-catalog-fixture.js), or **`restoreAppCatalogAfterTest`**.
+[`tests/vitest-setup.js`](tests/vitest-setup.js) loads **`sources/vendor-globals.js`**, sets test flags on **`window`**, imports [`sources/install-item-metadata.js`](sources/install-item-metadata.js) (which **dynamic-imports** the five `dist/*-metadata.js` modules on the test runner page and **registers** them with [`sources/state/catalog.ts`](sources/state/catalog.ts)), and **`await`s** **`catalogReady.onAllReady`** so the browser suite runs with the same **catalog** state as the app. Specs that need isolation use **`resetCatalogForTests`**, [`seedBrowserCatalog`](tests/browser-catalog-fixture.js), or **`restoreAppCatalogAfterTest`**.
 
 Typical patterns:
 
@@ -349,7 +350,7 @@ The same script is also available as **`npm run z-positions`**.
 
 This [CSV file](/scripts/zPositioning/z_positions.csv) is regenerated whenever you run:
 
-`node scripts/generate_sources.mjs`
+`npm run validate-site-sources`
 
 Therefore, before creating a PR, make sure you have committed the CSV to the repo as well.
 

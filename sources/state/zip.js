@@ -4,7 +4,7 @@ import {
   FRAME_SIZE,
   DIRECTIONS,
 } from "./constants.ts";
-import * as catalog from "./catalog.js";
+import { getItemMerged } from "./catalog.ts";
 import {
   extractAnimationFromCanvas,
   renderSingleItem,
@@ -20,7 +20,7 @@ import { getItemFileName } from "../utils/fileName.ts";
 import { loadImage } from "../canvas/load-image.js";
 import { getImageToDraw } from "../canvas/palette-recolor.js";
 import { customAnimations, customAnimationSize } from "../custom-animations.ts";
-import { getSortedLayersWithCustomFallback } from "./meta.js";
+import { getSortedLayersWithCustomFallback } from "./meta.ts";
 import { canvasToBlob } from "../canvas/canvas-utils.ts";
 import {
   addAnimationToZipFolder,
@@ -34,6 +34,7 @@ import {
   zipExportTimestamp,
   zipGenerateBlobWithProfiler,
 } from "../utils/zip-helpers.js";
+import m from "mithril";
 import { debugLog, debugWarn } from "../utils/debug.js";
 import { createZipExportProfiler } from "../performance-profiler.js";
 import {
@@ -74,7 +75,7 @@ export const exportSplitAnimations = async (deps = {}) => {
     const zip = new window.JSZip();
     const timestamp = zipExportTimestamp();
 
-    state = (await import("./state.js")).state; // Ensure state is loaded
+    state = (await import("./state.ts")).state; // Ensure state is loaded
     state.zipByAnimation.isRunning = true;
     m.redraw();
     beginZipExportUiSuspend();
@@ -211,7 +212,7 @@ export const exportSplitItemSheets = async (deps = {}) => {
     const zip = new window.JSZip();
     const timestamp = zipExportTimestamp();
 
-    state = (await import("./state.js")).state; // Ensure state is loaded
+    state = (await import("./state.ts")).state; // Ensure state is loaded
     state.zipByItem.isRunning = true;
     m.redraw();
     beginZipExportUiSuspend();
@@ -227,7 +228,7 @@ export const exportSplitItemSheets = async (deps = {}) => {
     // Render each item individually
     for (const [, selection] of Object.entries(state.selections)) {
       const { itemId, variant, name } = selection;
-      const itemLayers = getSortedLayersWithCustomFallback(itemId);
+      const itemLayers = getSortedLayersWithCustomFallback(itemId).unwrapOr([]);
 
       // Get Multiple Recolors If Available
       const recolors = getMultiRecolors(itemId, state.selections);
@@ -334,7 +335,7 @@ export const exportSplitItemAnimations = async (deps = {}) => {
     const zip = new window.JSZip();
     const timestamp = zipExportTimestamp();
 
-    state = (await import("./state.js")).state; // Ensure state is loaded
+    state = (await import("./state.ts")).state; // Ensure state is loaded
     state.zipByAnimimationAndItem.isRunning = true;
     m.redraw();
     beginZipExportUiSuspend();
@@ -364,8 +365,11 @@ export const exportSplitItemAnimations = async (deps = {}) => {
       // Export each item for this animation
       for (const [, selection] of Object.entries(state.selections)) {
         const { itemId, variant, name } = selection;
-        const meta = catalog.getItemMerged(itemId);
-        if (!meta || !meta.animations.includes(anim.value)) {
+        const metaResult = getItemMerged(itemId);
+        if (
+          metaResult.isErr() ||
+          !metaResult.value.animations.includes(anim.value)
+        ) {
           debugLog(
             "Skipping item ",
             itemId,
@@ -378,7 +382,9 @@ export const exportSplitItemAnimations = async (deps = {}) => {
         // Get Multiple Recolors If Available
         const recolors = getMultiRecolors(itemId, state.selections);
 
-        const itemLayers = getSortedLayersWithCustomFallback(itemId);
+        const itemLayers = getSortedLayersWithCustomFallback(itemId).unwrapOr(
+          [],
+        );
         for (const layer of itemLayers) {
           const fileName = getItemFileName(
             itemId,
@@ -583,7 +589,7 @@ export const exportIndividualFrames = async (deps = {}) => {
     const zip = new window.JSZip();
     const timestamp = zipExportTimestamp();
 
-    state = (await import("./state.js")).state;
+    state = (await import("./state.ts")).state;
     state.zipIndividualFrames = state.zipIndividualFrames || {
       isRunning: false,
     };

@@ -1,6 +1,7 @@
 {
+  "type": "module",
   "sideEffects": [
-    "sources/state/catalog.js"
+    "sources/state/catalog.ts"
   ],
   "name": "universal-lpc-spritesheet-character-generator",
   "version": "0.0.0",
@@ -14,10 +15,10 @@
     "serve:open": "vite --open",
     "lint": "eslint . --cache",
     "lint:fix": "eslint . --cache --fix",
-    "type-check": "tsc --noEmit",
+    "type-check": "tsgo --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "validate-site-sources": "node scripts/generate_sources.mjs",
+    "validate-site-sources": "concurrently -c auto -n \"credits,zpos\" \"node scripts/generate_credits.js\" \"node scripts/zPositioning/parse_zpos.js\"",
     "z-positions": "node scripts/zPositioning/parse_zpos.js",
     "z-positions:update": "node scripts/zPositioning/update_zpos.js",
     "test": "npm run test:node && node ./node_modules/testem/testem.js ci",
@@ -26,21 +27,22 @@
     "test:visual": "playwright test",
     "test:visual:headed": "playwright test --headed",
     "fixture:issue382": "node scripts/fixture-builder.js tests/fixtures/issue-382/issue-382-selections.json",
-    "profile:zip": "node scripts/zip/zip-export-profile.mjs",
-    "profile:zip:quick": "node scripts/zip/zip-export-profile.mjs --quick",
-    "profile:zip:baseline": "node scripts/zip/zip-export-profile.mjs --out tmp/baseline-zip-export-profile.json",
-    "profile:zip:baseline:quick": "node scripts/zip/zip-export-profile.mjs --quick --out tmp/baseline-zip-export-profile-quick.json",
-    "diff:zip-profile": "node scripts/zip/diff-zip-profile.mjs",
-    "compute-style-dump": "node scripts/computed-style/dump-computed-styles.mjs",
-    "compute-style-dump:mobile": "node scripts/computed-style/dump-computed-styles.mjs --preset mobile",
-    "compute-style-diff-all": "node scripts/computed-style/computed-style-diff-all.mjs",
-    "compute-style-diff-all:preview-ports": "node scripts/computed-style/computed-style-diff-all.mjs --url-a http://localhost:4176 --url-b http://localhost:4177"
+    "profile:zip": "node scripts/zip/zip-export-profile.js",
+    "profile:zip:quick": "node scripts/zip/zip-export-profile.js --quick",
+    "profile:zip:baseline": "node scripts/zip/zip-export-profile.js --out tmp/baseline-zip-export-profile.json",
+    "profile:zip:baseline:quick": "node scripts/zip/zip-export-profile.js --quick --out tmp/baseline-zip-export-profile-quick.json",
+    "diff:zip-profile": "node scripts/zip/diff-zip-profile.js",
+    "compute-style-dump": "node scripts/computed-style/dump-computed-styles.js",
+    "compute-style-dump:mobile": "node scripts/computed-style/dump-computed-styles.js --preset mobile",
+    "compute-style-diff-all": "node scripts/computed-style/computed-style-diff-all.js",
+    "compute-style-diff-all:preview-ports": "node scripts/computed-style/computed-style-diff-all.js --url-a http://localhost:4176 --url-b http://localhost:4177"
   },
   "dependencies": {
     "bulma": "1.0.4",
     "classnames": "^2.5.1",
     "jszip": "^3.10.1",
     "mithril": "^2.3.8",
+    "neverthrow": "^8.2.0",
     "tinygesture": "^3.0.0"
   },
   "devDependencies": {
@@ -49,8 +51,11 @@
     "@eslint/js": "^9.39.4",
     "@playwright/test": "^1.59.0",
     "@tsconfig/strictest": "^2.0.8",
+    "@types/mithril": "^2.2.8",
     "@types/node": "^25.6.0",
+    "@typescript/native-preview": "^7.0.0-beta.1",
     "chai": "^6.2.2",
+    "concurrently": "^9.2.1",
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",

@@ -3,42 +3,42 @@ import assert from "node:assert/strict";
 import {
   registerFromLayersModule,
   resetCatalogForTests,
-} from "../../../sources/state/catalog.js";
-import { getPreviewCanvasLoadingMessage } from "../../../sources/state/preview-canvas-loading.js";
-import { state } from "../../../sources/state/state.js";
+} from "../../../sources/state/catalog.ts";
+import { getPreviewCanvasState } from "../../../sources/state/preview-canvas-loading.ts";
+import { state } from "../../../sources/state/state.ts";
 import {
   resetOffscreenCanvasStateForTests,
   setOffscreenCanvasInitializedForTests,
 } from "../../../sources/canvas/renderer.js";
 
-test("getPreviewCanvasLoadingMessage: null only when S5, offscreen, and bootstrap all done", () => {
+test("getPreviewCanvasState walks through pending kinds in order, then ready", () => {
   resetCatalogForTests();
   resetOffscreenCanvasStateForTests();
   state.previewBootstrapRenderDone = false;
   state.isRenderingCharacter = false;
 
-  assert.equal(getPreviewCanvasLoadingMessage(), "Loading layer data…");
+  assert.equal(getPreviewCanvasState().kind, "loading-layers");
   registerFromLayersModule({ itemLayers: {} });
-  assert.equal(getPreviewCanvasLoadingMessage(), "Loading layer data…");
+  assert.equal(getPreviewCanvasState().kind, "canvas-not-initialized");
   setOffscreenCanvasInitializedForTests(true);
-  assert.equal(getPreviewCanvasLoadingMessage(), "Loading layer data…");
+  assert.equal(getPreviewCanvasState().kind, "bootstrap-pending");
   state.previewBootstrapRenderDone = true;
-  assert.equal(getPreviewCanvasLoadingMessage(), null);
+  assert.equal(getPreviewCanvasState().kind, "ready");
 
   resetCatalogForTests();
   resetOffscreenCanvasStateForTests();
   state.previewBootstrapRenderDone = false;
 });
 
-test("getPreviewCanvasLoadingMessage: null while compositing (render spinner only)", () => {
+test("getPreviewCanvasState reports `rendering` while a render is in flight, even with pending preconditions", () => {
   resetCatalogForTests();
   resetOffscreenCanvasStateForTests();
   state.previewBootstrapRenderDone = false;
   registerFromLayersModule({ itemLayers: {} });
   setOffscreenCanvasInitializedForTests(true);
-  assert.equal(getPreviewCanvasLoadingMessage(), "Loading layer data…");
+  assert.equal(getPreviewCanvasState().kind, "bootstrap-pending");
   state.isRenderingCharacter = true;
-  assert.equal(getPreviewCanvasLoadingMessage(), null);
+  assert.equal(getPreviewCanvasState().kind, "rendering");
 
   resetCatalogForTests();
   resetOffscreenCanvasStateForTests();

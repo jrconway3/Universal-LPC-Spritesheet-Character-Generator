@@ -1,7 +1,7 @@
 /**
  * Indexed hash param resolution: same tie-breaking as legacy `Object.entries(itemMetadata)` scans
  * when `itemsByTypeName[typeName]` lists rows in `Object.keys(itemMetadata)` order (see
- * `buildMetadataIndexes` in `scripts/generateSources/state.mjs`).
+ * `buildMetadataIndexes` in `scripts/generateSources/state.js`).
  *
  * `byTypeName` / `buildItemsByTypeNameLite` store only the fields used by
  * `resolveHashParamFromHashMatch` and `path.getNameWithoutVariant` (plus `itemId`); the full

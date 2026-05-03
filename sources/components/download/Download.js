@@ -1,5 +1,6 @@
 // Download component
-import { state } from "../../state/state.js";
+import m from "mithril";
+import { state } from "../../state/state.ts";
 import { layers } from "../../canvas/renderer.js";
 import {
   getAllCredits,
@@ -16,7 +17,7 @@ import {
   exportIndividualFrames,
 } from "../../state/zip.js";
 import { debugLog } from "../../utils/debug.js";
-import { isLayersReady } from "../../state/catalog.js";
+import { isLayersReady } from "../../state/catalog.ts";
 
 const zipExportDisabled = () => !isLayersReady();
 const zipExportTitle = "Wait for layer data to finish loading";

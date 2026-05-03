@@ -1,4 +1,5 @@
 // Filters Panel - combines Controls, LicenseFilters, AnimationFilters, CurrentSelections, and CategoryTree
+import m from "mithril";
 import { SearchControl } from "./filters/SearchControl.js";
 import { LicenseFilters } from "./filters/LicenseFilters.js";
 import { AnimationFilters } from "./filters/AnimationFilters.js";

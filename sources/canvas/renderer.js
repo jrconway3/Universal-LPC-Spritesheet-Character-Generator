@@ -2,7 +2,7 @@
 // Simplified renderer that draws character sprites based on selections
 
 import { loadImage, loadImagesInParallel } from "./load-image.js";
-import { getSpritePath } from "../state/path.js";
+import { getSpritePath } from "../state/path.ts";
 import { getImageToDraw } from "./palette-recolor.js";
 import { getMultiRecolors } from "../state/palettes.js";
 import { get2DContext, getZPos } from "./canvas-utils.ts";
@@ -18,9 +18,10 @@ import {
   setCurrentCustomAnimations,
   setCustomAnimYPositions,
 } from "./preview-animation.js";
-import { getSortedLayersByAnim } from "../state/meta.js";
-import { catalogReady } from "../state/catalog.js";
-import * as catalog from "../state/catalog.js";
+import { getSortedLayersByAnim } from "../state/meta.ts";
+import { catalogReady } from "../state/catalog.ts";
+import { getItemMerged } from "../state/catalog.ts";
+import m from "mithril";
 import { debugWarn } from "../utils/debug.js";
 
 /**
@@ -138,7 +139,7 @@ async function runRenderCharacter(selections, bodyType, targetCanvas) {
   addedCustomAnimations = new Set(); // Track which custom animations we've added
 
   // Import state to access custom uploaded image (kept out of `renderCharacter` profile span)
-  const appState = await import("../state/state.js").then((m) => m.state);
+  const appState = await import("../state/state.ts").then((mod) => mod.state);
   appState.renderCharacter.isRendering = true;
   appState.isRenderingCharacter = true;
   m.redraw();
@@ -164,9 +165,9 @@ async function runRenderCharacter(selections, bodyType, targetCanvas) {
 
     for (const [, selection] of Object.entries(selections)) {
       const { itemId, subId, variant } = selection;
-      const meta = catalog.getItemMerged(itemId);
-
-      if (!meta || subId) continue;
+      const metaResult = getItemMerged(itemId);
+      if (metaResult.isErr() || subId) continue;
+      const meta = metaResult.value;
 
       // Check if this body type is supported
       if (!meta.required.includes(bodyType)) {
@@ -252,7 +253,7 @@ async function runRenderCharacter(selections, bodyType, targetCanvas) {
             layerNum,
             selections,
             meta,
-          );
+          ).unwrapOr(null);
 
           itemsToDraw.push({
             itemId,
@@ -562,11 +563,12 @@ export async function renderSingleItem(
   singleLayer = null,
   zipProfiler = null,
 ) {
-  const meta = catalog.getItemMerged(itemId);
-  if (!meta) {
+  const metaResult = getItemMerged(itemId);
+  if (metaResult.isErr()) {
     console.error("Item metadata not found:", itemId);
     return null;
   }
+  const meta = metaResult.value;
 
   // Check if this body type is supported
   if (!meta.required.includes(bodyType)) {
@@ -612,7 +614,7 @@ export async function renderSingleItem(
 
     // Render all layers of this custom animation item
     const customSprites = [];
-    const animsList = getSortedLayersByAnim(itemId, true);
+    const animsList = getSortedLayersByAnim(itemId, true).unwrapOr({});
     for (const animName in animsList) {
       for (let layerNum = 1; layerNum < 10; layerNum++) {
         if (singleLayer !== null && layerNum !== singleLayer) continue;
@@ -704,7 +706,7 @@ export async function renderSingleItem(
         layerNum,
         selections,
         meta,
-      );
+      ).unwrapOr(null);
 
       spritesToDraw.push({
         itemId,
@@ -768,11 +770,12 @@ export async function renderSingleItemAnimation(
   singleLayer = null,
   zipProfiler = null,
 ) {
-  const meta = catalog.getItemMerged(itemId);
-  if (!meta) {
+  const metaResult = getItemMerged(itemId);
+  if (metaResult.isErr()) {
     console.error("Item metadata not found:", itemId);
     return null;
   }
+  const meta = metaResult.value;
 
   // Check if this body type is supported
   if (!meta.required.includes(bodyType)) {
@@ -846,7 +849,7 @@ export async function renderSingleItemAnimation(
       layerNum,
       selections,
       meta,
-    );
+    ).unwrapOr(null);
 
     spritesToDraw.push({
       spritePath,

@@ -1,4 +1,5 @@
 // Reusable CollapsibleSection component
+import m from "mithril";
 export const CollapsibleSection = {
   oninit: function (vnode) {
     const { defaultOpen = true } = vnode.attrs;

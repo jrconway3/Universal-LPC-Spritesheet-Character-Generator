@@ -1,6 +1,13 @@
 import fs from "node:fs";
 import path from "node:path";
-import { generateSources } from "../scripts/generate_sources.mjs";
+import { generateSources } from "../scripts/generate_sources.js";
+import {
+  computeSourceInputsFingerprint,
+  getSourceInputsCachePath,
+  readStoredSourceInputsFingerprint,
+  writeStoredSourceInputsFingerprint,
+} from "../scripts/generateSources/source_inputs_fingerprint.js";
+import { writeZPositionsFromSheetsSync } from "../scripts/zPositioning/write_z_positions_from_sheets.js";
 
 /**
  * @param {string} filePath
@@ -17,9 +24,32 @@ function isPathInside(filePath, dirPath) {
 }
 
 /**
- * Vite plugin: generates five metadata ES modules under `dist/` from `sheet_definitions/`
- * and `palette_definitions/` before bundling. Does not fork z-position tooling (CLI only).
- * Skips writing `CREDITS.csv` so dev/build do not dirty the repo.
+ * @param {string} root
+ */
+function hasRepoLayout(root) {
+  return (
+    fs.existsSync(path.join(root, "sheet_definitions")) &&
+    fs.existsSync(path.join(root, "palette_definitions"))
+  );
+}
+
+/**
+ * @param {string} root
+ */
+function distMetadataExists(root) {
+  return fs.existsSync(path.join(root, "dist", "index-metadata.js"));
+}
+
+function shouldForceRegenerateFromEnv() {
+  const v = process.env.VITE_REGENERATE_SOURCES;
+  return v === "1" || v === "true";
+}
+
+/**
+ * Vite plugin: generates five metadata ES modules under `dist/`, and when `sheet_definitions/`
+ * + `palette_definitions/` inputs are unchanged, skips re-running. When inputs are new, changed,
+ * or `dist` metadata is missing, also runs `z_positions` + `CREDITS.csv` (same as `validate-site-sources`).
+ * Use `VITE_REGENERATE_SOURCES=1` to always run the full pipeline.
  *
  * @param {"development"|"production"} [env="production"] Passed through to
  *   `generateSources` / `JSON.stringify` indent: development pretty-prints embedded JSON;
@@ -33,20 +63,56 @@ export function vitePluginItemMetadata(env = "production", pluginOptions = {}) {
   let root = process.cwd();
   let debounceTimer = null;
 
-  function runGenerate() {
+  function runMetadataOnly() {
     fs.mkdirSync(path.join(root, "dist"), { recursive: true });
     const metadataOutputPath = path.join(root, "dist", "item-metadata.js");
     generateSourcesFn({
       writeMetadata: true,
+      writeCredits: false,
       metadataOutputPath,
       env,
-      writeFileSync: (filePath, contents) => {
-        if (path.basename(filePath) === "CREDITS.csv") {
-          return;
-        }
-        fs.writeFileSync(filePath, contents);
-      },
+      writeFileSync: fs.writeFileSync,
     });
+  }
+
+  function runFullSourcePipeline() {
+    fs.mkdirSync(path.join(root, "dist"), { recursive: true });
+    const metadataOutputPath = path.join(root, "dist", "item-metadata.js");
+    writeZPositionsFromSheetsSync({ root });
+    generateSourcesFn({
+      writeMetadata: true,
+      writeCredits: true,
+      metadataOutputPath,
+      env,
+      writeFileSync: fs.writeFileSync,
+    });
+    const fp = computeSourceInputsFingerprint({ root });
+    writeStoredSourceInputsFingerprint(getSourceInputsCachePath(root), fp);
+  }
+
+  function shouldSkipByFingerprint() {
+    if (shouldForceRegenerateFromEnv()) {
+      return false;
+    }
+    if (!distMetadataExists(root)) {
+      return false;
+    }
+    const current = computeSourceInputsFingerprint({ root });
+    const previous = readStoredSourceInputsFingerprint(
+      getSourceInputsCachePath(root),
+    );
+    return previous !== null && previous === current;
+  }
+
+  function maybeRegenerate() {
+    if (!hasRepoLayout(root)) {
+      runMetadataOnly();
+      return;
+    }
+    if (shouldSkipByFingerprint()) {
+      return;
+    }
+    runFullSourcePipeline();
   }
 
   function scheduleRegenerate() {
@@ -55,7 +121,11 @@ export function vitePluginItemMetadata(env = "production", pluginOptions = {}) {
     }
     debounceTimer = setTimeout(() => {
       debounceTimer = null;
-      runGenerate();
+      if (hasRepoLayout(root)) {
+        runFullSourcePipeline();
+      } else {
+        runMetadataOnly();
+      }
     }, 150);
   }
 
@@ -66,7 +136,7 @@ export function vitePluginItemMetadata(env = "production", pluginOptions = {}) {
       root = config.root;
     },
     buildStart() {
-      runGenerate();
+      maybeRegenerate();
     },
     configureServer(server) {
       const sheetDefinitions = path.join(root, "sheet_definitions");

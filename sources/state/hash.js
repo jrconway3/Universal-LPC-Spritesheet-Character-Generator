@@ -1,19 +1,29 @@
-import { state, selectDefaults } from "./state.js";
+import m from "mithril";
+import { state, selectDefaults } from "./state.ts";
 import { parseRecolorKey } from "./palettes.js";
 import { debugWarn } from "../utils/debug.js";
-import * as catalog from "./catalog.js";
+import {
+  isIndexReady,
+  isLiteReady,
+  buildItemsByTypeNameFromRegisteredLite,
+} from "./catalog.ts";
+import {
+  getAliasMetadata,
+  getItemLite,
+  getMetadataIndexes,
+} from "./catalog.ts";
 import { resolveHashParamFromHashMatch } from "./resolve-hash-param.js";
 
 function createDefaultHashDeps() {
   return {
     resolveHashParam: ({ typeName, nameAndVariant }) => {
       let itemsByTypeName;
-      if (catalog.isIndexReady()) {
-        const idx = catalog.getMetadataIndexes();
+      if (isIndexReady()) {
+        const idx = getMetadataIndexes().unwrapOr(null);
         itemsByTypeName =
           idx?.hashMatch?.itemsByTypeName ?? idx?.byTypeName ?? {};
-      } else if (catalog.isLiteReady()) {
-        itemsByTypeName = catalog.buildItemsByTypeNameFromRegisteredLite();
+      } else if (isLiteReady()) {
+        itemsByTypeName = buildItemsByTypeNameFromRegisteredLite();
       } else {
         itemsByTypeName = {};
       }
@@ -23,7 +33,9 @@ function createDefaultHashDeps() {
         itemsByTypeName,
       });
     },
-    getItemLite: (itemId) => catalog.getItemLite(itemId),
+    // DI shape kept as `(id) => meta | null` so callers don't need to handle
+    // a Result. The typed boundary lives here.
+    getItemLite: (itemId) => getItemLite(itemId).unwrapOr(null),
   };
 }
 
@@ -168,9 +180,11 @@ export function getHashParamsforSelections(selections) {
 
   // Add selections - use old format: type_name=Name_variant
   // Format: "body=Body_color_light", "shoes=Sara_sara"
-  const aliasMetadata = catalog.getAliasMetadata() ?? {};
+  const aliasMetadata = getAliasMetadata().unwrapOr({});
   for (const [typeName, selection] of Object.entries(selections)) {
-    const meta = catalog.getItemLite(selection.itemId);
+    const meta = getItemLite(selection.itemId).unwrapOr(null);
+    // Defensive: real production data has type_name, but a few test fixtures
+    // (and possibly malformed URLs) might lack it. Treat as alias-fallback.
     if (!meta || !meta.type_name) {
       // Check if an alias is overriding this entry (e.g., "sash=Waistband_rose" instead of "waistband=Waistband_rose")
       const name = selection.name.split(" (")[0]; // Get base name without variant (e.g., "Waistband" from "Waistband (rose)")
@@ -246,7 +260,7 @@ export function loadSelectionsFromHash(hashString = null) {
     }
 
     // Check Name and Variant
-    const aliasMd = catalog.getAliasMetadata() ?? {};
+    const aliasMd = getAliasMetadata().unwrapOr({});
     const aliasType = aliasMd[typeName];
     const aliasMeta = aliasType?.[nameAndVariant];
     if (aliasMeta) {

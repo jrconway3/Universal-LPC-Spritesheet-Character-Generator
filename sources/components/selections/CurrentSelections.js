@@ -1,14 +1,16 @@
 // Current selections component
-import * as catalog from "../../state/catalog.js";
-import { state } from "../../state/state.js";
+import m from "mithril";
+import { isCreditsReady, isLiteReady } from "../../state/catalog.ts";
+import { getItemMerged } from "../../state/catalog.ts";
+import { state } from "../../state/state.ts";
 import {
   isItemLicenseCompatible,
   isItemAnimationCompatible,
-} from "../../state/filters.js";
+} from "../../state/filters.ts";
 
 export const CurrentSelections = {
   view: function () {
-    if (!catalog.isLiteReady()) {
+    if (!isLiteReady()) {
       return m("div", [
         m("h3.title.is-5", "Current Selections"),
         m("p.is-size-7.has-text-grey", "Loading item list…"),
@@ -24,6 +26,8 @@ export const CurrentSelections = {
       ]);
     }
 
+    const creditsReady = isCreditsReady();
+
     return m("div", [
       m("h3.title.is-5", "Current Selections"),
       m(
@@ -32,25 +36,26 @@ export const CurrentSelections = {
           const isLicenseCompatible = isItemLicenseCompatible(selection.itemId);
           const isAnimCompatible = isItemAnimationCompatible(selection.itemId);
           const isCompatible = isLicenseCompatible && isAnimCompatible;
-          const meta = catalog.getItemMerged(selection.itemId);
+          const metaResult = getItemMerged(selection.itemId);
+          const meta = metaResult.isOk() ? metaResult.value : null;
 
           // Get all licenses for this item
           const allLicenses = new Set();
-          if (meta?.credits) {
-            meta.credits.forEach((credit) => {
-              if (credit.licenses) {
-                credit.licenses.forEach((lic) => allLicenses.add(lic.trim()));
+          if (meta) {
+            for (const credit of meta.credits) {
+              for (const lic of credit.licenses) {
+                allLicenses.add(lic.trim());
               }
-            });
+            }
           }
-          const licensesText = !catalog.isCreditsReady()
+          const licensesText = !creditsReady
             ? "License info loading…"
             : allLicenses.size > 0
               ? `Licenses: ${Array.from(allLicenses).join(", ")}`
               : "No license info";
 
           // Get supported animations for this item
-          const supportedAnims = meta?.animations || [];
+          const supportedAnims = meta?.animations ?? [];
           const animsText =
             supportedAnims.length > 0
               ? `Animations: ${supportedAnims.join(", ")}`
@@ -71,7 +76,7 @@ export const CurrentSelections = {
             {
               key: selectionKey,
               class: isCompatible ? "is-info" : "is-warning",
-              title: catalog.isCreditsReady() ? tooltipText : undefined,
+              title: creditsReady ? tooltipText : undefined,
             },
             [
               m("span", selection.name),

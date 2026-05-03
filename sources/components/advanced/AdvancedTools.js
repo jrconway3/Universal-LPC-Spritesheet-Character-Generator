@@ -1,5 +1,6 @@
 // Advanced Tools component - Custom file upload with z-position
-import { state } from "../../state/state.js";
+import m from "mithril";
+import { state } from "../../state/state.ts";
 import { CollapsibleSection } from "../CollapsibleSection.js";
 
 export const AdvancedTools = {

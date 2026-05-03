@@ -6,7 +6,7 @@ import {
   runBuild,
   withCapturedConsoleError,
 } from "./generateSources/test_helpers.js";
-import { loadPaletteMetadata } from "../../../scripts/generateSources/palettes.mjs";
+import { loadPaletteMetadata } from "../../../scripts/generateSources/palettes.js";
 
 test("build1-basic aligns merged metadata and index-metadata.js indexes", async () => {
   const result = await runBuild("build1-basic");

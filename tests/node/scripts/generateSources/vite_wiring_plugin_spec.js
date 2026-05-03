@@ -4,7 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { METADATA_MODULE_BASENAMES } from "../../../../scripts/generateSources/state.mjs";
+import { METADATA_MODULE_BASENAMES } from "../../../../scripts/generateSources/state.js";
 import { vitePluginItemMetadata } from "../../../../vite/vite-plugin-item-metadata.js";
 import {
   itemMetadataCodeSplittingGroups,
@@ -99,6 +99,7 @@ test("vitePluginItemMetadata buildStart invokes generateSources with writeMetada
   assert.equal(calls.length, 1);
   const opts = calls[0];
   assert.equal(opts.writeMetadata, true);
+  assert.equal(opts.writeCredits, false);
   assert.equal(opts.env, "development");
   assert.equal(
     opts.metadataOutputPath,
@@ -107,17 +108,20 @@ test("vitePluginItemMetadata buildStart invokes generateSources with writeMetada
   assert.equal(typeof opts.writeFileSync, "function");
 });
 
-test("vitePluginItemMetadata writeFileSync wrapper skips CREDITS.csv", () => {
+test("vitePluginItemMetadata does not set writeCredits in metadata-only temp roots", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vite-credits-skip-"));
-  const captured = [];
+  const calls = [];
   const originalWrite = fs.writeFileSync;
-  fs.writeFileSync = (filePath, contents) =>
+  const captured = [];
+  fs.writeFileSync = (filePath, contents) => {
     captured.push([filePath, String(contents)]);
+    return originalWrite(filePath, contents);
+  };
 
   try {
     const plugin = vitePluginItemMetadata("production", {
       generateSources: (opts) => {
-        opts.writeFileSync(path.join(root, "dist", "CREDITS.csv"), "csv");
+        calls.push(opts);
         opts.writeFileSync(path.join(root, "dist", "item-metadata.js"), "js");
       },
     });
@@ -128,8 +132,8 @@ test("vitePluginItemMetadata writeFileSync wrapper skips CREDITS.csv", () => {
     fs.rmSync(root, { recursive: true, force: true });
   }
 
-  assert.ok(!captured.some(([p]) => path.basename(p) === "CREDITS.csv"));
-  assert.equal(captured.length, 1);
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].writeCredits, false);
   assert.equal(path.basename(captured[0][0]), "item-metadata.js");
   assert.equal(captured[0][1], "js");
 });
