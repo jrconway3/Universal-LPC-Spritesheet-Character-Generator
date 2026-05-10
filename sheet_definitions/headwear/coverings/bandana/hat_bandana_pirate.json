@@ -8,32 +8,6 @@
     "pregnant": "hat/pirate/bandana/adult/",
     "teen": "hat/pirate/bandana/adult/"
   },
-  "variants": [
-    "black",
-    "blue",
-    "bluegray",
-    "brown",
-    "charcoal",
-    "forest",
-    "gray",
-    "green",
-    "lavender",
-    "leather",
-    "maroon",
-    "navy",
-    "orange",
-    "pink",
-    "purple",
-    "red",
-    "rose",
-    "sky",
-    "slate",
-    "tan",
-    "teal",
-    "walnut",
-    "white",
-    "yellow"
-  ],
   "animations": [
     "spellcast",
     "thrust",
@@ -71,5 +45,13 @@
       ]
     }
   ],
+  "recolors": {
+    "material": "cloth",
+    "base": "black",
+    "palettes": [
+      "ulpc",
+      "all.lpcr"
+    ]
+  },
   "type_name": "bandana"
 }

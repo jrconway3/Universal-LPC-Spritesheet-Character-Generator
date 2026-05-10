@@ -8,35 +8,6 @@
     "pregnant": "hat/cloth/bandana/adult/",
     "teen": "hat/cloth/bandana/adult/"
   },
-  "variants": [
-    "bandana_gray",
-    "bandana_red",
-    "bandana_white",
-    "black",
-    "blue",
-    "bluegray",
-    "brown",
-    "charcoal",
-    "forest",
-    "gray",
-    "green",
-    "lavender",
-    "leather",
-    "maroon",
-    "navy",
-    "orange",
-    "pink",
-    "purple",
-    "red",
-    "rose",
-    "sky",
-    "slate",
-    "tan",
-    "teal",
-    "walnut",
-    "white",
-    "yellow"
-  ],
   "animations": [
     "spellcast",
     "thrust",
@@ -77,5 +48,12 @@
       ]
     }
   ],
+  "recolors": {
+    "material": "cloth",
+    "palettes": [
+      "ulpc",
+      "all.lpcr"
+    ]
+  },
   "type_name": "bandana"
 }
