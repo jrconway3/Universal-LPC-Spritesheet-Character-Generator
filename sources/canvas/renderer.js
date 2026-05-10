@@ -1,10 +1,10 @@
 // Canvas rendering module for Mithril UI
 // Simplified renderer that draws character sprites based on selections
 
-import { loadImage, loadImagesInParallel } from "./load-image.js";
+import { loadImage, loadImagesInParallel } from "./load-image.ts";
 import { getSpritePath } from "../state/path.ts";
 import { getImageToDraw } from "./palette-recolor.js";
-import { getMultiRecolors } from "../state/palettes.js";
+import { getMultiRecolors } from "../state/palettes.ts";
 import { get2DContext, getZPos } from "./canvas-utils.ts";
 import { variantToFilename } from "../utils/helpers.ts";
 import { drawFramesToCustomAnimation } from "./draw-frames.ts";

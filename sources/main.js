@@ -45,7 +45,7 @@ window.getPaletteRecolorConfig = getPaletteRecolorConfig;
 
 // Import state management
 import { initState, state } from "./state/state.ts";
-import { initHashChangeListener } from "./state/hash.js";
+import { initHashChangeListener } from "./state/hash.ts";
 
 // Import components
 import { App } from "./components/App.js";
@@ -53,7 +53,7 @@ import { AnimationPreview } from "./components/preview/AnimationPreview.js";
 import { FullSpritesheetPreview } from "./components/preview/FullSpritesheetPreview.js";
 
 // Import performance profiler
-import { PerformanceProfiler } from "./performance-profiler.js";
+import { PerformanceProfiler } from "./performance-profiler.ts";
 
 // DEBUG mode will be turned on if on localhost and off in production
 // but this can be overridden by adding debug=(true|false) to the querystring.

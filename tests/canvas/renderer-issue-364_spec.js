@@ -21,8 +21,8 @@ import {
   itemsToDraw,
   customAreaItems,
 } from "../../sources/canvas/renderer.js";
-import { resetImageLoadCache } from "../../sources/canvas/load-image.js";
-import { resetState } from "../../sources/state/hash.js";
+import { resetImageLoadCache } from "../../sources/canvas/load-image.ts";
+import { resetState } from "../../sources/state/hash.ts";
 import { resetCatalogForTests } from "../../sources/state/catalog.ts";
 import {
   restoreAppCatalogAfterTest,
