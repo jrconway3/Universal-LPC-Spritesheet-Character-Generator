@@ -17,9 +17,8 @@
  * rejection. If we ever need to recover instead of crash, add a `"load-failed"`
  * variant here.
  *
- * Consumer-side code pairs this with the `ResultBoundary` component (in the
- * render tree) or with `.match` / `.unwrapOr` / `if (r.isErr())` (everywhere
- * else).
+ * Consumer-side code pairs this with the `renderResult` helper (in the render
+ * tree) or with `.match` / `.unwrapOr` / `if (r.isErr())` (everywhere else).
  */
 
 import { ok, err, type Result } from "neverthrow";
@@ -28,7 +27,7 @@ import {
   expandInternedItemLite,
   expandMetadataIndexesWithInternedArrays,
   isInternedItemLite,
-} from "./resolve-hash-param.js";
+} from "./resolve-hash-param.ts";
 
 // ────────────────────────────────────────────────────────────────────────────
 // Error shape
@@ -115,7 +114,7 @@ export type CategoryTree = CategoryTreeNode;
 
 /**
  * Slim row shape stored in `MetadataIndexes.byTypeName[typeName]` and
- * `hashMatch.itemsByTypeName[typeName]`. Documented in `resolve-hash-param.js`:
+ * `hashMatch.itemsByTypeName[typeName]`. Documented in `resolve-hash-param.ts`:
  * just enough fields for hash-resolution and path-name lookups; the full
  * record lives in the lite item store.
  */

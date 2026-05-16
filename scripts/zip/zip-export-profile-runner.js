@@ -19,13 +19,13 @@ import {
   SHEET_HEIGHT,
   SHEET_WIDTH,
   renderCharacter,
-} from "../../sources/canvas/renderer.js";
+} from "../../sources/canvas/renderer.ts";
 import {
   exportIndividualFrames,
   exportSplitAnimations,
   exportSplitItemAnimations,
   exportSplitItemSheets,
-} from "../../sources/state/zip.js";
+} from "../../sources/state/zip.ts";
 import {
   loadSelectionsFromHash,
   resetState,

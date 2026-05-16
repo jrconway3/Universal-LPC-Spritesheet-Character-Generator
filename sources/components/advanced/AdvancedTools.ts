@@ -1,0 +1,93 @@
+// Advanced Tools component - Custom file upload with z-position
+import m from "mithril";
+import { state } from "../../state/state.ts";
+import { CollapsibleSection } from "../CollapsibleSection.ts";
+
+export const AdvancedTools: m.Component = {
+  view() {
+    const handleFileUpload = (e: Event) => {
+      const target = e.target as HTMLInputElement;
+      const file = target.files?.[0];
+      if (!file) return;
+
+      const img = new Image();
+      img.onload = () => {
+        state.customUploadedImage = img;
+        m.redraw();
+      };
+      img.src = URL.createObjectURL(file);
+    };
+
+    const handleZPosChange = (e: Event) => {
+      const target = e.target as HTMLInputElement;
+      const value = parseInt(target.value, 10);
+      state.customImageZPos = isNaN(value) ? 0 : value;
+      m.redraw();
+    };
+
+    const clearCustomImage = () => {
+      state.customUploadedImage = null;
+      state.customImageZPos = 0;
+      const fileInput = document.getElementById(
+        "customFileInput",
+      ) as HTMLInputElement | null;
+      if (fileInput) fileInput.value = "";
+      m.redraw();
+    };
+
+    return m(
+      CollapsibleSection,
+      {
+        title: "Advanced Tools",
+        defaultOpen: false,
+      },
+      [
+        m("div.field", [
+          m("label.label", "Custom File Upload"),
+          m("div.control", [
+            m("input.input[type=file]#customFileInput", {
+              accept: "image/*",
+              onchange: handleFileUpload,
+            }),
+          ]),
+          m(
+            "p.help",
+            "Upload a local image file to overlay on the spritesheet",
+          ),
+        ]),
+        m("div.field", [
+          m("label.label", "Z-Position"),
+          m("div.control", [
+            m("input.input[type=number]", {
+              value: state.customImageZPos,
+              oninput: handleZPosChange,
+              placeholder: "0",
+            }),
+          ]),
+          m("p.help", [
+            "Layer order: ",
+            m("code", "0=shadow"),
+            ", ",
+            m("code", "10=body"),
+            ", ",
+            m("code", "70=arms"),
+            ", ",
+            m("code", "110=beard"),
+          ]),
+        ]),
+        state.customUploadedImage &&
+          m("div.field", [
+            m("div.control", [
+              m(
+                "button.button.is-small.is-warning",
+                {
+                  onclick: clearCustomImage,
+                },
+                "Clear Custom Image",
+              ),
+            ]),
+          ]),
+      ],
+    );
+  },
+};

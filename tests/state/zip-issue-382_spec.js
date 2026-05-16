@@ -22,16 +22,16 @@ import {
   SHEET_HEIGHT,
   SHEET_WIDTH,
   renderCharacter,
-} from "../../sources/canvas/renderer.js";
+} from "../../sources/canvas/renderer.ts";
 import {
   exportIndividualFrames,
   exportSplitAnimations,
   exportSplitItemAnimations,
   exportSplitItemSheets,
-} from "../../sources/state/zip.js";
+} from "../../sources/state/zip.ts";
 import { resetState } from "../../sources/state/hash.ts";
 import { state } from "../../sources/state/state.ts";
-import { importStateFromJSON } from "../../sources/state/json.js";
+import { importStateFromJSON } from "../../sources/state/json.ts";
 import issue382ItemMetadata from "../fixtures/issue-382/issue-382-itemdata.js";
 import issue382Selections from "../fixtures/issue-382/issue-382-selections.js";
 import { paths as issue382ZipPathsSplitAnimations } from "../fixtures/issue-382/issue-382-zip-paths-split-animations.js";
@@ -48,7 +48,7 @@ function applyImportedStateFromFixture() {
   Object.assign(state, importStateFromJSON(JSON.stringify(issue382Selections)));
 }
 
-describe("state/zip.js issue #382 regression (longsword + full outfit)", () => {
+describe("state/zip.ts issue #382 regression (longsword + full outfit)", () => {
   let sandbox;
   let fakeZip;
   let alertStub;

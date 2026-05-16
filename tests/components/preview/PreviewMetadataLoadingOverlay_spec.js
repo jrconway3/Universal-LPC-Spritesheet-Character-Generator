@@ -1,12 +1,12 @@
 import m from "mithril";
 import { assert } from "chai";
 import { describe, it, beforeEach, afterEach } from "mocha-globals";
-import { PreviewMetadataLoadingOverlay } from "../../../sources/components/preview/PreviewMetadataLoadingOverlay.js";
+import { PreviewMetadataLoadingOverlay } from "../../../sources/components/preview/PreviewMetadataLoadingOverlay.ts";
 import { state } from "../../../sources/state/state.ts";
 import {
   resetOffscreenCanvasStateForTests,
   setOffscreenCanvasInitializedForTests,
-} from "../../../sources/canvas/renderer.js";
+} from "../../../sources/canvas/renderer.ts";
 import { resetCatalogForTests } from "../../../sources/state/catalog.ts";
 import { restoreAppCatalogAfterTest } from "../../browser-catalog-fixture.js";
 
