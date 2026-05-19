@@ -27,17 +27,17 @@ export const FiltersPanel: m.Component<FiltersPanelAttrs> = {
             {
               class: "filters-column",
             },
-            m(LicenseFilters),
+            m(LicenseFilters, { catalog: vnode.attrs.catalog }),
           ),
           m(
             "div.column.is-half-desktop.is-12-mobile",
             {
               class: "filters-column",
             },
-            m(AnimationFilters),
+            m(AnimationFilters, { catalog: vnode.attrs.catalog }),
           ),
         ]),
-        m("div.mb-4", m(CurrentSelections)),
+        m("div.mb-4", m(CurrentSelections, { catalog: vnode.attrs.catalog })),
         m(CategoryTree),
       ],
     );
