@@ -1,5 +1,6 @@
 // Filters Panel - combines Controls, LicenseFilters, AnimationFilters, CurrentSelections, and CategoryTree
 import m from "mithril";
+import type { CatalogReader } from "../state/catalog.ts";
 import { SearchControl } from "./filters/SearchControl.ts";
 import { LicenseFilters } from "./filters/LicenseFilters.ts";
 import { AnimationFilters } from "./filters/AnimationFilters.ts";
@@ -7,8 +8,10 @@ import { CurrentSelections } from "./selections/CurrentSelections.ts";
 import { CategoryTree } from "./tree/CategoryTree.ts";
 import { CollapsibleSection } from "./CollapsibleSection.ts";
 
-export const FiltersPanel: m.Component = {
-  view() {
+type FiltersPanelAttrs = { catalog: CatalogReader };
+
+export const FiltersPanel: m.Component<FiltersPanelAttrs> = {
+  view(vnode) {
     return m(
       CollapsibleSection,
       {
@@ -16,7 +19,7 @@ export const FiltersPanel: m.Component = {
         defaultOpen: true,
       },
       [
-        m("div.mb-4", m(SearchControl)),
+        m("div.mb-4", m(SearchControl, { catalog: vnode.attrs.catalog })),
         // Responsive wrapper for License and Animation filters
         m("div.columns.is-multiline.m-0", [
           m(
