@@ -38,7 +38,7 @@ export const FiltersPanel: m.Component<FiltersPanelAttrs> = {
           ),
         ]),
         m("div.mb-4", m(CurrentSelections, { catalog: vnode.attrs.catalog })),
-        m(CategoryTree),
+        m(CategoryTree, { catalog: vnode.attrs.catalog }),
       ],
     );
   },
