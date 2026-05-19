@@ -64,7 +64,7 @@ export const App: m.Component<AppAttrs, AppState> = {
   },
   view(vnode) {
     return m("div", [
-      m(Download),
+      m(Download, { catalog: vnode.attrs.catalog }),
       m(FiltersPanel, { catalog: vnode.attrs.catalog }),
       m(Credits),
       m(AdvancedTools),
