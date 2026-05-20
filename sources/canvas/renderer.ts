@@ -4,7 +4,7 @@
 import { ok, err, type Result } from "neverthrow";
 import { loadImage, loadImagesInParallel } from "./load-image.ts";
 import type { LoadedImage } from "./load-image.ts";
-import { getSpritePath } from "../state/path.ts";
+import { getSpritePath, type PathError } from "../state/path.ts";
 import { getImageToDraw } from "./palette-recolor.ts";
 import { getMultiRecolors } from "../state/palettes.ts";
 import { get2DContext, getZPos } from "./canvas-utils.ts";
@@ -22,7 +22,11 @@ import {
 } from "./preview-animation.ts";
 import { getSortedLayersByAnim } from "../state/meta.ts";
 import type { AnimationLayer } from "../state/meta.ts";
-import { catalogReady, getItemMerged } from "../state/catalog.ts";
+import {
+  catalogReady,
+  formatLoadError,
+  getItemMerged,
+} from "../state/catalog.ts";
 import m from "mithril";
 import { debugWarn } from "../utils/debug.ts";
 import type { Selections } from "../state/state.ts";
@@ -48,35 +52,44 @@ const animationConfigByName = ANIMATION_CONFIGS as Record<
   AnimationConfig | undefined
 >;
 
+function formatPathError(itemId: string, e: PathError): string {
+  switch (e.kind) {
+    case "loading":
+    case "not-found":
+      return `getSpritePath: ${formatLoadError(e)} (item ${itemId})`;
+    case "missing-layer":
+      return `getSpritePath: item ${itemId} has no layer ${e.layerNum}`;
+    case "missing-bodytype-path":
+      return `getSpritePath: item ${itemId} has no path for bodyType ${e.bodyType}`;
+  }
+}
+
 /**
- * A standard-animation sprite item collected during `runRenderCharacter`. The
- * `customImage` variant (used for the user-uploaded sprite) carries an
- * already-loaded `HTMLImageElement` and has `spritePath: null`; everything else
- * resolves a path through `getSpritePath`.
+ * Where the bytes for a drawable layer come from. The two cases converge on
+ * `HTMLImageElement`: `catalog` items resolve a URL via `getSpritePath` and
+ * fetch through `loadImage`; `custom` items carry the already-decoded image
+ * from the user's file upload.
  */
-export type ItemToDraw = {
+export type LayerSource =
+  | { kind: "catalog"; spritePath: string }
+  | { kind: "custom"; image: HTMLImageElement };
+
+/**
+ * One queued draw operation produced by `runRenderCharacter`: one `(item,
+ * layer, animation)` triple, corresponding 1:1 with a `drawImage` call in the
+ * draw loop. The exported `drawCalls` array is `DrawCall[]`.
+ */
+export type DrawCall = {
   itemId: string;
   name?: string;
   variant: string | null;
   recolors?: Recolors;
-  spritePath: string | null;
   zPos: number;
   layerNum: number;
   animation: string;
   yPos: number;
-  isCustom: boolean;
   needsRecolor?: boolean;
-  customImage?: HTMLImageElement;
-};
-
-/**
- * One entry in the exported `layers` array — deduplicated by `(itemId, layerNum)`
- * across all standard animations of `itemsToDraw`. Consumers: `state/zip.ts`,
- * `components/download/Download.js`, and tests.
- */
-export type RenderedLayer = Omit<ItemToDraw, "spritePath" | "animation"> & {
-  fileName: string;
-  supportedAnimations: string[];
+  source: LayerSource;
 };
 
 type CustomAnimationItem = {
@@ -88,7 +101,6 @@ type CustomAnimationItem = {
   zPos: number;
   layerNum: number;
   customAnimation: string;
-  isCustom: true;
 };
 
 type CustomSpriteAreaItem = {
@@ -105,7 +117,7 @@ type CustomSpriteAreaItem = {
 type ExtractedFramesAreaItem = {
   type: "extracted_frames";
   zPos: number;
-  spritePath: string | null;
+  spritePath: string;
   itemId: string;
   animation: string;
   needsRecolor?: boolean;
@@ -140,8 +152,7 @@ export const SHEET_WIDTH = 832; // 13 frames * 64px
 
 export let canvas: HTMLCanvasElement | null = null;
 export let ctx: CanvasRenderingContext2D | null = null;
-export let layers: RenderedLayer[] = [];
-export let itemsToDraw: ItemToDraw[] = [];
+export let drawCalls: DrawCall[] = [];
 export let addedCustomAnimations: Set<string> = new Set();
 export let customAreaItems: Record<string, CustomAreaItem[]> = {};
 /** True after `initCanvas()` — offscreen buffer exists (main bootstrap runs this after S1∧S2). */
@@ -212,8 +223,8 @@ async function runRenderCharacter(
 ): Promise<void> {
   const profiler = window.profiler;
 
-  // Build list of items to draw
-  itemsToDraw = [];
+  // Build list of draw calls
+  drawCalls = [];
   addedCustomAnimations = new Set(); // Track which custom animations we've added
 
   // Import state to access custom uploaded image (kept out of `renderCharacter` profile span)
@@ -289,7 +300,6 @@ async function runRenderCharacter(
             zPos,
             layerNum,
             customAnimation: customAnimName,
-            isCustom: true,
           });
 
           continue; // Skip standard animation processing for this layer
@@ -322,7 +332,7 @@ async function runRenderCharacter(
             if (!meta.animations.includes(animName)) continue;
           }
 
-          const spritePath = getSpritePath(
+          const pathResult = getSpritePath(
             itemId,
             variant ?? null,
             recolors,
@@ -331,67 +341,48 @@ async function runRenderCharacter(
             layerNum,
             selections,
             meta,
-          ).unwrapOr(null);
+          );
+          if (pathResult.isErr()) {
+            debugWarn(formatPathError(itemId, pathResult.error));
+            continue;
+          }
 
-          itemsToDraw.push({
+          drawCalls.push({
             itemId,
             name: selection.name,
             variant: variant ?? null,
             recolors,
-            spritePath,
+            source: { kind: "catalog", spritePath: pathResult.value },
             zPos,
             layerNum,
             animation: animName,
             yPos,
-            isCustom: false,
             needsRecolor: itemId === "body-body" && variant !== "light", // Flag body variants for recoloring
           });
         }
       }
     }
 
-    // Add custom uploaded image to itemsToDraw if present
+    // Add custom uploaded image as a draw call if present
     if (appState.customUploadedImage) {
+      const customImage = appState.customUploadedImage;
       // Add custom image to be drawn at all standard animation positions
       for (const [animName, yPos] of Object.entries(ANIMATION_OFFSETS)) {
-        itemsToDraw.push({
+        drawCalls.push({
           itemId: "custom-upload",
           variant: null,
-          spritePath: null, // Will draw directly from Image object
+          source: { kind: "custom", image: customImage },
           zPos: appState.customImageZPos,
           layerNum: 0,
           animation: animName,
           yPos,
-          isCustom: false,
-          customImage: appState.customUploadedImage, // Store the Image object
         });
       }
     }
 
-    // Sort standard items by zPos only (lower zPos = drawn first = behind)
-    // This ensures shadow (zPos=0) is drawn before body (zPos=10), etc.
-    itemsToDraw.sort((a, b) => a.zPos - b.zPos);
-
-    // save layers for external access — dedupe by (itemId, layerNum), collecting
-    // all `animation` values into `supportedAnimations`.
-    layers = itemsToDraw.reduce<RenderedLayer[]>((acc, item) => {
-      const existing = acc.find(
-        (l) => l.itemId === item.itemId && l.layerNum === item.layerNum,
-      );
-      if (existing) {
-        existing.supportedAnimations.push(item.animation);
-        return acc;
-      }
-      const { spritePath, animation, ...rest } = item;
-      acc.push({
-        ...rest,
-        fileName: spritePath
-          ? spritePath.substring("spritesheets/".length)
-          : "",
-        supportedAnimations: [animation],
-      });
-      return acc;
-    }, []);
+    // Sort by zPos (lower zPos = drawn first = behind). Shadow (zPos=0) before
+    // body (zPos=10), etc.
+    drawCalls.sort((a, b) => a.zPos - b.zPos);
 
     // Calculate total canvas height needed (standard sheet + custom animations)
     let totalHeight = SHEET_HEIGHT;
@@ -445,23 +436,22 @@ async function runRenderCharacter(
     setCustomAnimYPositions(customAnimYPositions);
 
     // Load all standard animation images in parallel and attach them to their items
-    const loadPromises = itemsToDraw.map((item) => {
-      if (item.customImage) {
-        // Custom image already loaded
-        return Promise.resolve({ item, img: item.customImage, success: true });
-      } else {
-        // Load standard image
-        return loadImage(item.spritePath!)
-          .then((img) => ({ item, img, success: true }))
-          .catch(() => {
-            debugWarn(`Failed to load sprite: ${item.spritePath}`);
-            return {
-              item,
-              img: null as HTMLImageElement | null,
-              success: false,
-            };
-          });
+    const loadPromises = drawCalls.map((item) => {
+      if (item.source.kind === "custom") {
+        // Already-decoded user-uploaded image
+        return Promise.resolve({ item, img: item.source.image, success: true });
       }
+      const { spritePath } = item.source;
+      return loadImage(spritePath)
+        .then((img) => ({ item, img, success: true }))
+        .catch(() => {
+          debugWarn(`Failed to load sprite: ${spritePath}`);
+          return {
+            item,
+            img: null as HTMLImageElement | null,
+            success: false,
+          };
+        });
     });
 
     const loadedItems = await Promise.all(loadPromises);
@@ -473,7 +463,7 @@ async function runRenderCharacter(
           img,
           item.itemId,
           item.recolors,
-          item.spritePath,
+          item.source.kind === "catalog" ? item.source.spritePath : null,
         );
         renderCtx.drawImage(imageToDraw, 0, item.yPos);
       }
@@ -514,14 +504,15 @@ async function runRenderCharacter(
         }
 
         // 2. Add standard items that need to be extracted into this custom animation
-        // (e.g., body "sit" frames go into wheelchair custom animation)
+        // (e.g., body "sit" frames go into wheelchair custom animation).
+        // Custom-source items have no spritePath to extract frames from, so skip them.
         if (baseAnim) {
-          for (const item of itemsToDraw) {
-            if (item.animation === baseAnim) {
+          for (const item of drawCalls) {
+            if (item.animation === baseAnim && item.source.kind === "catalog") {
               areaItems.push({
                 type: "extracted_frames",
                 zPos: item.zPos,
-                spritePath: item.spritePath,
+                spritePath: item.source.spritePath,
                 itemId: item.itemId,
                 animation: item.animation,
                 needsRecolor: item.needsRecolor,
@@ -766,7 +757,7 @@ export async function renderSingleItem(
     itemId: string;
     variant: string | null;
     recolors: Recolors;
-    spritePath: string | null;
+    spritePath: string;
     zPos: number;
     layerNum: number;
     animation: string;
@@ -798,7 +789,7 @@ export async function renderSingleItem(
         if (!meta.animations.includes(animName)) continue;
       }
 
-      const spritePath = getSpritePath(
+      const pathResult = getSpritePath(
         itemId,
         variant,
         recolors,
@@ -807,13 +798,17 @@ export async function renderSingleItem(
         layerNum,
         selections,
         meta,
-      ).unwrapOr(null);
+      );
+      if (pathResult.isErr()) {
+        debugWarn(formatPathError(itemId, pathResult.error));
+        continue;
+      }
 
       spritesToDraw.push({
         itemId,
         variant,
         recolors,
-        spritePath,
+        spritePath: pathResult.value,
         zPos,
         layerNum,
         animation: animName,
@@ -916,7 +911,7 @@ export async function renderSingleItemAnimation(
 
   // Build list of sprites to draw for this item & animation
   type AnimSprite = {
-    spritePath: string | null;
+    spritePath: string;
     zPos: number;
     layerNum: number;
     recolors: Recolors;
@@ -945,7 +940,7 @@ export async function renderSingleItemAnimation(
       if (!meta.animations.includes(animationName)) continue;
     }
 
-    const spritePath = getSpritePath(
+    const pathResult = getSpritePath(
       itemId,
       variant,
       recolors,
@@ -954,10 +949,14 @@ export async function renderSingleItemAnimation(
       layerNum,
       selections,
       meta,
-    ).unwrapOr(null);
+    );
+    if (pathResult.isErr()) {
+      debugWarn(formatPathError(itemId, pathResult.error));
+      continue;
+    }
 
     spritesToDraw.push({
-      spritePath,
+      spritePath: pathResult.value,
       zPos,
       layerNum,
       recolors,
