@@ -279,6 +279,22 @@ export function selectItem(
     name: `${displayName} (${variantDisplayName})`,
   };
 
+  if (subMeta?.type_name && subSelect !== selectionGroup) {
+    const existingParent = state.selections[selectionGroup];
+    if (existingParent) {
+      const parentRecolor = existingParent.recolor;
+      state.selections[selectionGroup] = {
+        itemId,
+        subId: null,
+        variant: existingParent.variant,
+        recolor: parentRecolor,
+        name: parentRecolor
+          ? `${meta.name} (${parentRecolor.replaceAll("_", " ")})`
+          : meta.name,
+      };
+    }
+  }
+
   if (
     subMeta?.matchBodyColor ||
     (subSelect === selectionGroup && meta.matchBodyColor)

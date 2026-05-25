@@ -117,7 +117,7 @@ export function getMultiRecolors(
   }
 
   // If body color, force match body color
-  if (meta.matchBodyColor) {
+  if (meta.matchBodyColor && state.matchBodyColorEnabled) {
     const bodyColor = getBodyColor(itemId, selections).unwrapOr(null);
     if (bodyColor) recolors[meta.type_name] = bodyColor;
   }
@@ -265,8 +265,12 @@ export type PaletteOption = {
   matchBodyColor: boolean;
   versions: string[];
   selectionColor: string | null;
+  sourceColors: string[] | null;
   colors: string[] | null;
 };
+
+export const CUSTOM_KEY: string = "source";
+export const CUSTOM_VERSION: string = "custom";
 
 /** Palette options + currently-selected colors for the item's selection group. */
 export function getPaletteOptions(
@@ -288,6 +292,11 @@ export function getPaletteOptions(
         selectedColor,
         color,
       );
+
+      if (color.source) {
+        versions.unshift(`${material}.${CUSTOM_VERSION}`);
+      }
+
       paletteOptions.push({
         idx,
         label: color.label,
@@ -297,10 +306,15 @@ export function getPaletteOptions(
         matchBodyColor: color.matchBodyColor ?? false,
         versions,
         selectionColor: selectedColor,
+        sourceColors: color.source ?? null,
         colors:
-          material !== undefined
-            ? getTargetPalette(material, `${version}.${recolor}`).unwrapOr(null)
-            : null,
+          selectedColor === "source" || (!selectedColor && color.source)
+            ? (color.source ?? null)
+            : material !== undefined
+              ? getTargetPalette(material, `${version}.${recolor}`).unwrapOr(
+                  null,
+                )
+              : null,
       });
     });
   }
