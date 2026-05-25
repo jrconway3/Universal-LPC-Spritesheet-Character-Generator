@@ -691,9 +691,11 @@ export async function renderSingleItem(
     // Render all layers of this custom animation item
     const customSprites: { spritePath: string; zPos: number; yPos: number }[] =
       [];
-    const animsList = getSortedLayersByAnim(itemId, true).unwrapOr(
-      {} as Record<string, AnimationLayer[]>,
-    );
+    const animsList = getSortedLayersByAnim(
+      defaultCatalog,
+      itemId,
+      true,
+    ).unwrapOr({} as Record<string, AnimationLayer[]>);
     for (const animName in animsList) {
       for (let layerNum = 1; layerNum < 10; layerNum++) {
         if (singleLayer !== null && layerNum !== singleLayer) continue;
