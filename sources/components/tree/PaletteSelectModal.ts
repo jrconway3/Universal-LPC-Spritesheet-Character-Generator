@@ -189,7 +189,7 @@ function renderModal(
                     ),
                   ],
                 ),
-                isExpanded || version === CUSTOM_VERSION
+                isExpanded
                   ? m("div.variants-container.is-flex.is-flex-wrap-wrap", [
                       ...Object.entries(recolors).map(([palette, colors]) => {
                         const gradient = colors.slice().reverse();

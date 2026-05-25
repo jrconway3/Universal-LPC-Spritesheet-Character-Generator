@@ -308,7 +308,7 @@ export function getPaletteOptions(
         selectionColor: selectedColor,
         sourceColors: color.source ?? null,
         colors:
-          selectedColor === "source" || (!selectedColor && color.source)
+          selectedColor === CUSTOM_KEY || (!selectedColor && color.source)
             ? (color.source ?? null)
             : material !== undefined
               ? getTargetPalette(material, `${version}.${recolor}`).unwrapOr(
