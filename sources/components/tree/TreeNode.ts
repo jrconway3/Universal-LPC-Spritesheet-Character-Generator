@@ -63,9 +63,9 @@ function renderItem(itemId: string, meta: ItemMerged, ctx: ItemListCtx) {
     searchQuery.length >= 2 &&
     matchesSearch(meta.name, searchQuery);
 
-  const isLicenseCompatibleFlag = isItemLicenseCompatible(itemId);
+  const isLicenseCompatibleFlag = isItemLicenseCompatible(itemId, catalog);
   const isAnimCompatibleFlag =
-    isItemAnimationCompatible(itemId) && isNodeAnimCompatible;
+    isItemAnimationCompatible(itemId, catalog) && isNodeAnimCompatible;
   const isCompatible = isLicenseCompatibleFlag && isAnimCompatibleFlag;
 
   // Build tooltip text (license list needs credits chunk)
@@ -163,7 +163,7 @@ function renderItemList(itemIds: string[], ctx: ItemListCtx) {
       const lite = liteResult.value;
       // Filter: Only show items compatible with current body type
       if (!lite.required.includes(state.bodyType)) return false;
-      if (!isItemAnimationCompatible(itemId) || !isNodeAnimCompatible)
+      if (!isItemAnimationCompatible(itemId, catalog) || !isNodeAnimCompatible)
         return false;
       // Filter: Only show items matching search query
       if (
@@ -187,7 +187,7 @@ export const TreeNode: m.Component<TreeNodeAttrs> = {
     const { name, node, pathPrefix = "", catalog } = vnode.attrs;
     const nodePath = pathPrefix ? `${pathPrefix}-${name}` : name;
     const searchQuery = state.searchQuery;
-    const hasSearchMatches = nodeHasMatches(node, searchQuery);
+    const hasSearchMatches = nodeHasMatches(node, searchQuery, catalog);
     const isNodeAnimCompatible = isNodeAnimationCompatible(node);
 
     // Filter: Only show items compatible with current body type

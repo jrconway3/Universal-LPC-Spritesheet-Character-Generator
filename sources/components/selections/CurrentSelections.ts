@@ -10,7 +10,7 @@ import {
 type CurrentSelectionsAttrs = {
   catalog: Pick<
     CatalogReader,
-    "isLiteReady" | "isCreditsReady" | "getItemMerged"
+    "isLiteReady" | "isCreditsReady" | "getItemLite" | "getItemMerged"
   >;
 };
 
@@ -40,8 +40,14 @@ export const CurrentSelections: m.Component<CurrentSelectionsAttrs> = {
       m(
         "div.tags",
         Object.entries(state.selections).map(([selectionKey, selection]) => {
-          const isLicenseCompatible = isItemLicenseCompatible(selection.itemId);
-          const isAnimCompatible = isItemAnimationCompatible(selection.itemId);
+          const isLicenseCompatible = isItemLicenseCompatible(
+            selection.itemId,
+            catalog,
+          );
+          const isAnimCompatible = isItemAnimationCompatible(
+            selection.itemId,
+            catalog,
+          );
           const isCompatible = isLicenseCompatible && isAnimCompatible;
           const metaResult = catalog.getItemMerged(selection.itemId);
           const meta = metaResult.isOk() ? metaResult.value : null;

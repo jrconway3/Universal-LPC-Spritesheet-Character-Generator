@@ -12,7 +12,7 @@ type LicenseOption = {
   urlLabel?: string;
 };
 type LicenseFiltersDeps = {
-  isItemLicenseCompatible: (itemId: string) => boolean;
+  isItemLicenseCompatible: typeof isItemLicenseCompatible;
   licenseConfig: readonly LicenseOption[];
 };
 
@@ -27,8 +27,11 @@ export function setLicenseCompatible(
 ): void {
   deps.isItemLicenseCompatible = overrides.isItemLicenseCompatible;
 }
-export function isLicenseCompatible(itemId: string): boolean {
-  return deps.isItemLicenseCompatible(itemId);
+export function isLicenseCompatible(
+  itemId: string,
+  catalog: Pick<CatalogReader, "getItemMerged">,
+): boolean {
+  return deps.isItemLicenseCompatible(itemId, catalog);
 }
 
 export function setLicenseConfig(config: readonly LicenseOption[]): void {
@@ -40,7 +43,10 @@ export function getLicenseConfig(): readonly LicenseOption[] {
 
 type LicenseFiltersState = { isExpanded: boolean };
 type LicenseFiltersAttrs = {
-  catalog: Pick<CatalogReader, "isLiteReady" | "isCreditsReady">;
+  catalog: Pick<
+    CatalogReader,
+    "isLiteReady" | "isCreditsReady" | "getItemMerged"
+  >;
 };
 
 export const LicenseFilters: m.Component<
@@ -58,7 +64,7 @@ export const LicenseFilters: m.Component<
       for (const [selectionGroup, selection] of Object.entries(
         state.selections,
       )) {
-        if (!isLicenseCompatible(selection.itemId)) {
+        if (!isLicenseCompatible(selection.itemId, vnode.attrs.catalog)) {
           toRemove.push(selectionGroup);
         }
       }
@@ -75,7 +81,8 @@ export const LicenseFilters: m.Component<
 
     const incompatibleSelections = creditsReady
       ? Object.values(state.selections).filter(
-          (selection) => !isLicenseCompatible(selection.itemId),
+          (selection) =>
+            !isLicenseCompatible(selection.itemId, vnode.attrs.catalog),
         )
       : [];
     const hasIncompatibleItems =
