@@ -290,7 +290,7 @@ export function selectItem(
         recolor: parentRecolor,
         name: parentRecolor
           ? `${meta.name} (${parentRecolor.replaceAll("_", " ")})`
-          : meta.name,
+          : (meta.name ?? ""),
       };
     }
   }
