@@ -1,4 +1,5 @@
 import {
+  createMeta,
   getLayersToLoad,
   getSortedLayers,
   getSortedLayersByAnim,
@@ -6,10 +7,34 @@ import {
   resetMetaDeps,
   setMetaDeps,
 } from "../../sources/state/meta.ts";
+import { createCatalog, defaultCatalog } from "../../sources/state/catalog.ts";
 import { ok, err } from "neverthrow";
 import { expect } from "chai";
 import sinon from "sinon";
 import { describe, it, beforeEach, afterEach } from "mocha-globals";
+
+function createCatalogWithItem(itemId, item) {
+  const catalog = createCatalog();
+  const { credits = [], layers = {}, ...liteOverrides } = item;
+  catalog.registerFromItemModule({
+    itemMetadata: {
+      [itemId]: {
+        name: itemId,
+        type_name: "test",
+        required: [],
+        animations: [],
+        recolors: [],
+        matchBodyColor: false,
+        variants: [],
+        path: [],
+        ...liteOverrides,
+      },
+    },
+  });
+  catalog.registerFromCreditsModule({ itemCredits: { [itemId]: credits } });
+  catalog.registerFromLayersModule({ itemLayers: { [itemId]: layers } });
+  return catalog;
+}
 
 describe("state/meta.ts", () => {
   beforeEach(() => {
@@ -18,6 +43,37 @@ describe("state/meta.ts", () => {
 
   afterEach(() => {
     resetMetaDeps();
+  });
+
+  describe("createMeta", () => {
+    it("uses the provided catalog instead of the default singleton", () => {
+      const itemId = "meta_factory_isolated_item";
+      const catalog = createCatalogWithItem(itemId, {
+        layers: {
+          layer_1: { zPos: 42 },
+        },
+      });
+      const meta = createMeta(catalog);
+
+      expect(defaultCatalog.getItemMerged(itemId).isErr()).to.equal(true);
+      expect(meta.getSortedLayers(itemId)._unsafeUnwrap()).to.deep.equal([
+        { layerNum: 1, zPos: 42 },
+      ]);
+    });
+
+    it("keeps custom fallback calls inside the same factory instance", () => {
+      const itemId = "meta_factory_custom_only_item";
+      const catalog = createCatalogWithItem(itemId, {
+        layers: {
+          layer_1: { custom_animation: "wheelchair", zPos: 88 },
+        },
+      });
+      const meta = createMeta(catalog);
+
+      expect(
+        meta.getSortedLayersWithCustomFallback(itemId)._unsafeUnwrap(),
+      ).to.deep.equal([{ layerNum: 1, zPos: 88 }]);
+    });
   });
 
   describe("getSortedLayers", () => {
