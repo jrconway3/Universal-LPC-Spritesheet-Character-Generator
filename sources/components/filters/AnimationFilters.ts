@@ -7,7 +7,7 @@ import { ANIMATIONS } from "../../state/constants.ts";
 
 type AnimationOption = { value: string; label: string };
 type AnimationFiltersDeps = {
-  isItemAnimationCompatible: (itemId: string) => boolean;
+  isItemAnimationCompatible: typeof isItemAnimationCompatible;
   animations: readonly AnimationOption[];
 };
 
@@ -22,8 +22,11 @@ export function setAnimationCompatible(
 ): void {
   deps.isItemAnimationCompatible = overrides.isItemAnimationCompatible;
 }
-export function isAnimationCompatible(itemId: string): boolean {
-  return deps.isItemAnimationCompatible(itemId);
+export function isAnimationCompatible(
+  itemId: string,
+  catalog: Pick<CatalogReader, "getItemLite">,
+): boolean {
+  return deps.isItemAnimationCompatible(itemId, catalog);
 }
 
 export function setAnimations(anims: readonly AnimationOption[]): void {
@@ -35,7 +38,7 @@ export function getAnimations(): readonly AnimationOption[] {
 
 type AnimationFiltersState = { isExpanded: boolean };
 type AnimationFiltersAttrs = {
-  catalog: Pick<CatalogReader, "isLiteReady">;
+  catalog: Pick<CatalogReader, "isLiteReady" | "getItemLite">;
 };
 
 export const AnimationFilters: m.Component<
@@ -53,7 +56,7 @@ export const AnimationFilters: m.Component<
       for (const [selectionGroup, selection] of Object.entries(
         state.selections,
       )) {
-        if (!isAnimationCompatible(selection.itemId)) {
+        if (!isAnimationCompatible(selection.itemId, vnode.attrs.catalog)) {
           toRemove.push(selectionGroup);
         }
       }
@@ -67,7 +70,8 @@ export const AnimationFilters: m.Component<
     };
 
     const incompatibleSelections = Object.values(state.selections).filter(
-      (selection) => !isAnimationCompatible(selection.itemId),
+      (selection) =>
+        !isAnimationCompatible(selection.itemId, vnode.attrs.catalog),
     );
     const hasIncompatibleItems = incompatibleSelections.length > 0;
 
