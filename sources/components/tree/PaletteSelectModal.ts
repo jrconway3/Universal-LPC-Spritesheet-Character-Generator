@@ -8,7 +8,6 @@ import type {
   PaletteMetadata,
   LoadError,
 } from "../../state/catalog.ts";
-import type { LayersToLoadCatalog } from "../../state/meta.ts";
 import { renderResult } from "../../utils/render-result.ts";
 import { state, getSelectionGroup } from "../../state/state.ts";
 import { ucwords } from "../../utils/helpers.ts";
@@ -19,12 +18,6 @@ import {
   CUSTOM_VERSION,
   type PaletteOption,
 } from "../../state/palettes.ts";
-
-export type PaletteSelectModalCatalog = Pick<
-  CatalogReader,
-  "chunkReady" | "getItemMerged" | "getPaletteMetadata"
-> &
-  LayersToLoadCatalog;
 
 type RootViewState = {
   palettePreviewGateSeq?: number;
@@ -48,7 +41,7 @@ export type PaletteSelectModalAttrs = {
   rootViewNode: RootViewRef;
   onClose: () => void;
   onSelect: (recolor: string) => void;
-  catalog: PaletteSelectModalCatalog;
+  catalog: CatalogReader;
 };
 
 /**
