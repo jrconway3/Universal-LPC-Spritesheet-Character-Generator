@@ -362,8 +362,8 @@ export function parseRecolorKey(
  * Compile Palette Key for Recolor Modal
  */
 export function compilePaletteKey(
-  version: string,
   material: string,
+  version: string,
   palette: string,
   opt: PaletteOption,
 ): string {

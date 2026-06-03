@@ -215,6 +215,7 @@ function renderModal(
                               class: classNames({
                                 "has-background-link-light has-text-weight-bold has-text-link":
                                   isSelected,
+                                [`key-${key}`]: true,
                               }),
                               onmouseover: (e: MouseEvent) => {
                                 const div = e.currentTarget as HTMLElement;

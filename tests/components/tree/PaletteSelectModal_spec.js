@@ -289,7 +289,7 @@ describe("PaletteSelectModal", function () {
     );
 
     host.querySelector(".palette-modal .variant-item").click();
-    assert.strictEqual(selected, "ulpc.cloth.red");
+    assert.strictEqual(selected, "red");
   });
 
   it("uses compact canvas dimensions when compactDisplay is enabled", function () {
@@ -372,7 +372,7 @@ describe("PaletteSelectModal", function () {
     assert.notEqual(sourceLabel, null);
     sourceLabel.closest(".variant-item")?.click();
 
-    assert.strictEqual(selected, "custom.cloth.source");
+    assert.strictEqual(selected, "source");
   });
 
   it("renders source in a standalone block above version categories", function () {
