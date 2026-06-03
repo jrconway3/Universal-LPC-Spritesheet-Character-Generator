@@ -297,6 +297,15 @@ export function getPaletteOptions(
         versions.unshift(`${material}.${CUSTOM_VERSION}`);
       }
 
+      let palette = null;
+      if (selectedColor === CUSTOM_KEY || (!selectedColor && color.source)) {
+        palette = color.source ?? null;
+      } else if (material !== undefined) {
+        palette = getTargetPalette(material, `${version}.${recolor}`).unwrapOr(
+          null,
+        );
+      }
+
       paletteOptions.push({
         idx,
         label: color.label,
@@ -307,14 +316,7 @@ export function getPaletteOptions(
         versions,
         selectionColor: selectedColor,
         sourceColors: color.source ?? null,
-        colors:
-          selectedColor === CUSTOM_KEY || (!selectedColor && color.source)
-            ? (color.source ?? null)
-            : material !== undefined
-              ? getTargetPalette(material, `${version}.${recolor}`).unwrapOr(
-                  null,
-                )
-              : null,
+        colors: palette,
       });
     });
   }
@@ -354,4 +356,26 @@ export function parseRecolorKey(
     version = palette?.default;
   }
   return [material, version, recolor];
+}
+
+/**
+ * Compile Palette Key for Recolor Modal
+ */
+export function compilePaletteKey(
+  version: string,
+  material: string,
+  palette: string,
+  opt: PaletteOption,
+): string {
+  if (version === CUSTOM_VERSION) {
+    return CUSTOM_KEY;
+  }
+
+  let key = material !== opt.material ? material + "." : "";
+
+  if (version !== opt.default) {
+    key += version + ".";
+  }
+
+  return key + palette;
 }

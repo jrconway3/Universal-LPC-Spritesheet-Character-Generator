@@ -288,9 +288,7 @@ export function selectItem(
         subId: null,
         variant: existingParent.variant,
         recolor: parentRecolor,
-        name: parentRecolor
-          ? `${meta.name} (${parentRecolor.replaceAll("_", " ")})`
-          : (meta.name ?? ""),
+        name: `${meta.name} ${parentRecolor ? `(${parentRecolor.replaceAll("_", " ")})` : ""}`,
       };
     }
   }

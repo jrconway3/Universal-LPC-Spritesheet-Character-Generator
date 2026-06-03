@@ -14,6 +14,7 @@ import { state, getSelectionGroup } from "../../state/state.ts";
 import { ucwords } from "../../utils/helpers.ts";
 import { COMPACT_FRAME_SIZE, FRAME_SIZE } from "../../state/constants.ts";
 import {
+  compilePaletteKey,
   CUSTOM_KEY,
   CUSTOM_VERSION,
   type PaletteOption,
@@ -193,14 +194,12 @@ function renderModal(
                   ? m("div.variants-container.is-flex.is-flex-wrap-wrap", [
                       ...Object.entries(recolors).map(([palette, colors]) => {
                         const gradient = colors.slice().reverse();
-                        const key =
-                          version === CUSTOM_VERSION
-                            ? CUSTOM_KEY
-                            : (material !== opt.material
-                                ? material + "."
-                                : "") +
-                              (version !== opt.default ? version + "." : "") +
-                              palette;
+                        const key = compilePaletteKey(
+                          material,
+                          version,
+                          palette,
+                          opt,
+                        );
                         const isSelected =
                           (selection?.itemId === itemId ||
                             selectionGroup === opt.type_name) &&
