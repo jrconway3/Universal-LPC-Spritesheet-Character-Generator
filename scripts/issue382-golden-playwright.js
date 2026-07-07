@@ -82,9 +82,9 @@ export async function generateIssue382GoldenZipFixtures(inputRelativeToRepo) {
       "--strictPort",
     ],
     {
-    cwd: REPO_ROOT,
-    stdio: "ignore",
-    shell: process.platform === "win32",
+      cwd: REPO_ROOT,
+      stdio: "ignore",
+      shell: process.platform === "win32",
     },
   );
 
