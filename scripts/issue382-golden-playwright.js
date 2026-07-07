@@ -21,7 +21,7 @@
  *
  * Environment
  * -----------
- * - **ISSUE382_GOLDEN_PORT** — TCP port for `npx serve` (default `9876`). Change if the port is busy.
+ * - **ISSUE382_GOLDEN_PORT** — TCP port for the Vite dev server (default `9876`). Change if the port is busy.
  */
 
 /* eslint-disable no-undef -- page.evaluate / waitForFunction callbacks execute in the browser */
@@ -71,11 +71,22 @@ export const paths = ${JSON.stringify(paths, null, 2)};
 }
 
 export async function generateIssue382GoldenZipFixtures(inputRelativeToRepo) {
-  const serve = spawn("npx", ["serve", REPO_ROOT, "-l", String(SERVE_PORT)], {
+  const serve = spawn(
+    "npx",
+    [
+      "vite",
+      "--host",
+      "127.0.0.1",
+      "--port",
+      String(SERVE_PORT),
+      "--strictPort",
+    ],
+    {
     cwd: REPO_ROOT,
     stdio: "ignore",
     shell: process.platform === "win32",
-  });
+    },
+  );
 
   let browser;
   try {
@@ -94,11 +105,26 @@ export async function generateIssue382GoldenZipFixtures(inputRelativeToRepo) {
       },
     );
 
-    await page.waitForFunction(
-      () => window.__ISSUE382_GOLDEN_READY__ === true,
-      undefined,
-      { timeout: 180000 },
-    );
+    try {
+      await page.waitForFunction(
+        () => window.__ISSUE382_GOLDEN_READY__ === true,
+        undefined,
+        { timeout: 180000 },
+      );
+    } catch (err) {
+      const statusText = await page
+        .evaluate(() => window.__ISSUE382_GOLDEN_STATUS__ ?? null)
+        .catch(() => null);
+      const pageText = await page
+        .locator("#status")
+        .textContent()
+        .catch(() => null);
+      const extra = [statusText, pageText].filter(Boolean).join(" | ");
+      if (extra) {
+        throw new Error(`Golden runner timed out at: ${extra}`);
+      }
+      throw err;
+    }
 
     const errText = await page.evaluate(() => window.__ISSUE382_GOLDEN_ERROR__);
     if (errText) {
