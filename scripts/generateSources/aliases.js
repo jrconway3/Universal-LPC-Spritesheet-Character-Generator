@@ -38,6 +38,32 @@ function resolveSegmentedTarget(variants, aliasVariant) {
 }
 
 /**
+ * Resolves a name-wildcard alias where both sides end with "_*"
+ * (e.g., "Fur_Pants_*" → "Formal_Pants_*"). Returns the forward object when
+ * the pattern matches, or null when either side is not a name-wildcard.
+ * @param {string} originVariant Origin variant expression (left side of alias).
+ * @param {string} aliasVariant Target variant expression (right side of alias).
+ * @param {string|undefined} aliasType Explicit target type, if provided.
+ * @param {string} defaultTypeName Fallback type name from item metadata.
+ * @return {{typeName: string, name: string, variant: string}|null} Forward object or null.
+ */
+function resolveNameWildcardAlias(
+  originVariant,
+  aliasVariant,
+  aliasType,
+  defaultTypeName,
+) {
+  if (!originVariant.endsWith("_*") || !aliasVariant.endsWith("_*")) {
+    return null;
+  }
+  return {
+    typeName: aliasType ?? defaultTypeName,
+    name: aliasVariant.slice(0, -2),
+    variant: "*",
+  };
+}
+
+/**
  * Resolves alias target metadata for a single alias entry.
  * @param {Object} meta Item metadata.
  * @param {string} aliasVariant Alias variant expression.
@@ -89,31 +115,34 @@ export function writeAliases(aliases, meta) {
 
   for (const [original, alias] of Object.entries(aliases)) {
     const [aliasVariant, aliasType] = alias.split("=").reverse();
-    const target = resolveAliasTarget(meta, aliasVariant, aliasType);
+    const [originVariant, originType] = original.split("=").reverse();
+    const typeName = originType ?? meta.type_name;
 
-    if (!target) {
+    let forward = resolveNameWildcardAlias(
+      originVariant,
+      aliasVariant,
+      aliasType,
+      meta.type_name,
+    );
+    if (!forward) {
+      const target = resolveAliasTarget(meta, aliasVariant, aliasType);
+      if (target) {
+        forward = {
+          typeName: target.typeName,
+          name: target.targetName,
+          variant: target.targetVariant,
+        };
+      }
+    }
+
+    if (!forward) {
       debugWarn("Alias target does not exist for", alias);
       continue;
     }
 
-    const forward = {
-      typeName: target.typeName,
-      name: target.targetName,
-      variant: target.targetVariant,
-    };
-
-    const [originVariant, originType] = original.split("=").reverse();
-    const typeName = originType ?? meta.type_name;
-    if (!aliasMetadata[typeName]) {
-      aliasMetadata[typeName] = {};
-    }
+    aliasMetadata[typeName] ??= {};
     aliasMetadata[typeName][originVariant] = forward;
-
-    appliedAliases.push({
-      typeName,
-      originVariant,
-      forward,
-    });
+    appliedAliases.push({ typeName, originVariant, forward });
   }
 
   return appliedAliases;

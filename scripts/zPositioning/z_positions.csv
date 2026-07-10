@@ -116,7 +116,7 @@ feet_boots_basic,layer_1,25,feet/boots/basic/male/ feet/boots/basic/thin/ feet/b
 feet_boots_fold,layer_1,25,feet/boots/fold/male/ feet/boots/fold/thin/ feet/boots/fold/male/ feet/boots/fold/thin/
 feet_boots_revised,layer_1,25,feet/boots/revised/male/ feet/boots/revised/thin/ feet/boots/revised/male/ feet/boots/revised/thin/
 feet_boots_rim,layer_1,25,feet/boots/rimmed/male/ feet/boots/rimmed/thin/ feet/boots/rimmed/male/ feet/boots/rimmed/thin/
-feet_hoofs,layer_1,15,feet/hoofs/male/ feet/hoofs/female/ feet/hoofs/male/ feet/hoofs/female/
+feet_hoofs,layer_1,15,feet/hoofs/male/ feet/hoofs/thin/ feet/hoofs/male/ feet/hoofs/thin/
 feet_plate_toe,layer_1,27,feet/accessory/plate_toe/male/ feet/accessory/plate_toe/thin/ feet/accessory/plate_toe/male/ feet/accessory/plate_toe/thin/
 feet_plate_toe_thick,layer_1,27,feet/accessory/plate_toe_thick/male/ feet/accessory/plate_toe_thick/thin/ feet/accessory/plate_toe_thick/male/ feet/accessory/plate_toe_thick/thin/
 feet_sandals,layer_1,15,feet/sandals/male/ feet/sandals/thin/ feet/sandals/male/ feet/sandals/thin/
@@ -377,8 +377,8 @@ hat_visor_slit_narrow,layer_1,132,hat/visor/slit/adult/ hat/visor/slit/adult/ ha
 head_ears_avyon,layer_1,126,head/ears/avyon/adult/ head/ears/avyon/adult/ head/ears/avyon/adult/ head/ears/avyon/adult/ head/ears/avyon/child/
 head_ears_avyon_skin,layer_1,127,head/ears/avyon/skin/adult/ head/ears/avyon/skin/adult/ head/ears/avyon/skin/adult/ head/ears/avyon/skin/adult/ head/ears/avyon/skin/child/
 head_ears_big,layer_1,105,head/ears/big/adult/ head/ears/big/adult/ head/ears/big/adult/ head/ears/big/adult/ head/ears/big/child/
-head_ears_cat,layer_1,130,head/ears/cat/adult_front/ head/ears/cat/adult_front/ head/ears/cat/adult_front/ head/ears/cat/adult_front/ head/ears/cat/child_front/
-head_ears_cat,layer_2,8,head/ears/cat/adult_back/ head/ears/cat/adult_back/ head/ears/cat/adult_back/ head/ears/cat/adult_back/ head/ears/cat/child_back/
+head_ears_cat,layer_1,130,head/ears/cat/adult/fg/ head/ears/cat/adult/fg/ head/ears/cat/adult/fg/ head/ears/cat/adult/fg/ head/ears/cat/child/fg/
+head_ears_cat,layer_2,8,head/ears/cat/adult/bg/ head/ears/cat/adult/bg/ head/ears/cat/adult/bg/ head/ears/cat/adult/bg/ head/ears/cat/child/bg/
 head_ears_cat_skin,layer_1,131,head/ears/cat/skin/adult/fg/ head/ears/cat/skin/adult/fg/ head/ears/cat/skin/adult/fg/ head/ears/cat/skin/adult/fg/ head/ears/cat/skin/child/fg/
 head_ears_cat_skin,layer_2,9,head/ears/cat/skin/adult/bg/ head/ears/cat/skin/adult/bg/ head/ears/cat/skin/adult/bg/ head/ears/cat/skin/adult/bg/ head/ears/cat/skin/child/bg/
 head_ears_down,layer_1,126,head/ears/down/adult/ head/ears/down/adult/ head/ears/down/adult/ head/ears/down/adult/ head/ears/down/child/
@@ -389,8 +389,8 @@ head_ears_long,layer_1,126,head/ears/long/adult/ head/ears/long/adult/ head/ears
 head_ears_lykon,layer_1,126,head/ears/lykon/adult/ head/ears/lykon/adult/ head/ears/lykon/adult/ head/ears/lykon/adult/ head/ears/lykon/child/
 head_ears_lykon_skin,layer_1,127,head/ears/lykon/skin/adult/ head/ears/lykon/skin/adult/ head/ears/lykon/skin/adult/ head/ears/lykon/skin/adult/ head/ears/lykon/skin/child/
 head_ears_medium,layer_1,126,head/ears/medium/adult/ head/ears/medium/adult/ head/ears/medium/adult/ head/ears/medium/adult/ head/ears/medium/child/
-head_ears_wolf,layer_1,130,head/ears/wolf/adult_front/ head/ears/wolf/adult_front/ head/ears/wolf/adult_front/ head/ears/wolf/adult_front/ head/ears/wolf/child_front/
-head_ears_wolf,layer_2,8,head/ears/wolf/adult_back/ head/ears/wolf/adult_back/ head/ears/wolf/adult_back/ head/ears/wolf/adult_back/ head/ears/wolf/child_back/
+head_ears_wolf,layer_1,130,head/ears/wolf/adult/fg/ head/ears/wolf/adult/fg/ head/ears/wolf/adult/fg/ head/ears/wolf/adult/fg/ head/ears/wolf/child/fg/
+head_ears_wolf,layer_2,8,head/ears/wolf/adult/bg/ head/ears/wolf/adult/bg/ head/ears/wolf/adult/bg/ head/ears/wolf/adult/bg/ head/ears/wolf/child/bg/
 head_ears_wolf_skin,layer_1,131,head/ears/wolf/skin/adult/fg/ head/ears/wolf/skin/adult/fg/ head/ears/wolf/skin/adult/fg/ head/ears/wolf/skin/adult/fg/ head/ears/wolf/skin/child/fg/
 head_ears_wolf_skin,layer_2,9,head/ears/wolf/skin/adult/bg/ head/ears/wolf/skin/adult/bg/ head/ears/wolf/skin/adult/bg/ head/ears/wolf/skin/adult/bg/ head/ears/wolf/skin/child/bg/
 head_ears_zabos,layer_1,126,head/ears/zabos/adult/ head/ears/zabos/adult/ head/ears/zabos/adult/ head/ears/zabos/adult/ head/ears/zabos/child/
@@ -457,7 +457,6 @@ legs_childskirts,layer_1,20,legs/skirts/child/
 legs_cuffed,layer_1,20,legs/cuffed/male/ legs/cuffed/thin/
 legs_formal,layer_1,20,legs/formal/male/ legs/formal/thin/ legs/formal/male/ legs/formal/thin/
 legs_formal_striped,layer_1,20,legs/formal_striped/male/ legs/formal_striped/thin/ legs/formal_striped/male/ legs/formal_striped/thin/
-legs_fur,layer_1,20,legs/fur/male/ legs/fur/thin/ legs/fur/male/ legs/fur/thin/
 legs_hose,layer_1,20,legs/hose/male/ legs/hose/thin/
 legs_leggings,layer_1,20,legs/leggings/male/ legs/leggings/thin/
 legs_leggings2,layer_1,20,legs/leggings2/male/ legs/leggings2/thin/
