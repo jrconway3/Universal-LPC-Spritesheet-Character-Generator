@@ -20,13 +20,6 @@
     "pregnant": "shield/heater/original/wood/fg/",
     "teen": "shield/heater/original/wood/fg/"
   },
-  "variants": [
-    "brown",
-    "coffee",
-    "oak",
-    "tan",
-    "umber"
-  ],
   "animations": [
     "spellcast",
     "thrust",
@@ -63,5 +56,13 @@
       ]
     }
   ],
+  "recolors": {
+    "material": "wood",
+    "palettes": [
+      "ulpc",
+      "lpcr",
+      "all.lpcr"
+    ]
+  },
   "type_name": "shield"
 }
