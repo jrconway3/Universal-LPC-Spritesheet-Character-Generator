@@ -451,7 +451,7 @@ heads_wolf_child,layer_1,100,head/heads/wolf/child/
 heads_wolf_female,layer_1,100,head/heads/wolf/female/ head/heads/wolf/female/ head/heads/wolf/female/ head/heads/wolf/female/
 heads_wolf_male,layer_1,100,head/heads/wolf/male/ head/heads/wolf/male/ head/heads/wolf/male/ head/heads/wolf/male/
 heads_zombie,layer_1,100,head/heads/zombie/adult/ head/heads/zombie/adult/ head/heads/zombie/adult/ head/heads/zombie/adult/
-legs_armour,layer_1,20,legs/armour/plate/male/ legs/armour/plate/thin/
+legs_armour,layer_1,20,legs/armour/plate/male/ legs/armour/plate/thin/ legs/armour/plate/thin/
 legs_childpants,layer_1,20,legs/pants/child/
 legs_childskirts,layer_1,20,legs/skirts/child/
 legs_cuffed,layer_1,20,legs/cuffed/male/ legs/cuffed/thin/
