@@ -111,7 +111,7 @@ facial_monocle_left,layer_1,115,facial/monocle/left/adult/ facial/monocle/left/a
 facial_monocle_left_frame,layer_1,115,facial/monocle/left/frame/adult/ facial/monocle/left/frame/adult/ facial/monocle/left/frame/adult/ facial/monocle/left/frame/adult/ facial/monocle/left/frame/child/
 facial_monocle_right,layer_1,115,facial/monocle/right/adult/ facial/monocle/right/adult/ facial/monocle/right/adult/ facial/monocle/right/adult/ facial/monocle/right/child/
 facial_monocle_right_frame,layer_1,115,facial/monocle/right/frame/adult/ facial/monocle/right/frame/adult/ facial/monocle/right/frame/adult/ facial/monocle/right/frame/adult/ facial/monocle/right/frame/child/
-feet_armour,layer_1,15,feet/armour/plate/male/ feet/armour/plate/female/ feet/armour/plate/male/ feet/armour/plate/female/
+feet_armour,layer_1,15,feet/armour/plate/male/ feet/armour/plate/thin/ feet/armour/plate/male/ feet/armour/plate/thin/
 feet_boots_basic,layer_1,25,feet/boots/basic/male/ feet/boots/basic/thin/ feet/boots/basic/male/ feet/boots/basic/thin/
 feet_boots_fold,layer_1,25,feet/boots/fold/male/ feet/boots/fold/thin/ feet/boots/fold/male/ feet/boots/fold/thin/
 feet_boots_revised,layer_1,25,feet/boots/revised/male/ feet/boots/revised/thin/ feet/boots/revised/male/ feet/boots/revised/thin/
@@ -451,7 +451,7 @@ heads_wolf_child,layer_1,100,head/heads/wolf/child/
 heads_wolf_female,layer_1,100,head/heads/wolf/female/ head/heads/wolf/female/ head/heads/wolf/female/ head/heads/wolf/female/
 heads_wolf_male,layer_1,100,head/heads/wolf/male/ head/heads/wolf/male/ head/heads/wolf/male/ head/heads/wolf/male/
 heads_zombie,layer_1,100,head/heads/zombie/adult/ head/heads/zombie/adult/ head/heads/zombie/adult/ head/heads/zombie/adult/
-legs_armour,layer_1,20,legs/armour/plate/male/ legs/armour/plate/thin/
+legs_armour,layer_1,20,legs/armour/plate/male/ legs/armour/plate/thin/ legs/armour/plate/thin/
 legs_childpants,layer_1,20,legs/pants/child/
 legs_childskirts,layer_1,20,legs/skirts/child/
 legs_cuffed,layer_1,20,legs/cuffed/male/ legs/cuffed/thin/
