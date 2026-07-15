@@ -1,0 +1,7 @@
+{
+    "type": "material",
+    "label": "Wood",
+    "desc": "Palettes designed for wooden surfaces such as bows and staves.",
+    "default": "ulpc",
+    "base": "maple"
+}

@@ -10,15 +10,32 @@
     "child": "shadow/child/",
     "teen": "shadow/adult/"
   },
-  "variants": [
-    "shadow"
+  "animations": [
+    "spellcast",
+    "thrust",
+    "walk",
+    "slash",
+    "shoot",
+    "hurt",
+    "watering",
+    "idle",
+    "jump",
+    "sit",
+    "emote",
+    "climb",
+    "run",
+    "combat",
+    "1h_slash",
+    "1h_backslash",
+    "1h_halfslash"
   ],
   "credits": [
     {
       "file": "shadow",
-      "notes": "",
+      "notes": "Original by Dr. Jamgo, jump/sit/emote/run/revised combat by JaidynReiman",
       "authors": [
-        "drjamgo@hotmail.com"
+        "drjamgo@hotmail.com",
+        "JaidynReiman"
       ],
       "licenses": [
         "CC0"
@@ -28,5 +45,12 @@
       ]
     }
   ],
+  "recolors": {
+    "material": "cloth",
+    "palettes": [
+      "ulpc",
+      "all.lpcr"
+    ]
+  },
   "type_name": "shadow"
 }

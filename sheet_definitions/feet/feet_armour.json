@@ -5,9 +5,9 @@
     "zPos": 15,
     "male": "feet/armour/plate/male/",
     "muscular": "feet/armour/plate/male/",
-    "female": "feet/armour/plate/female/",
-    "pregnant": "feet/armour/plate/female/",
-    "teen": "feet/armour/plate/female/"
+    "female": "feet/armour/plate/thin/",
+    "pregnant": "feet/armour/plate/thin/",
+    "teen": "feet/armour/plate/thin/"
   },
   "animations": [
     "spellcast",
@@ -16,7 +16,13 @@
     "slash",
     "shoot",
     "hurt",
-    "idle"
+    "watering",
+    "idle",
+    "climb",
+    "jump",
+    "sit",
+    "emote",
+    "run"
   ],
   "credits": [
     {

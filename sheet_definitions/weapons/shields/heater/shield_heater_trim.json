@@ -20,15 +20,6 @@
     "pregnant": "shield/heater/original/trim/fg/",
     "teen": "shield/heater/original/trim/fg/"
   },
-  "variants": [
-    "brass",
-    "bronze",
-    "copper",
-    "gold",
-    "iron",
-    "silver",
-    "steel"
-  ],
   "animations": [
     "spellcast",
     "thrust",
@@ -65,5 +56,13 @@
       ]
     }
   ],
+  "recolors": {
+    "material": "metal",
+    "palettes": [
+      "ulpc",
+      "lpcr",
+      "all.lpcr"
+    ]
+  },
   "type_name": "shield_trim"
 }
