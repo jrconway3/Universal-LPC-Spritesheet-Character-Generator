@@ -32,12 +32,21 @@ import { seedBrowserCatalogMergedOnDist } from "../../browser-catalog-fixture.js
 
 let fakeZip;
 
+function setStatus(text) {
+  window.__ISSUE382_GOLDEN_STATUS__ = text;
+  const el = document.getElementById("status");
+  if (el) el.textContent = text;
+}
+
 async function runGoldens() {
+  setStatus("Resetting state...");
   resetState();
   drawCalls.length = 0;
 
+  setStatus("Seeding browser catalog...");
   await seedBrowserCatalogMergedOnDist(issue382ItemMetadata);
 
+  setStatus("Importing selections...");
   Object.assign(state, importStateFromJSON(JSON.stringify(issue382Selections)));
 
   window.alert = () => {};
@@ -69,22 +78,27 @@ async function runGoldens() {
   ctx.fillStyle = "#445566";
   ctx.fillRect(0, 0, SHEET_WIDTH, SHEET_HEIGHT);
 
+  setStatus("Rendering character...");
   await renderCharacter(state.selections, state.bodyType);
 
   const out = {};
 
+  setStatus("Exporting split animations...");
   await exportSplitAnimations();
   out.splitAnimations = sortedZipKeys(fakeZip);
   state.zipByAnimation.isRunning = false;
 
+  setStatus("Exporting split item sheets...");
   await exportSplitItemSheets();
   out.splitItemSheets = sortedZipKeys(fakeZip);
   state.zipByItem.isRunning = false;
 
+  setStatus("Exporting split item animations...");
   await exportSplitItemAnimations();
   out.splitItemAnimations = sortedZipKeys(fakeZip);
   state.zipByAnimationAndItem.isRunning = false;
 
+  setStatus("Exporting individual frames...");
   await exportIndividualFrames();
   out.individualFrames = sortedZipKeys(fakeZip);
   if (state.zipIndividualFrames) {
@@ -103,18 +117,17 @@ async function runGoldens() {
 window.__ISSUE382_GOLDEN__ = null;
 window.__ISSUE382_GOLDEN_READY__ = false;
 window.__ISSUE382_GOLDEN_ERROR__ = null;
+window.__ISSUE382_GOLDEN_STATUS__ = "Booting golden runner...";
 
 runGoldens()
   .then((goldens) => {
     window.__ISSUE382_GOLDEN__ = goldens;
     window.__ISSUE382_GOLDEN_READY__ = true;
-    const el = document.getElementById("status");
-    if (el) el.textContent = "Done (issue #382 golden paths).";
+    setStatus("Done (issue #382 golden paths).");
   })
   .catch((err) => {
     window.__ISSUE382_GOLDEN_ERROR__ = String(err?.stack || err);
     window.__ISSUE382_GOLDEN_READY__ = true;
-    const el = document.getElementById("status");
-    if (el) el.textContent = `Error: ${window.__ISSUE382_GOLDEN_ERROR__}`;
+    setStatus(`Error: ${window.__ISSUE382_GOLDEN_ERROR__}`);
     console.error(err);
   });
